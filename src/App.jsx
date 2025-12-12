@@ -58,8 +58,9 @@ function App() {
       setCurrentView(prev => {
         console.log("Auto-route check. Prev:", prev);
 
-        // Check for welcome path (handles Supabase redirects)
-        if (window.location.pathname === '/welcome') {
+        // Check for welcome flag from email confirmation redirect
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('welcome') === 'true') {
           return 'welcome';
         }
 
