@@ -136,6 +136,7 @@ function App() {
             setSelectedAuthType('restaurant');
             setCurrentView('auth_forms');
           }}
+          onIkoyi={() => setCurrentView('ikoyi')}
         />
       )}
 

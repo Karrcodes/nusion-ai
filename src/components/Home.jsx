@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Home = ({ user, onStart, onLogin, onSignup, onDashboard, onPartnerSignup }) => {
+const Home = ({ user, onStart, onLogin, onSignup, onDashboard, onPartnerSignup, onIkoyi }) => {
     // Get user photo from local storage if available
     const userPhoto = React.useMemo(() => {
         if (!user) return null;
@@ -158,7 +158,10 @@ const Home = ({ user, onStart, onLogin, onSignup, onDashboard, onPartnerSignup }
 
                     <div className="grid md:grid-cols-2 gap-8">
                         {/* Ikoyi Card */}
-                        <div className="group relative h-64 rounded-2xl overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500">
+                        <div
+                            onClick={onIkoyi}
+                            className="group relative h-64 rounded-2xl overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500"
+                        >
                             <div className="absolute inset-0 bg-black/50 group-hover:bg-black/40 transition-colors z-10"></div>
                             <img src="/ikoyi-interior.png" alt="Ikoyi" className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                             <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-6 text-center">
