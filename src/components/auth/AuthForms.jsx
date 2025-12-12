@@ -50,7 +50,8 @@ const AuthForms = ({ type, mode, onAuthSuccess, onBack }) => {
                     email,
                     password,
                     options: {
-                        data: metadata
+                        data: metadata,
+                        emailRedirectTo: `${window.location.origin}?welcome=true`, // Redirect with welcome flag
                     }
                 });
 
@@ -58,7 +59,12 @@ const AuthForms = ({ type, mode, onAuthSuccess, onBack }) => {
                 setShowSuccess(true);
             }
         } catch (err) {
-            setError(err.message);
+            console.error("Auth Error:", err);
+            let errorMessage = err.message;
+            if (errorMessage.includes("Error sending confirmation email")) {
+                errorMessage = "Rate limit exceeded. Please wait a moment before trying again, or check if you've already received a confirmation email.";
+            }
+            setError(errorMessage);
         } finally {
             setIsLoading(false);
         }

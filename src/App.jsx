@@ -8,6 +8,7 @@ import AuthSelection from './components/AuthSelection';
 import AuthForms from './components/auth/AuthForms';
 import RestaurantDashboard from './components/RestaurantDashboard';
 import DinerDashboard from './components/DinerDashboard';
+import Welcome from './components/auth/Welcome';
 import './index.css';
 
 function App() {
@@ -56,6 +57,13 @@ function App() {
       // For now, let's auto-route if on 'home' or 'auth' flow
       setCurrentView(prev => {
         console.log("Auto-route check. Prev:", prev);
+
+        // Check for welcome flag from email confirmation redirect
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('welcome') === 'true') {
+          return 'welcome';
+        }
+
         // Only auto-route to dashboard if user was in the middle of auth flow
         if (['auth_selection', 'auth_forms'].includes(prev)) {
           console.log("Redirecting to dashboard from auth flow");
@@ -138,6 +146,17 @@ function App() {
             setCurrentView('auth_forms');
           }}
           onBack={() => setCurrentView('home')}
+        />
+      )}
+
+      {currentView === 'welcome' && (
+        <Welcome
+          user={currentUser}
+          onContinue={() => {
+            // Clear query params to prevent reappearing on refresh
+            window.history.replaceState({}, document.title, "/");
+            setCurrentView(currentUser?.type === 'restaurant' ? 'restaurant_dashboard' : 'diner_dashboard');
+          }}
         />
       )}
 
