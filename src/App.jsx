@@ -37,6 +37,11 @@ function App() {
     return () => subscription.unsubscribe();
   }, []);
 
+  // --- SCROLL TO TOP ON VIEW CHANGE ---
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [currentView]);
+
   const handleSession = (session) => {
     console.log("Handle Session:", session ? "User found" : "No user");
     if (session?.user) {
