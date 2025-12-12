@@ -1,0 +1,120 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Playfair+Display:wght@400;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply font-main bg-bg-primary text-text-primary min-h-screen bg-repeat bg-fixed;
+    background-size: 780px;
+    background-image: url('/bg-pattern.png');
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply font-display font-bold;
+  }
+}
+
+@layer components {
+
+  /* Glassmorphism Utilities */
+  .glass-panel {
+    @apply bg-glass-bg border border-glass-border rounded-[24px] shadow-lg;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .glass-input {
+    background-color: rgba(255, 255, 255, 0.4);
+    @apply border border-glass-border text-text-primary p-4 rounded-xl w-full text-lg outline-none transition-colors;
+  }
+
+  .glass-input:focus {
+    background-color: rgba(255, 255, 255, 0.6);
+    @apply border-accent-wa;
+  }
+
+  /* Button Styles */
+  .btn-primary {
+    @apply bg-gradient-to-r from-accent-wa to-accent-jp text-white border-none py-4 px-8 font-bold text-lg rounded-full cursor-pointer transition-all shadow-md relative overflow-hidden;
+  }
+
+  .btn-primary:hover {
+    @apply transform -translate-y-[2px] shadow-lg scale-105;
+  }
+
+  .btn-primary:active {
+    @apply transform translate-y-[1px] scale-95;
+  }
+
+  /* Typography Utilities */
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-text-primary to-accent-jp;
+  }
+
+  /* Animated Logo Gradient */
+  .logo-gradient {
+    @apply w-full h-[90px] bg-no-repeat bg-contain relative mb-4;
+    animation: gradient-flow 8s ease infinite;
+    background: linear-gradient(120deg, #4a4036, #c2a878, #8b5e3c, #a68a64, #4a4036);
+    background-size: 300%;
+    -webkit-mask-image: url('/logo.png');
+    mask-image: url('/logo.png');
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center center;
+    mask-position: center center;
+  }
+}
+
+@keyframes gradient-flow {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes steam {
+  0% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+
+  20% {
+    opacity: 0.8;
+    transform: translateY(-10px);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-40px) scale(1.5);
+  }
+}
+
+@keyframes rise {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 0;
+  }
+
+  50% {
+    opacity: 0.6;
+  }
+
+  100% {
+    transform: translateY(-60px) scale(1.5);
+    opacity: 0;
+  }
+}
