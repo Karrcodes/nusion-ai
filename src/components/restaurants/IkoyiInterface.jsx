@@ -5,7 +5,7 @@ import RecommendationResult from '../RecommendationResult';
 import { getRecommendation } from '../../utils/recommendationLogic';
 import { generateDishImage } from '../../utils/imageGenerator';
 
-function IkoyiInterface({ onBack }) {
+function IkoyiInterface({ onBack, onHome }) {
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState(null);
     const [loadingPhase, setLoadingPhase] = useState('idle');
@@ -129,7 +129,11 @@ function IkoyiInterface({ onBack }) {
                 {/* Footer */}
                 <footer className="w-full py-8 text-text-secondary opacity-50 flex justify-center text-sm items-center mt-12 gap-2">
                     <span className="tracking-widest uppercase text-xs">Powered by</span>
-                    <div className="flex items-center gap-1">
+                    <div
+                        onClick={onHome}
+                        className="flex items-center gap-1 cursor-pointer hover:opacity-100 transition-opacity"
+                        title="Return to Home"
+                    >
                         <img
                             src="/nusion-logo.png"
                             alt="Nusion"
