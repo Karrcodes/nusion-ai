@@ -51,7 +51,8 @@ const AuthForms = ({ type, mode, onAuthSuccess, onBack }) => {
                     password,
                     options: {
                         data: metadata,
-                        emailRedirectTo: `${window.location.origin}?welcome=true`, // Redirect with welcome flag
+                        // Prioritize VITE_SITE_URL for production, fallback to origin for local dev
+                        emailRedirectTo: `${import.meta.env.VITE_SITE_URL || window.location.origin}?welcome=true`,
                     }
                 });
 
