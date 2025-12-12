@@ -52,7 +52,8 @@ const AuthForms = ({ type, mode, onAuthSuccess, onBack }) => {
                     options: {
                         data: metadata,
                         // Prioritize VITE_SITE_URL for production, fallback to origin for local dev
-                        emailRedirectTo: `${import.meta.env.VITE_SITE_URL || window.location.origin}?welcome=true`,
+                        // We use a path-based redirect (/welcome) which is more robust than query params
+                        emailRedirectTo: `${import.meta.env.VITE_SITE_URL || window.location.origin}/welcome`,
                     }
                 });
 
