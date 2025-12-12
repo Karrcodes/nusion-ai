@@ -39,7 +39,17 @@ function App() {
 
   // --- SCROLL TO TOP ON VIEW CHANGE ---
   useEffect(() => {
-    window.scrollTo(0, 0);
+    // Disable default browser scroll restoration
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual';
+    }
+
+    // Use timeout to ensure this runs after layout measurements
+    const timer = setTimeout(() => {
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    }, 10);
+
+    return () => clearTimeout(timer);
   }, [currentView]);
 
   const handleSession = (session) => {
