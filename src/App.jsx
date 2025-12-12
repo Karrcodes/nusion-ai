@@ -1,41 +1,24 @@
-
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Routes, Route, useNavigate, Navigate, useLocation } from 'react-router-dom';
 import { supabase } from './lib/supabaseClient';
 import Home from './components/Home';
-import Dashboard from './components/Dashboard'; // "Brand Selection"
-import IkoyiInterface from './components/restaurants/IkoyiInterface';
 import AuthSelection from './components/AuthSelection';
 import AuthForms from './components/auth/AuthForms';
-import RestaurantDashboard from './components/RestaurantDashboard';
+import Dashboard from './components/Dashboard';
+import IkoyiInterface from './components/restaurants/IkoyiInterface';
 import DinerDashboard from './components/DinerDashboard';
+import RestaurantDashboard from './components/RestaurantDashboard';
 import Welcome from './components/auth/Welcome';
+import ProtectedRoute from './components/ProtectedRoute';
 import './index.css';
 
 function App() {
-  // Views: 'home' | 'auth_selection' | 'auth_forms' | 'restaurant_dashboard' | 'diner_dashboard' | 'dashboard' | 'ikoyi'
-  const [currentView, setCurrentView] = useState('home');
   const [currentUser, setCurrentUser] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [authMode, setAuthMode] = useState('login'); // 'login' or 'signup'
-  const [selectedAuthType, setSelectedAuthType] = useState(null); // 'diner' or 'restaurant'
-
-  // --- SUPABASE SESSION MANAGEMENT ---
-  useEffect(() => {
-    // 1. Check active session on mount
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      handleSession(session);
-      setIsLoading(false);
-    });
-
-    // 2. Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      handleSession(session);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
+  const [selectedAuthType, setSelectedAuthType] = useState(null); // 'diner' | 'restaurant'
+  const [authMode, setAuthMode] = useState('login'); // 'login' | 'signup'
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   // --- SCROLL TO TOP ON VIEW CHANGE ---
   useEffect(() => {
@@ -50,170 +33,154 @@ function App() {
     }, 10);
 
     return () => clearTimeout(timer);
-  }, [currentView]);
+  }, [location.pathname]); // Trigger on path change including subpages
+
+
+  useEffect(() => {
+    // Check active session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      handleSession(session);
+      setLoading(false);
+    });
+
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      handleSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []); // Run once on mount
 
   const handleSession = (session) => {
-    console.log("Handle Session:", session ? "User found" : "No user");
     if (session?.user) {
-      // Normalize user object for our app
-      const userMeta = session.user.user_metadata || {};
       const appUser = {
         id: session.user.id,
         email: session.user.email,
-        name: userMeta.name || 'User',
-        type: userMeta.type || 'diner', // Default to diner if missing
-        ...userMeta
+        name: session.user.user_metadata?.name,
+        type: session.user.user_metadata?.type || 'diner'
       };
-
       setCurrentUser(appUser);
 
-      // Route to dashboard if we are currently on home or auth screens
-      // This prevents redirecting if user is deep in another view (though we might want to anyway)
-      // For now, let's auto-route if on 'home' or 'auth' flow
-      setCurrentView(prev => {
-        console.log("Auto-route check. Prev:", prev);
+      // Auto-routing logic
+      const currentPath = window.location.pathname;
 
-        // Check for welcome flag from email confirmation redirect
-        const params = new URLSearchParams(window.location.search);
-        if (params.get('welcome') === 'true') {
-          return 'welcome';
-        }
+      // Check for welcome flag (query param check for legacy support + path check)
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('welcome') === 'true' || currentPath === '/welcome') {
+        navigate('/welcome');
+        return;
+      }
 
-        // Only auto-route to dashboard if user was in the middle of auth flow
-        if (['auth_selection', 'auth_forms'].includes(prev)) {
-          console.log("Redirecting to dashboard from auth flow");
-          return appUser.type === 'restaurant' ? 'restaurant_dashboard' : 'diner_dashboard';
-        }
-        return prev;
-      });
+      // If on public/auth pages, redirect to dashboard
+      // We don't want to redirect if user is already on a deeper valid page (like /ikoyi)
+      const publicPaths = ['/', '/auth', '/auth/forms'];
+      if (publicPaths.includes(currentPath)) {
+        console.log("Redirecting to dashboard from public flow");
+        navigate(appUser.type === 'restaurant' ? '/dashboard/restaurant' : '/dashboard/diner');
+      }
 
     } else {
       setCurrentUser(null);
-      // If logged out, kick to home
-      setCurrentView('home');
+      // ProtectedRoute component will handle redirects now, so we can remove strict session checking here
+      // But we can keep a "bounce" for better UX if needed, though simpler is better.
     }
   };
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    setCurrentView('home');
-  };
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-bg-primary flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-accent-wa border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-text-secondary font-mono text-sm animate-pulse">Initializing Nusion...</p>
-        </div>
-      </div>
-    );
+  if (loading) {
+    return <div className="h-screen w-full flex items-center justify-center bg-bg-primary text-text-primary">Loading Nusion AI...</div>;
   }
-
-  console.log("App Render. CurrentView:", currentView, "IsLoading:", isLoading);
 
   return (
     <div className="min-h-screen bg-bg-primary font-main text-text-primary transition-all duration-500">
-
-      {currentView === 'home' && (
-        <Home
-          user={currentUser}
-          onDashboard={() => {
-            // Direct link for the User Icon
-            if (currentUser && currentUser.type === 'restaurant') {
-              setCurrentView('restaurant_dashboard');
-            } else {
-              setCurrentView('diner_dashboard');
-            }
-          }}
-          onStart={() => {
-            // "Browse Restaurants" -> If logged in as diner, go to dashboard or browsing.
-            // If not logged in, go to Auth selection.
-            if (currentUser && currentUser.type === 'diner') {
-              setCurrentView('dashboard');
-            } else if (currentUser && currentUser.type === 'restaurant') {
-              setCurrentView('restaurant_dashboard');
-            } else {
+      <Routes>
+        <Route path="/" element={
+          <Home
+            user={currentUser}
+            onStart={() => {
+              if (currentUser && currentUser.type === 'diner') {
+                navigate('/dashboard');
+              } else if (currentUser && currentUser.type === 'restaurant') {
+                navigate('/dashboard/restaurant');
+              } else {
+                setAuthMode('signup');
+                navigate('/auth');
+              }
+            }}
+            onLogin={() => {
+              setAuthMode('login');
+              navigate('/auth');
+            }}
+            onSignup={() => {
               setAuthMode('signup');
-              setCurrentView('auth_selection');
-            }
-          }}
-          onLogin={() => {
-            setAuthMode('login');
-            setCurrentView('auth_selection');
-          }}
-          onSignup={() => {
-            setAuthMode('signup');
-            setCurrentView('auth_selection');
-          }}
-          onPartnerSignup={() => {
-            setAuthMode('signup');
-            setSelectedAuthType('restaurant');
-            setCurrentView('auth_forms');
-          }}
-          onIkoyi={() => setCurrentView('ikoyi')}
-        />
-      )}
-
-      {currentView === 'auth_selection' && (
-        <AuthSelection
-          onSelect={(type) => {
-            setSelectedAuthType(type);
-            setCurrentView('auth_forms');
-          }}
-          onBack={() => setCurrentView('home')}
-        />
-      )}
-
-      {currentView === 'welcome' && (
-        <Welcome
-          user={currentUser}
-          onContinue={() => {
-            // Clear query params to prevent reappearing on refresh
-            window.history.replaceState({}, document.title, "/");
-            setCurrentView(currentUser?.type === 'restaurant' ? 'restaurant_dashboard' : 'diner_dashboard');
-          }}
-        />
-      )}
-
-      {currentView === 'auth_forms' && (
-        <AuthForms
-          type={selectedAuthType}
-          mode={authMode}
-          onBack={() => setCurrentView('auth_selection')}
-        />
-      )}
-
-      {currentView === 'restaurant_dashboard' && (
-        <RestaurantDashboard user={currentUser} onBack={handleLogout} onHome={() => setCurrentView('home')} />
-      )}
-
-      {currentView === 'diner_dashboard' && (
-        <DinerDashboard
-          user={currentUser}
-          onBack={handleLogout}
-          onBrowse={() => setCurrentView('dashboard')}
-          onHome={() => setCurrentView('home')}
-        />
-      )}
-
-      {currentView === 'dashboard' && ( // Brand Selector
-        <Dashboard
-          user={currentUser}
-          onSelect={(brand) => setCurrentView(brand)}
-          onHome={() => setCurrentView('home')}
-          onProfile={() => setCurrentView('diner_dashboard')}
-        />
-      )}
-
-      {currentView === 'ikoyi' && (
-        <div className="animate-[fadeSlideIn_0.5s_ease-out] w-full min-h-screen pt-[50px] pb-[50px]">
-          <IkoyiInterface
-            onBack={() => setCurrentView('dashboard')}
-            onHome={() => setCurrentView('home')}
+              navigate('/auth');
+            }}
+            onPartnerSignup={() => {
+              setAuthMode('signup');
+              setSelectedAuthType('restaurant');
+              navigate('/auth/forms');
+            }}
           />
-        </div>
-      )}
+        } />
+
+        <Route path="/auth" element={
+          <AuthSelection
+            onSelect={(type) => {
+              setSelectedAuthType(type);
+              navigate('/auth/forms');
+            }}
+          />
+        } />
+
+        <Route path="/auth/forms" element={
+          <AuthForms
+            type={selectedAuthType}
+            mode={authMode}
+          />
+        } />
+
+        <Route path="/welcome" element={
+          <ProtectedRoute user={currentUser}>
+            <Welcome
+              user={currentUser}
+              onContinue={() => {
+                // Clear URL params visually by navigating clean
+                navigate(currentUser?.type === 'restaurant' ? '/dashboard/restaurant' : '/dashboard/diner', { replace: true });
+              }}
+            />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/dashboard/restaurant" element={
+          <ProtectedRoute user={currentUser} requiredType="restaurant">
+            <RestaurantDashboard user={currentUser} />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/dashboard/diner" element={
+          <ProtectedRoute user={currentUser} requiredType="diner">
+            <DinerDashboard user={currentUser} />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/dashboard" element={
+          <ProtectedRoute user={currentUser} requiredType="diner">
+            <Dashboard user={currentUser} />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/ikoyi" element={
+          <ProtectedRoute user={currentUser} requiredType="diner">
+            <div className="animate-[fadeSlideIn_0.5s_ease-out] w-full min-h-screen pt-[50px] pb-[50px]">
+              <IkoyiInterface />
+            </div>
+          </ProtectedRoute>
+        } />
+
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </div>
   );
 }

@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { supabase } from '../lib/supabaseClient';
 
-const RestaurantDashboard = ({ user, onBack, onHome }) => {
+const RestaurantDashboard = ({ user }) => {
+    const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('inventory'); // 'dashboard', 'inventory', 'insights'
 
     // Load initial inventory from localStorage (keyed by User ID) or default
@@ -23,6 +26,11 @@ const RestaurantDashboard = ({ user, onBack, onHome }) => {
         }
     }, [inventory, user]);
 
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
+        navigate('/');
+    };
+
     const handleStockChange = (id) => {
         setInventory(prev => prev.map(item => {
             if (item.id === id) {
@@ -38,10 +46,10 @@ const RestaurantDashboard = ({ user, onBack, onHome }) => {
         <div className="min-h-screen w-full bg-bg-primary flex">
             {/* Sidebar */}
             <aside className="w-64 border-r border-glass-border p-6 flex flex-col pt-8">
-                <div onClick={onHome} className="flex items-center gap-2 mb-12 px-2 cursor-pointer hover:opacity-80 transition-opacity" title="Back to Home">
+                <Link to="/" className="flex items-center gap-2 mb-12 px-2 cursor-pointer hover:opacity-80 transition-opacity" title="Back to Home">
                     <img src="/nusion-logo.png" alt="Logo" className="h-8 w-auto opacity-80" style={{ filter: 'brightness(0) saturate(100%) invert(23%) sepia(13%) saturate(928%) hue-rotate(338deg) brightness(96%) contrast(90%)' }} />
                     <span className="font-display font-medium text-xl text-text-primary tracking-wide opacity-80 pt-1">AI</span>
-                </div>
+                </Link>
 
                 <nav className="space-y-2">
                     <button
@@ -60,7 +68,7 @@ const RestaurantDashboard = ({ user, onBack, onHome }) => {
                 </nav>
 
                 <div className="mt-auto pt-8 border-t border-glass-border">
-                    <button onClick={onBack} className="flex items-center gap-2 text-sm text-text-secondary hover:text-text-primary px-4">
+                    <button onClick={handleLogout} className="flex items-center gap-2 text-sm text-text-secondary hover:text-text-primary px-4">
                         <span>←</span> Log Out
                     </button>
                 </div>

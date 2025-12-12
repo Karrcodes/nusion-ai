@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
 
-const AuthForms = ({ type, mode, onAuthSuccess, onBack }) => {
+const AuthForms = ({ type, mode }) => {
     // mode: 'login' or 'signup'
     // type: 'diner' or 'restaurant' (only relevant for signup usually, but we keep context)
 
@@ -73,12 +74,12 @@ const AuthForms = ({ type, mode, onAuthSuccess, onBack }) => {
 
     return (
         <div className="min-h-screen w-full flex items-center justify-center bg-bg-primary p-4 animate-[fadeIn_0.5s]">
-            <button
-                onClick={onBack}
+            <Link
+                to="/auth"
                 className="absolute top-8 left-8 text-text-secondary hover:text-text-primary transition-colors flex items-center gap-2 font-mono text-sm"
             >
                 ← Back
-            </button>
+            </Link>
 
             <div className="glass-panel p-10 w-full max-w-md relative overflow-hidden">
                 {/* Decorative Background */}

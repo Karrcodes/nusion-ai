@@ -1,33 +1,34 @@
+import { Link } from 'react-router-dom';
 
-const Dashboard = ({ onSelect, onHome, user, onProfile }) => {
+const Dashboard = ({ user }) => {
     return (
         <div className="min-h-screen w-full flex flex-col items-center p-8 animate-[fadeIn_0.5s] relative">
 
             {/* Top Navigation */}
             <nav className="w-full max-w-7xl flex justify-between items-center mb-12 relative z-50">
-                <button
-                    onClick={onHome}
+                <Link
+                    to="/"
                     className="flex items-center gap-2 text-text-secondary hover:text-text-primary transition-colors group"
                 >
                     <span className="text-xl group-hover:-translate-x-1 transition-transform">←</span>
                     <span className="text-sm font-mono uppercase tracking-widest hidden md:inline">Back Home</span>
-                </button>
+                </Link>
 
-                <div className="flex items-center gap-2 absolute left-1/2 -translate-x-1/2 cursor-pointer" onClick={onHome} title="Return to Home">
+                <Link to="/" className="flex items-center gap-2 absolute left-1/2 -translate-x-1/2 cursor-pointer" title="Return to Home">
                     <img src="/nusion-logo.png" alt="Nusion" className="h-10 w-auto opacity-90" style={{ filter: 'brightness(0) saturate(100%) invert(23%) sepia(13%) saturate(928%) hue-rotate(338deg) brightness(96%) contrast(90%)' }} />
                     <span className="font-display font-medium text-xl text-text-primary tracking-wide opacity-80 pt-1">AI</span>
-                </div>
+                </Link>
 
                 <div className="flex items-center gap-4">
                     {user && (
-                        <div
-                            onClick={onProfile}
+                        <Link
+                            to="/dashboard/diner"
                             className={`w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition-all shadow-md ${(() => {
-                                    try {
-                                        const stored = localStorage.getItem(`diner_preferences_${user.id}`);
-                                        return stored && JSON.parse(stored).photo ? 'border-2 border-accent-wa/50 p-0 overflow-hidden' : 'bg-accent-wa/20 text-accent-wa font-bold hover:bg-accent-wa hover:text-white border border-accent-wa/50';
-                                    } catch (e) { return 'bg-accent-wa/20 text-accent-wa font-bold hover:bg-accent-wa hover:text-white border border-accent-wa/50'; }
-                                })()
+                                try {
+                                    const stored = localStorage.getItem(`diner_preferences_${user.id}`);
+                                    return stored && JSON.parse(stored).photo ? 'border-2 border-accent-wa/50 p-0 overflow-hidden' : 'bg-accent-wa/20 text-accent-wa font-bold hover:bg-accent-wa hover:text-white border border-accent-wa/50';
+                                } catch (e) { return 'bg-accent-wa/20 text-accent-wa font-bold hover:bg-accent-wa hover:text-white border border-accent-wa/50'; }
+                            })()
                                 }`}
                             title="Go to My Palate"
                         >
@@ -44,7 +45,7 @@ const Dashboard = ({ onSelect, onHome, user, onProfile }) => {
                                     return user.name ? user.name.charAt(0).toUpperCase() : 'U';
                                 }
                             })()}
-                        </div>
+                        </Link>
                     )}
                 </div>
             </nav>
@@ -58,9 +59,9 @@ const Dashboard = ({ onSelect, onHome, user, onProfile }) => {
 
             <div className="grid md:grid-cols-2 gap-8 w-full max-w-4xl">
                 {/* Ikoyi Card (Active) */}
-                <div
-                    onClick={() => onSelect('ikoyi')}
-                    className="group cursor-pointer relative h-[400px] rounded-3xl overflow-hidden shadow-xl transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl"
+                <Link
+                    to="/ikoyi"
+                    className="group cursor-pointer relative h-[400px] rounded-3xl overflow-hidden shadow-xl transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl block"
                 >
                     <div className="absolute inset-0 bg-black/60 z-10 group-hover:bg-black/40 transition-colors duration-500"></div>
                     <img
@@ -83,7 +84,7 @@ const Dashboard = ({ onSelect, onHome, user, onProfile }) => {
                             </span>
                         </div>
                     </div>
-                </div>
+                </Link>
 
                 {/* Coming Soon Card */}
                 <div className="relative h-[400px] rounded-3xl overflow-hidden border-2 border-dashed border-text-secondary/20 flex flex-col items-center justify-center bg-bg-secondary/30">

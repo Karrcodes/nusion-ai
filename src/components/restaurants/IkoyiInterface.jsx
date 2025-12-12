@@ -1,11 +1,12 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { currentConfig } from '../../config/restaurantConfig';
 import InputForm from '../InputForm';
 import RecommendationResult from '../RecommendationResult';
 import { getRecommendation } from '../../utils/recommendationLogic';
 import { generateDishImage } from '../../utils/imageGenerator';
 
-function IkoyiInterface({ onBack, onHome }) {
+function IkoyiInterface() {
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState(null);
     const [loadingPhase, setLoadingPhase] = useState('idle');
@@ -67,12 +68,12 @@ function IkoyiInterface({ onBack, onHome }) {
     return (
         <div className="w-full h-full flex flex-col items-center">
             {/* Back Button for Navigation */}
-            <button
-                onClick={onBack}
+            <Link
+                to="/dashboard"
                 className="absolute top-8 left-8 text-text-secondary hover:text-text-primary uppercase text-xs tracking-widest font-bold z-10 flex items-center gap-2"
             >
                 ← Back to Brands
-            </button>
+            </Link>
 
             <div className="container mx-auto px-6 flex flex-col items-center gap-12 max-w-6xl flex-grow pt-[50px]">
 
@@ -129,8 +130,8 @@ function IkoyiInterface({ onBack, onHome }) {
                 {/* Footer */}
                 <footer className="w-full py-8 text-text-secondary opacity-50 flex justify-center text-sm items-center mt-12 gap-2">
                     <span className="tracking-widest uppercase text-xs">Powered by</span>
-                    <div
-                        onClick={onHome}
+                    <Link
+                        to="/"
                         className="flex items-center gap-1 cursor-pointer hover:opacity-100 transition-opacity"
                         title="Return to Home"
                     >
@@ -141,11 +142,10 @@ function IkoyiInterface({ onBack, onHome }) {
                             style={{ filter: 'brightness(0) saturate(100%) invert(23%) sepia(13%) saturate(928%) hue-rotate(338deg) brightness(96%) contrast(90%)' }}
                         />
                         <span className="font-bold text-xs tracking-tighter">AI</span>
-                    </div>
+                    </Link>
                 </footer>
             </div>
         </div>
     );
 }
-
 export default IkoyiInterface;

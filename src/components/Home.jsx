@@ -1,6 +1,7 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
-const Home = ({ user, onStart, onLogin, onSignup, onDashboard, onPartnerSignup, onIkoyi }) => {
+const Home = ({ user, onStart, onLogin, onSignup, onPartnerSignup }) => {
     // Get user photo from local storage if available
     const userPhoto = React.useMemo(() => {
         if (!user) return null;
@@ -15,6 +16,8 @@ const Home = ({ user, onStart, onLogin, onSignup, onDashboard, onPartnerSignup, 
         }
         return null;
     }, [user]);
+
+    const dashboardPath = user?.type === 'restaurant' ? '/dashboard/restaurant' : '/dashboard/diner';
 
     return (
         <div className="min-h-screen w-full flex flex-col relative overflow-hidden bg-bg-primary">
@@ -36,8 +39,8 @@ const Home = ({ user, onStart, onLogin, onSignup, onDashboard, onPartnerSignup, 
                 <div className="flex items-center gap-6">
                     {user ? (
                         <div className="flex items-center gap-4">
-                            <button
-                                onClick={onDashboard}
+                            <Link
+                                to={dashboardPath}
                                 className={`w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-md group ${userPhoto ? 'border-2 border-accent-wa/50 p-0 overflow-hidden' : 'bg-accent-wa/20 text-accent-wa font-bold hover:bg-accent-wa hover:text-white border border-accent-wa/50'}`}
                                 title="Go to Dashboard"
                             >
@@ -46,7 +49,7 @@ const Home = ({ user, onStart, onLogin, onSignup, onDashboard, onPartnerSignup, 
                                 ) : (
                                     user.name ? user.name.charAt(0).toUpperCase() : 'U'
                                 )}
-                            </button>
+                            </Link>
                         </div>
                     ) : (
                         <>
@@ -158,9 +161,9 @@ const Home = ({ user, onStart, onLogin, onSignup, onDashboard, onPartnerSignup, 
 
                     <div className="grid md:grid-cols-2 gap-8">
                         {/* Ikoyi Card */}
-                        <div
-                            onClick={onIkoyi}
-                            className="group relative h-64 rounded-2xl overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500"
+                        <Link
+                            to="/ikoyi"
+                            className="group relative h-64 rounded-2xl overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500 block"
                         >
                             <div className="absolute inset-0 bg-black/50 group-hover:bg-black/40 transition-colors z-10"></div>
                             <img src="/ikoyi-interior.png" alt="Ikoyi" className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
@@ -168,7 +171,7 @@ const Home = ({ user, onStart, onLogin, onSignup, onDashboard, onPartnerSignup, 
                                 <img src="/logo.png" alt="Logo" className="h-16 w-auto brightness-0 invert mb-3" />
                                 <p className="text-white/80 text-xs uppercase tracking-widest">London</p>
                             </div>
-                        </div>
+                        </Link>
 
                         {/* Placeholder Card */}
                         <div

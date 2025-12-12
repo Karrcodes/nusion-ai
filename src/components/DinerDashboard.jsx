@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { supabase } from '../lib/supabaseClient';
 
-const DinerDashboard = ({ user, onBack, onBrowse, onHome }) => {
+const DinerDashboard = ({ user }) => {
+    const navigate = useNavigate();
     const [view, setView] = useState('dashboard'); // 'dashboard' | 'profile'
 
     // Load preferences from localStorage (keyed by User ID)
@@ -30,13 +33,18 @@ const DinerDashboard = ({ user, onBack, onBrowse, onHome }) => {
     const togglePref = (key) => setPreferences(prev => ({ ...prev, [key]: !prev[key] }));
     const handleChange = (key, value) => setPreferences(prev => ({ ...prev, [key]: value }));
 
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
+        navigate('/');
+    };
+
     return (
         <div className="min-h-screen w-full bg-bg-primary">
             <nav className="px-8 py-6 flex justify-between items-center border-b border-glass-border bg-white/50 backdrop-blur-md sticky top-0 z-50">
-                <div onClick={onHome} className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity" title="Back to Home">
+                <Link to="/" className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity" title="Back to Home">
                     <img src="/nusion-logo.png" alt="Logo" className="h-8 w-auto opacity-80" style={{ filter: 'brightness(0) saturate(100%) invert(23%) sepia(13%) saturate(928%) hue-rotate(338deg) brightness(96%) contrast(90%)' }} />
                     <span className="font-display font-medium text-xl text-text-primary tracking-wide opacity-80 pt-1">AI</span>
-                </div>
+                </Link>
                 <div className="flex items-center gap-6">
                     <button
                         onClick={() => setView('dashboard')}
@@ -70,12 +78,12 @@ const DinerDashboard = ({ user, onBack, onBrowse, onHome }) => {
                                 <h1 className="text-3xl font-display font-bold text-text-primary mb-2">My Palate</h1>
                                 <p className="text-text-secondary">Manage your dining DNA and view generative history.</p>
                             </div>
-                            <button
-                                onClick={onBrowse}
+                            <Link
+                                to="/dashboard"
                                 className="px-6 py-3 bg-text-primary text-bg-primary rounded-full font-bold hover:opacity-90 transition-opacity shadow-lg hover:shadow-xl"
                             >
                                 + Generate New Meal
-                            </button>
+                            </Link>
                         </header>
 
                         {/* --- DIETARY PREFERENCES (Quick View) --- */}
@@ -256,7 +264,7 @@ const DinerDashboard = ({ user, onBack, onBrowse, onHome }) => {
                 )}
 
                 <div className="mt-20 border-t border-glass-border pt-8 text-center">
-                    <button onClick={onBack} className="text-text-secondary hover:text-text-primary text-sm">
+                    <button onClick={handleLogout} className="text-text-secondary hover:text-text-primary text-sm">
                         Sign Out
                     </button>
                 </div>
