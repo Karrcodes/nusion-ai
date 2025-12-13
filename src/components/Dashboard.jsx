@@ -22,7 +22,7 @@ const Dashboard = ({ user }) => {
                 <div className="flex items-center gap-4">
                     {user && (
                         <Link
-                            to="/dashboard/diner"
+                            to="/dashboard/diner?view=profile"
                             className={`w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition-all shadow-md ${(() => {
                                 try {
                                     const stored = localStorage.getItem(`diner_preferences_${user.id}`);

@@ -1,10 +1,31 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
 
 const DinerDashboard = ({ user }) => {
     const navigate = useNavigate();
-    const [view, setView] = useState('dashboard'); // 'dashboard' | 'profile'
+    const location = useLocation();
+
+    // Initialize view based on query param
+    const [view, setView] = useState(() => {
+        const params = new URLSearchParams(location.search);
+        return params.get('view') === 'profile' ? 'profile' : 'dashboard';
+    });
+
+    // Update view if URL changes (e.g. back button)
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const urlView = params.get('view') === 'profile' ? 'profile' : 'dashboard';
+        if (urlView !== view) {
+            // Optional: we could sync them, but for now let's just respect initial load or manual navigation
+            // If we want two-way sync, we'd use setView(urlView) here, but valid to keep internal state dominant for now unless necessary.
+            // Actually, simplest is just to respect initial load.
+        }
+    }, [location.search]);
+
+    // Update URL when view changes to allow bookmarking/sharing (Optional but good UX)
+    // For now, let's just stick to internal state unless user specifically asked for deep linking. 
+    // The query param is mainly for the entry point from Dashboard.jsx.
 
     // Load preferences from localStorage (keyed by User ID)
     const [preferences, setPreferences] = useState(() => {
@@ -59,13 +80,16 @@ const DinerDashboard = ({ user }) => {
                         Profile
                     </button>
                     <div className="w-px h-6 bg-glass-border"></div>
-                    <div className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center transition-all shadow-sm ${preferences.photo ? 'border-2 border-accent-wa/50 p-0 overflow-hidden' : 'bg-accent-wa/20 text-accent-wa font-bold'}`}>
+                    <button
+                        onClick={() => setView('profile')}
+                        className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center transition-all shadow-sm hover:ring-2 hover:ring-accent-wa/50 ${preferences.photo ? 'border-2 border-accent-wa/50 p-0 overflow-hidden' : 'bg-accent-wa/20 text-accent-wa font-bold'}`}
+                    >
                         {preferences.photo ? (
                             <img src={preferences.photo} alt="Profile" className="w-full h-full object-cover" />
                         ) : (
                             user?.name ? user.name.charAt(0).toUpperCase() : 'G'
                         )}
-                    </div>
+                    </button>
                 </div>
             </nav>
 
