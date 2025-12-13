@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
+import { currentConfig } from '../config/restaurantConfig';
 
 const DinerDashboard = ({ user }) => {
     const navigate = useNavigate();
@@ -28,21 +29,43 @@ const DinerDashboard = ({ user }) => {
     // The query param is mainly for the entry point from Dashboard.jsx.
 
     // Load preferences from localStorage (keyed by User ID)
+    // Load preferences from localStorage (keyed by User ID)
     const [preferences, setPreferences] = useState(() => {
         const storageKey = `diner_preferences_${user?.id}`;
-        const saved = localStorage.getItem(storageKey);
-        // If we have saved prefs, use them. Otherwise default.
-        return saved ? JSON.parse(saved) : {
-            vegan: false,
-            spicy: true,
-            halal: true,
-            glutenFree: false,
-            // New Profile Fields
-            location: '',
-            budget: '$$',
-            allergies: '',
-        };
+        try {
+            const saved = localStorage.getItem(storageKey);
+            return saved ? JSON.parse(saved) : {
+                vegan: false,
+                spicy: true,
+                halal: true,
+                glutenFree: false,
+                // New Profile Fields
+                location: '',
+                budget: '$$',
+                allergies: '',
+            };
+        } catch (e) {
+            return { vegan: false, spicy: true, halal: true, glutenFree: false, location: '', budget: '$$', allergies: '' };
+        }
     });
+
+    // Load history
+    const [history, setHistory] = useState([]);
+
+    useEffect(() => {
+        if (user?.id) {
+            const fetchHistory = async () => {
+                const { data, error } = await supabase
+                    .from('generations')
+                    .select('*')
+                    .eq('user_id', user.id)
+                    .order('created_at', { ascending: false });
+
+                if (data) setHistory(data);
+            };
+            fetchHistory();
+        }
+    }, [user]);
 
     // Persist preferences on change
     useEffect(() => {
@@ -137,21 +160,48 @@ const DinerDashboard = ({ user }) => {
                                 <span className="text-xl">🕰️</span> Generative History
                             </h2>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                                {/* Card 1 */}
-                                <div className="glass-panel overflow-hidden group cursor-pointer hover:-translate-y-1 transition-transform duration-300">
-                                    <div className="h-48 bg-stone-200 w-full relative overflow-hidden">
-                                        <div className="absolute inset-0 bg-gradient-to-br from-orange-100 to-red-50"></div>
-                                        <div className="absolute inset-0 flex items-center justify-center text-text-secondary/30 font-mono text-sm">[Render #492]</div>
-                                        <div className="absolute top-4 right-4 bg-white/80 backdrop-blur px-2 py-1 rounded text-xs font-bold text-text-primary shadow-sm">Booked</div>
-                                    </div>
-                                    <div className="p-6">
-                                        <h3 className="text-xl font-display font-bold text-text-primary mb-1">Spiced Jollof Deconstruction</h3>
-                                        <p className="text-xs text-text-secondary uppercase tracking-widest mb-4">Ikoyi London • 14 Dec</p>
-                                        <button className="w-full py-2 rounded border border-glass-border text-text-secondary text-sm hover:bg-text-primary hover:text-bg-primary transition-colors">View Receipt</button>
-                                    </div>
+                            {history.length === 0 ? (
+                                <div className="text-center py-12 glass-panel">
+                                    <p className="text-text-secondary mb-4">No generations yet.</p>
+                                    <Link to="/dashboard" className="text-accent-jp font-bold hover:underline">Start your first creation →</Link>
                                 </div>
-                            </div>
+                            ) : (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                    {history.map((gen, idx) => (
+                                        <div key={idx} className="glass-panel overflow-hidden group cursor-pointer hover:-translate-y-1 transition-transform duration-300">
+                                            {/* Collage Image Section */}
+                                            <div className="h-48 w-full bg-stone-200 grid grid-cols-3 relative">
+                                                {gen.courses && gen.courses.slice(0, 3).map((course, i) => (
+                                                    <div key={i} className="h-full w-full relative border-r border-white/10 last:border-r-0">
+                                                        {course.image ? (
+                                                            <img src={course.image} alt={course.name} className="w-full h-full object-cover" />
+                                                        ) : (
+                                                            <div className="w-full h-full flex items-center justify-center bg-gray-200 text-xs">🍽️</div>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                                {/* Status Badge */}
+                                                <div className="absolute top-3 right-3 bg-white/90 backdrop-blur px-2 py-1 rounded text-[10px] font-bold text-text-primary shadow-sm uppercase tracking-wider">
+                                                    Generated
+                                                </div>
+                                            </div>
+
+                                            <div className="p-6">
+                                                <h3 className="text-lg font-display font-bold text-text-primary mb-1 line-clamp-1">
+                                                    {gen.courses?.[1]?.name || "Custom Menu"}
+                                                </h3>
+                                                <p className="text-xs text-text-secondary uppercase tracking-widest mb-4">
+                                                    Ikoyi London • {new Date(gen.created_at || gen.date || Date.now()).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                                                </p>
+                                                <div className="flex justify-between items-center text-sm font-mono text-text-secondary/80">
+                                                    <span>{currentConfig.currency}{gen.totalCost}</span>
+                                                    <span>{gen.courses?.length || 3} Courses</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </section>
                     </>
                 ) : (

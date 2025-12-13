@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { supabase } from '../../lib/supabaseClient';
 import { currentConfig } from '../../config/restaurantConfig';
 import InputForm from '../InputForm';
 import RecommendationResult from '../RecommendationResult';
 import { getRecommendation } from '../../utils/recommendationLogic';
 import { generateDishImage } from '../../utils/imageGenerator';
 
-function IkoyiInterface() {
+function IkoyiInterface({ user }) {
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState(null);
     const [loadingPhase, setLoadingPhase] = useState('idle');
@@ -49,7 +50,30 @@ function IkoyiInterface() {
             setProgress(100);
             await new Promise(r => setTimeout(r, 800));
 
-            setResult({ ...recommendation, courses: coursesWithImages });
+            const finalResult = { ...recommendation, courses: coursesWithImages, date: new Date().toISOString() };
+            setResult(finalResult);
+
+            // Persist to Supabase
+            if (user?.id) {
+                try {
+                    const { error } = await supabase
+                        .from('generations')
+                        .insert([
+                            {
+                                user_id: user.id,
+                                courses: coursesWithImages,
+                                total_cost: recommendation.totalCost,
+                                narrative: recommendation.narrative
+                            }
+                        ]);
+
+                    if (error) throw error;
+                    console.log("Generation saved to Supabase");
+                } catch (e) {
+                    console.error("Failed to save history to Supabase", e);
+                    // Fallback or alert? For now silent fail/log is acceptable as per MVP.
+                }
+            }
 
         } catch (error) {
             console.error("Error calling API:", error);
