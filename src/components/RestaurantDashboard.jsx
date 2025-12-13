@@ -19,6 +19,25 @@ const RestaurantDashboard = ({ user }) => {
         ];
     });
 
+    // Load profile from localStorage
+    const [profile, setProfile] = useState(() => {
+        const storageKey = `restaurant_preferences_${user?.id}`;
+        try {
+            const saved = localStorage.getItem(storageKey);
+            return saved ? JSON.parse(saved) : {
+                name: user?.user_metadata?.name || '',
+                location: 'London', // Default
+                description: '',
+                cuisine: 'Modern West African',
+                philosophy: '',
+                logoUrl: '',
+                coverUrl: ''
+            };
+        } catch (e) {
+            return { name: '', location: '', description: '', cuisine: '', philosophy: '', logoUrl: '', coverUrl: '' };
+        }
+    });
+
     // Save to localStorage whenever inventory changes
     useEffect(() => {
         if (user?.id) {
@@ -67,7 +86,12 @@ const RestaurantDashboard = ({ user }) => {
                     >
                         Insights
                     </button>
-                    <button className="md:w-full text-left px-4 py-2 md:py-3 rounded-lg text-text-secondary hover:bg-glass-border/30 transition-colors whitespace-nowrap text-sm md:text-base">Menu Settings</button>
+                    <button
+                        onClick={() => setActiveTab('profile')}
+                        className={`md:w-full text-left px-4 py-2 md:py-3 rounded-lg font-medium transition-all whitespace-nowrap text-sm md:text-base ${activeTab === 'profile' ? 'bg-accent-jp/10 text-accent-jp' : 'text-text-secondary hover:bg-glass-border/30'}`}
+                    >
+                        Profile
+                    </button>
                 </nav>
 
                 <div className="mt-auto pt-8 border-t border-glass-border hidden md:block">
@@ -134,6 +158,123 @@ const RestaurantDashboard = ({ user }) => {
                                     ))}
                                 </tbody>
                             </table>
+                        </div>
+                    </div>
+                )}
+
+                {/* --- PROFILE VIEW --- */}
+                {activeTab === 'profile' && (
+                    <div className="animate-[fadeIn_0.3s] max-w-3xl">
+                        <div className="flex justify-between items-center mb-8">
+                            <h2 className="text-xl font-bold text-text-primary">Restaurant Profile</h2>
+                            <button
+                                onClick={() => {
+                                    localStorage.setItem(`restaurant_preferences_${user.id}`, JSON.stringify(profile));
+                                    alert('Profile saved!');
+                                }}
+                                className="px-6 py-2 bg-text-primary text-bg-primary rounded-lg text-sm font-bold hover:opacity-90 transition-opacity"
+                            >
+                                Save Changes
+                            </button>
+                        </div>
+
+                        <div className="space-y-8">
+                            {/* Basic Info */}
+                            <section className="glass-panel p-8">
+                                <h3 className="text-lg font-bold text-text-primary mb-6 flex items-center gap-2">
+                                    <span>📍</span> General Information
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-mono text-text-secondary uppercase">Restaurant Name</label>
+                                        <input
+                                            type="text"
+                                            value={profile.name}
+                                            onChange={(e) => setProfile({ ...profile, name: e.target.value })}
+                                            className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-mono text-text-secondary uppercase">Location City</label>
+                                        <input
+                                            type="text"
+                                            value={profile.location}
+                                            onChange={(e) => setProfile({ ...profile, location: e.target.value })}
+                                            className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none"
+                                        />
+                                    </div>
+                                    <div className="md:col-span-2 space-y-2">
+                                        <label className="text-xs font-mono text-text-secondary uppercase">Description</label>
+                                        <textarea
+                                            value={profile.description}
+                                            onChange={(e) => setProfile({ ...profile, description: e.target.value })}
+                                            rows={3}
+                                            className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none resize-none"
+                                        />
+                                    </div>
+                                </div>
+                            </section>
+
+                            {/* Culinary Identity */}
+                            <section className="glass-panel p-8 relative overflow-hidden">
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-accent-jp/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+                                <h3 className="text-lg font-bold text-text-primary mb-6 flex items-center gap-2 relative z-10">
+                                    <span>🍳</span> Culinary Identity
+                                </h3>
+                                <p className="text-sm text-text-secondary mb-6 relative z-10">These settings guide the Generative Engine's creativity.</p>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-mono text-text-secondary uppercase">Cuisine Type</label>
+                                        <input
+                                            type="text"
+                                            placeholder="e.g. Modern West African"
+                                            value={profile.cuisine}
+                                            onChange={(e) => setProfile({ ...profile, cuisine: e.target.value })}
+                                            className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-mono text-text-secondary uppercase">Philosophy</label>
+                                        <input
+                                            type="text"
+                                            placeholder="e.g. Hyper-seasonal, Fermentation"
+                                            value={profile.philosophy}
+                                            onChange={(e) => setProfile({ ...profile, philosophy: e.target.value })}
+                                            className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none"
+                                        />
+                                    </div>
+                                </div>
+                            </section>
+
+                            {/* Visuals */}
+                            <section className="glass-panel p-8">
+                                <h3 className="text-lg font-bold text-text-primary mb-6 flex items-center gap-2">
+                                    <span>📸</span> Brand Visuals
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-mono text-text-secondary uppercase">Logo URL</label>
+                                        <input
+                                            type="text"
+                                            placeholder="https://..."
+                                            value={profile.logoUrl}
+                                            onChange={(e) => setProfile({ ...profile, logoUrl: e.target.value })}
+                                            className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-mono text-text-secondary uppercase">Cover Image URL</label>
+                                        <input
+                                            type="text"
+                                            placeholder="https://..."
+                                            value={profile.coverUrl}
+                                            onChange={(e) => setProfile({ ...profile, coverUrl: e.target.value })}
+                                            className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none"
+                                        />
+                                    </div>
+                                </div>
+                            </section>
                         </div>
                     </div>
                 )}
