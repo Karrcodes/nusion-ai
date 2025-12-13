@@ -73,13 +73,7 @@ function App() {
         return;
       }
 
-      // If on public/auth pages, redirect to dashboard
-      // We don't want to redirect if user is already on a deeper valid page (like /ikoyi)
-      const publicPaths = ['/', '/auth', '/auth/forms'];
-      if (publicPaths.includes(currentPath)) {
-        console.log("Redirecting to dashboard from public flow");
-        navigate(appUser.type === 'restaurant' ? '/dashboard/restaurant' : '/dashboard/diner');
-      }
+
 
     } else {
       setCurrentUser(null);

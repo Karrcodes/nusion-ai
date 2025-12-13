@@ -40,7 +40,7 @@ const Home = ({ user, onStart, onLogin, onSignup, onPartnerSignup }) => {
                     {user ? (
                         <div className="flex items-center gap-4">
                             <Link
-                                to="/dashboard"
+                                to={dashboardPath}
                                 className={`w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-md group ${userPhoto ? 'border-2 border-accent-wa/50 p-0 overflow-hidden' : 'bg-accent-wa/20 text-accent-wa font-bold hover:bg-accent-wa hover:text-white border border-accent-wa/50'}`}
                                 title="Go to Dashboard"
                             >
