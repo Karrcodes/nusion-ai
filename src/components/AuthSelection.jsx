@@ -1,14 +1,15 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
-const AuthSelection = ({ onSelect, onBack }) => {
+const AuthSelection = ({ onSelect }) => {
     return (
         <div className="min-h-screen w-full flex flex-col items-center justify-center p-8 bg-bg-primary animate-[fadeIn_0.5s]">
-            <button
-                onClick={onBack}
+            <Link
+                to="/"
                 className="absolute top-8 left-8 text-text-secondary hover:text-text-primary transition-colors flex items-center gap-2"
             >
                 ← Back
-            </button>
+            </Link>
 
             <h2 className="text-4xl font-display font-bold text-text-primary mb-12">Choose your path</h2>
 
