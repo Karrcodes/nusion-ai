@@ -89,7 +89,7 @@ function IkoyiInterface() {
                 </header>
 
                 {/* Main Interface Section */}
-                <main className="glass-panel p-12 w-full max-w-6xl relative overflow-hidden min-h-[500px] flex flex-col justify-center items-center transition-all duration-500 shadow-2xl">
+                <main className="glass-panel p-6 md:p-12 w-full max-w-6xl relative overflow-hidden min-h-[500px] flex flex-col justify-center items-center transition-all duration-500 shadow-2xl">
                     {/* Decorative Top Border */}
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-accent-wa to-accent-jp"></div>
 

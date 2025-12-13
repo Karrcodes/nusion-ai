@@ -40,26 +40,26 @@ const DinerDashboard = ({ user }) => {
 
     return (
         <div className="min-h-screen w-full bg-bg-primary">
-            <nav className="px-8 py-6 flex justify-between items-center border-b border-glass-border bg-white/50 backdrop-blur-md sticky top-0 z-50">
+            <nav className="px-4 py-4 md:px-8 md:py-6 flex justify-between items-center border-b border-glass-border bg-white/50 backdrop-blur-md sticky top-0 z-50">
                 <Link to="/" className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity" title="Back to Home">
                     <img src="/nusion-logo.png" alt="Logo" className="h-8 w-auto opacity-80" style={{ filter: 'brightness(0) saturate(100%) invert(23%) sepia(13%) saturate(928%) hue-rotate(338deg) brightness(96%) contrast(90%)' }} />
-                    <span className="font-display font-medium text-xl text-text-primary tracking-wide opacity-80 pt-1">AI</span>
+                    <span className="font-display font-medium text-lg md:text-xl text-text-primary tracking-wide opacity-80 pt-1">AI</span>
                 </Link>
-                <div className="flex items-center gap-6">
+                <div className="flex items-center gap-3 md:gap-6">
                     <button
                         onClick={() => setView('dashboard')}
-                        className={`text-sm font-medium transition-colors ${view === 'dashboard' ? 'text-text-primary font-bold' : 'text-text-secondary hover:text-text-primary'}`}
+                        className={`text-xs md:text-sm font-medium transition-colors ${view === 'dashboard' ? 'text-text-primary font-bold' : 'text-text-secondary hover:text-text-primary'}`}
                     >
                         My Palate
                     </button>
                     <button
                         onClick={() => setView('profile')}
-                        className={`text-sm font-medium transition-colors ${view === 'profile' ? 'text-text-primary font-bold' : 'text-text-secondary hover:text-text-primary'}`}
+                        className={`text-xs md:text-sm font-medium transition-colors ${view === 'profile' ? 'text-text-primary font-bold' : 'text-text-secondary hover:text-text-primary'}`}
                     >
                         Profile
                     </button>
                     <div className="w-px h-6 bg-glass-border"></div>
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-sm ${preferences.photo ? 'border-2 border-accent-wa/50 p-0 overflow-hidden' : 'bg-accent-wa/20 text-accent-wa font-bold'}`}>
+                    <div className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center transition-all shadow-sm ${preferences.photo ? 'border-2 border-accent-wa/50 p-0 overflow-hidden' : 'bg-accent-wa/20 text-accent-wa font-bold'}`}>
                         {preferences.photo ? (
                             <img src={preferences.photo} alt="Profile" className="w-full h-full object-cover" />
                         ) : (
@@ -69,7 +69,7 @@ const DinerDashboard = ({ user }) => {
                 </div>
             </nav>
 
-            <main className="p-8 md:p-12 max-w-6xl mx-auto animate-[fadeIn_0.5s]">
+            <main className="p-4 md:p-12 max-w-6xl mx-auto animate-[fadeIn_0.5s]">
 
                 {view === 'dashboard' ? (
                     <>

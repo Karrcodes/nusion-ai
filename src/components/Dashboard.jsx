@@ -2,10 +2,10 @@ import { Link } from 'react-router-dom';
 
 const Dashboard = ({ user }) => {
     return (
-        <div className="min-h-screen w-full flex flex-col items-center p-8 animate-[fadeIn_0.5s] relative">
+        <div className="min-h-screen w-full flex flex-col items-center p-4 md:p-8 animate-[fadeIn_0.5s] relative">
 
             {/* Top Navigation */}
-            <nav className="w-full max-w-7xl flex justify-between items-center mb-12 relative z-50">
+            <nav className="w-full max-w-7xl flex justify-between items-center mb-8 md:mb-12 relative z-50">
                 <Link
                     to="/"
                     className="flex items-center gap-2 text-text-secondary hover:text-text-primary transition-colors group"
@@ -15,8 +15,8 @@ const Dashboard = ({ user }) => {
                 </Link>
 
                 <Link to="/" className="flex items-center gap-2 absolute left-1/2 -translate-x-1/2 cursor-pointer" title="Return to Home">
-                    <img src="/nusion-logo.png" alt="Nusion" className="h-10 w-auto opacity-90" style={{ filter: 'brightness(0) saturate(100%) invert(23%) sepia(13%) saturate(928%) hue-rotate(338deg) brightness(96%) contrast(90%)' }} />
-                    <span className="font-display font-medium text-xl text-text-primary tracking-wide opacity-80 pt-1">AI</span>
+                    <img src="/nusion-logo.png" alt="Nusion" className="h-8 md:h-10 w-auto opacity-90" style={{ filter: 'brightness(0) saturate(100%) invert(23%) sepia(13%) saturate(928%) hue-rotate(338deg) brightness(96%) contrast(90%)' }} />
+                    <span className="font-display font-medium text-lg md:text-xl text-text-primary tracking-wide opacity-80 pt-1">AI</span>
                 </Link>
 
                 <div className="flex items-center gap-4">
@@ -51,17 +51,17 @@ const Dashboard = ({ user }) => {
             </nav>
 
 
-            <header className="text-center mb-16 animate-[fadeIn_1s] flex flex-col items-center mt-8">
-                <p className="text-sm uppercase tracking-[0.3em] text-text-secondary opacity-70">
+            <header className="text-center mb-10 md:mb-16 animate-[fadeIn_1s] flex flex-col items-center mt-8">
+                <p className="text-xs md:text-sm uppercase tracking-[0.3em] text-text-secondary opacity-70">
                     Select Your Muse
                 </p>
             </header>
 
-            <div className="grid md:grid-cols-2 gap-8 w-full max-w-4xl">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl">
                 {/* Ikoyi Card (Active) */}
                 <Link
                     to="/ikoyi"
-                    className="group cursor-pointer relative h-[400px] rounded-3xl overflow-hidden shadow-xl transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl block"
+                    className="group cursor-pointer relative h-64 md:h-[400px] rounded-3xl overflow-hidden shadow-xl transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl block"
                 >
                     <div className="absolute inset-0 bg-black/60 z-10 group-hover:bg-black/40 transition-colors duration-500"></div>
                     <img
@@ -74,7 +74,7 @@ const Dashboard = ({ user }) => {
                         <div className="absolute top-10 left-10 right-10 h-1 bg-gradient-to-r from-accent-wa to-accent-jp opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
                         <div className="text-center transform transition-transform duration-500 group-hover:-translate-y-4 flex flex-col items-center mt-10">
-                            <img src="/logo.png" alt="IKOYI" className="h-16 w-auto brightness-0 invert mb-4" />
+                            <img src="/logo.png" alt="IKOYI" className="h-12 md:h-16 w-auto brightness-0 invert mb-4" />
                             <p className="text-white/70 uppercase tracking-widest text-xs">London • Hyper-Seasonal Spice</p>
                         </div>
 
@@ -87,13 +87,13 @@ const Dashboard = ({ user }) => {
                 </Link>
 
                 {/* Coming Soon Card */}
-                <div className="relative h-[400px] rounded-3xl overflow-hidden border-2 border-dashed border-text-secondary/20 flex flex-col items-center justify-center bg-bg-secondary/30">
-                    <h3 className="text-2xl font-display font-bold text-text-secondary mb-2">Coming Soon</h3>
+                <div className="relative h-64 md:h-[400px] rounded-3xl overflow-hidden border-2 border-dashed border-text-secondary/20 flex flex-col items-center justify-center bg-bg-secondary/30">
+                    <h3 className="text-xl md:text-2xl font-display font-bold text-text-secondary mb-2">Coming Soon</h3>
                     <p className="text-xs uppercase tracking-widest text-text-secondary/50">New Brand</p>
                 </div>
             </div>
 
-            <footer className="absolute bottom-8 text-xs text-text-secondary/40 font-mono">
+            <footer className="absolute bottom-4 md:bottom-8 text-xs text-text-secondary/40 font-mono">
                 Studio AikinKarr 2026 copyright
             </footer>
         </div>

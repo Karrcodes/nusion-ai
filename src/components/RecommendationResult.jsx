@@ -83,14 +83,14 @@ const RecommendationResult = ({ result, onReset }) => {
     return (
         <div className="w-full text-left animate-[fadeIn_0.5s_ease-out]">
             {/* Downloadable Area (Visible) */}
-            <div ref={cardRef} className="p-8 bg-[#fdfbf7]">
-                <div className="flex justify-between items-baseline mb-8 border-b border-glass-border pb-4">
-                    <h2 className="text-3xl font-bold text-text-primary">
+            <div ref={cardRef} className="p-4 md:p-8 bg-[#fdfbf7]">
+                <div className="flex flex-col md:flex-row justify-between items-baseline mb-6 md:mb-8 border-b border-glass-border pb-4 gap-2">
+                    <h2 className="text-2xl md:text-3xl font-bold text-text-primary">
                         Your Curated Journey
                     </h2>
-                    <div className="text-right">
+                    <div className="text-left md:text-right">
                         <span className="text-xs text-text-secondary block uppercase tracking-wider">Total Expectation</span>
-                        <span className="text-2xl font-bold text-accent-jp">
+                        <span className="text-xl md:text-2xl font-bold text-accent-jp">
                             {currentConfig.currency}{totalCost}
                         </span>
                     </div>

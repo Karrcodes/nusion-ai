@@ -66,7 +66,7 @@ const InputForm = ({ onCalculate }) => {
                 <label className="block mb-4 text-xs uppercase tracking-wider text-text-secondary font-bold">
                     Spice Tolerance
                 </label>
-                <div className="flex justify-center gap-4">
+                <div className="flex justify-center gap-2 md:gap-4">
                     {[1, 2, 3, 4, 5].map((level) => (
                         <button
                             type="button"

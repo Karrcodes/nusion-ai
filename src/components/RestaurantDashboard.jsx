@@ -43,31 +43,34 @@ const RestaurantDashboard = ({ user }) => {
     };
 
     return (
-        <div className="min-h-screen w-full bg-bg-primary flex">
+        <div className="min-h-screen w-full bg-bg-primary flex flex-col md:flex-row">
             {/* Sidebar */}
-            <aside className="w-64 border-r border-glass-border p-6 flex flex-col pt-8">
-                <Link to="/" className="flex items-center gap-2 mb-12 px-2 cursor-pointer hover:opacity-80 transition-opacity" title="Back to Home">
-                    <img src="/nusion-logo.png" alt="Logo" className="h-8 w-auto opacity-80" style={{ filter: 'brightness(0) saturate(100%) invert(23%) sepia(13%) saturate(928%) hue-rotate(338deg) brightness(96%) contrast(90%)' }} />
-                    <span className="font-display font-medium text-xl text-text-primary tracking-wide opacity-80 pt-1">AI</span>
-                </Link>
+            <aside className="w-full md:w-64 border-b md:border-b-0 md:border-r border-glass-border p-4 md:p-6 flex flex-col md:pt-8 bg-white/50 backdrop-blur-md md:bg-transparent">
+                <div className="flex justify-between items-center md:block mb-4 md:mb-12">
+                    <Link to="/" className="flex items-center gap-2 md:px-2 cursor-pointer hover:opacity-80 transition-opacity" title="Back to Home">
+                        <img src="/nusion-logo.png" alt="Logo" className="h-6 md:h-8 w-auto opacity-80" style={{ filter: 'brightness(0) saturate(100%) invert(23%) sepia(13%) saturate(928%) hue-rotate(338deg) brightness(96%) contrast(90%)' }} />
+                        <span className="font-display font-medium text-lg md:text-xl text-text-primary tracking-wide opacity-80 pt-1">AI</span>
+                    </Link>
+                    <button onClick={handleLogout} className="md:hidden text-xs text-text-secondary border border-glass-border px-3 py-1 rounded">Log Out</button>
+                </div>
 
-                <nav className="space-y-2">
+                <nav className="flex md:flex-col gap-2 overflow-x-auto md:overflow-visible pb-2 md:pb-0 scrollbar-hide">
                     <button
                         onClick={() => setActiveTab('inventory')}
-                        className={`w-full text-left px-4 py-3 rounded-lg font-medium transition-all ${activeTab === 'inventory' ? 'bg-accent-jp/10 text-accent-jp' : 'text-text-secondary hover:bg-glass-border/30'}`}
+                        className={`md:w-full text-left px-4 py-2 md:py-3 rounded-lg font-medium transition-all whitespace-nowrap text-sm md:text-base ${activeTab === 'inventory' ? 'bg-accent-jp/10 text-accent-jp' : 'text-text-secondary hover:bg-glass-border/30'}`}
                     >
                         Live Inventory
                     </button>
                     <button
                         onClick={() => setActiveTab('insights')}
-                        className={`w-full text-left px-4 py-3 rounded-lg font-medium transition-all ${activeTab === 'insights' ? 'bg-accent-jp/10 text-accent-jp' : 'text-text-secondary hover:bg-glass-border/30'}`}
+                        className={`md:w-full text-left px-4 py-2 md:py-3 rounded-lg font-medium transition-all whitespace-nowrap text-sm md:text-base ${activeTab === 'insights' ? 'bg-accent-jp/10 text-accent-jp' : 'text-text-secondary hover:bg-glass-border/30'}`}
                     >
                         Insights
                     </button>
-                    <button className="w-full text-left px-4 py-3 rounded-lg text-text-secondary hover:bg-glass-border/30 transition-colors">Menu Settings</button>
+                    <button className="md:w-full text-left px-4 py-2 md:py-3 rounded-lg text-text-secondary hover:bg-glass-border/30 transition-colors whitespace-nowrap text-sm md:text-base">Menu Settings</button>
                 </nav>
 
-                <div className="mt-auto pt-8 border-t border-glass-border">
+                <div className="mt-auto pt-8 border-t border-glass-border hidden md:block">
                     <button onClick={handleLogout} className="flex items-center gap-2 text-sm text-text-secondary hover:text-text-primary px-4">
                         <span>←</span> Log Out
                     </button>
@@ -75,8 +78,8 @@ const RestaurantDashboard = ({ user }) => {
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 p-12 bg-bg-secondary/30">
-                <header className="mb-12 flex justify-between items-center">
+            <main className="flex-1 p-4 md:p-12 bg-bg-secondary/30">
+                <header className="mb-6 md:mb-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
                         <h1 className="text-3xl font-display font-bold text-text-primary mb-1">Welcome back, Ikoyi</h1>
                         <p className="text-text-secondary text-sm">Manage your real-time generative parameters.</p>
@@ -99,7 +102,7 @@ const RestaurantDashboard = ({ user }) => {
                             </button>
                         </div>
 
-                        <div className="glass-panel overflow-hidden">
+                        <div className="glass-panel overflow-x-auto">
                             <table className="w-full text-left">
                                 <thead className="bg-glass-border/20 text-xs uppercase text-text-secondary font-mono">
                                     <tr>
