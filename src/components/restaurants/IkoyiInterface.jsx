@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
 import { currentConfig } from '../../config/restaurantConfig';
 import InputForm from '../InputForm';
@@ -8,10 +8,31 @@ import { getRecommendation } from '../../utils/recommendationLogic';
 import { generateDishImage } from '../../utils/imageGenerator';
 
 function IkoyiInterface({ user }) {
+    const location = useLocation();
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState(null);
     const [loadingPhase, setLoadingPhase] = useState('idle');
     const [progress, setProgress] = useState(0);
+
+    // Check for historical result passed via navigation
+    useEffect(() => {
+        if (location.state?.historicalResult) {
+            setResult(location.state.historicalResult);
+        }
+    }, [location.state]);
+
+    // Load user photo for profile display
+    const [userPhoto, setUserPhoto] = useState(null);
+    useEffect(() => {
+        if (user?.id) {
+            try {
+                const stored = localStorage.getItem(`diner_preferences_${user.id}`);
+                if (stored) {
+                    setUserPhoto(JSON.parse(stored).photo);
+                }
+            } catch (e) { }
+        }
+    }, [user]);
 
     const handleCalculate = async (userData) => {
         setLoading(true);
@@ -87,19 +108,44 @@ function IkoyiInterface({ user }) {
     const reset = () => {
         setResult(null);
         setProgress(0);
+        // Clear location state history so back doesn't get weird? 
+        // Actually, internal state reset is fine.
     };
 
     return (
-        <div className="w-full h-full flex flex-col items-center">
-            {/* Back Button for Navigation */}
-            <Link
-                to="/dashboard"
-                className="absolute top-8 left-8 text-text-secondary hover:text-text-primary uppercase text-xs tracking-widest font-bold z-10 flex items-center gap-2"
-            >
-                ← Back to Brands
-            </Link>
+        <div className="w-full h-full flex flex-col items-center relative">
+            {/* Navigation Header */}
+            <div className="absolute top-0 left-0 w-full px-8 py-6 flex justify-between items-start z-50 pointer-events-none">
+                {/* Back Button */}
+                <Link
+                    to="/dashboard"
+                    className="pointer-events-auto text-text-secondary hover:text-text-primary uppercase text-xs tracking-widest font-bold flex items-center gap-2 bg-white/50 backdrop-blur-sm px-4 py-2 rounded-full border border-glass-border hover:bg-white transition-all"
+                >
+                    ← Back to Brands
+                </Link>
 
-            <div className="container mx-auto px-6 flex flex-col items-center gap-12 max-w-6xl flex-grow pt-[50px]">
+                {/* Profile Button */}
+                {user && (
+                    <Link
+                        to="/dashboard/diner?view=profile"
+                        className="pointer-events-auto group flex items-center gap-3 bg-white/50 backdrop-blur-sm pl-4 pr-1 py-1 rounded-full border border-glass-border hover:bg-white transition-all shadow-sm hover:shadow"
+                        title="Go to Profile"
+                    >
+                        <span className="text-xs font-mono uppercase text-text-secondary group-hover:text-text-primary transition-colors pr-2">
+                            {user.name || 'Profile'}
+                        </span>
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${userPhoto ? 'border border-accent-wa/30 p-0 overflow-hidden' : 'bg-accent-wa/20 text-accent-wa font-bold'}`}>
+                            {userPhoto ? (
+                                <img src={userPhoto} alt="Profile" className="w-full h-full object-cover" />
+                            ) : (
+                                user.name ? user.name.charAt(0).toUpperCase() : 'U'
+                            )}
+                        </div>
+                    </Link>
+                )}
+            </div>
+
+            <div className="container mx-auto px-6 flex flex-col items-center gap-12 max-w-6xl flex-grow pt-[120px]">
 
                 {/* Header Section */}
                 <header className="text-center max-w-2xl flex flex-col items-center animate-[fadeIn_0.5s]">

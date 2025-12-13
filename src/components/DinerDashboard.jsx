@@ -168,7 +168,12 @@ const DinerDashboard = ({ user }) => {
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                                     {history.map((gen, idx) => (
-                                        <div key={idx} className="glass-panel overflow-hidden group cursor-pointer hover:-translate-y-1 transition-transform duration-300">
+                                        <div
+                                            key={idx}
+                                            onClick={() => navigate('/ikoyi', { state: { historicalResult: gen } })}
+                                            className="glass-panel overflow-hidden group cursor-pointer hover:-translate-y-1 transition-transform duration-300"
+                                            title="View this Menu"
+                                        >
                                             {/* Collage Image Section */}
                                             <div className="h-48 w-full bg-stone-200 grid grid-cols-3 relative">
                                                 {gen.courses && gen.courses.slice(0, 3).map((course, i) => (
