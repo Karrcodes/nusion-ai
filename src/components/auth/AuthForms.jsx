@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
 
 const AuthForms = ({ type, mode }) => {
+    const navigate = useNavigate();
     // mode: 'login' or 'signup'
     // type: 'diner' or 'restaurant' (only relevant for signup usually, but we keep context)
 
@@ -33,10 +34,15 @@ const AuthForms = ({ type, mode }) => {
                 });
 
                 if (error) throw error;
-                // onAuthSuccess will be handled by onAuthStateChange in App.jsx usually, 
-                // but we can also trigger it manually if needed for immediate UI feedback before the listener fires
+
+                // Explicit navigation on success
                 if (data?.user) {
-                    // Fetch metadata if needed, but onAuthStateChange should catch it
+                    const userType = data.user.user_metadata?.type || 'diner';
+                    if (userType === 'restaurant') {
+                        navigate('/dashboard/restaurant');
+                    } else {
+                        navigate('/dashboard/diner');
+                    }
                 }
 
             } else {
