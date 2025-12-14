@@ -146,6 +146,8 @@ const RestaurantDashboard = ({ user }) => {
         }
     };
 
+    const [showClearMenu, setShowClearMenu] = useState(false);
+
     return (
         <div className="min-h-screen w-full bg-bg-primary flex flex-col md:flex-row">
             {/* Sidebar */}
@@ -196,7 +198,7 @@ const RestaurantDashboard = ({ user }) => {
                     <div className="flex gap-4">
                         <div className="glass-panel px-4 py-2 flex items-center gap-2">
                             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                            <span className="text-xs font-mono font-bold text-text-primary">System Online v2.3</span>
+                            <span className="text-xs font-mono font-bold text-text-primary">System Online v2.4</span>
                         </div>
                     </div>
                 </header>
@@ -226,19 +228,42 @@ const RestaurantDashboard = ({ user }) => {
                                 </button>
                             </div>
 
-                            <div className="flex gap-2 items-center">
+                            <div className="flex gap-2 items-center relative">
                                 {/* Clear Data Options */}
-                                <div className="relative group">
-                                    <button className="px-3 py-2 text-text-secondary hover:text-red-500 text-sm font-bold transition-colors">
-                                        Clear...
+                                <div className="relative">
+                                    <button
+                                        onClick={() => setShowClearMenu(!showClearMenu)}
+                                        className="px-4 py-2 border border-red-200 text-red-400 rounded-lg text-sm font-bold hover:bg-red-50 hover:text-red-500 transition-colors flex items-center gap-1"
+                                    >
+                                        <span>🗑️</span> Clear
                                     </button>
-                                    <div className="absolute right-0 top-full mt-2 w-32 bg-white border border-glass-border rounded-lg shadow-xl overflow-hidden hidden group-hover:block z-50">
-                                        <button onClick={() => clearData('Menu')} className="w-full text-left px-4 py-2 text-xs hover:bg-red-50 text-text-secondary hover:text-red-600">Clear Menu</button>
-                                        <button onClick={() => clearData('Pantry')} className="w-full text-left px-4 py-2 text-xs hover:bg-red-50 text-text-secondary hover:text-red-600">Clear Pantry</button>
-                                        <div className="h-px bg-glass-border my-1"></div>
-                                        <button onClick={() => clearData('All Data')} className="w-full text-left px-4 py-2 text-xs hover:bg-red-50 text-red-600 font-bold">Clear All</button>
-                                    </div>
+
+                                    {showClearMenu && (
+                                        <div className="absolute right-0 top-full mt-2 w-40 glass-panel border border-glass-border shadow-2xl overflow-hidden z-50 flex flex-col p-1 animate-[fadeIn_0.1s]">
+                                            <button
+                                                onClick={() => { clearData('Menu'); setShowClearMenu(false); }}
+                                                className="text-left px-3 py-2 text-xs text-text-secondary hover:bg-glass-border/50 hover:text-text-primary rounded transition-colors"
+                                            >
+                                                Clear Menu
+                                            </button>
+                                            <button
+                                                onClick={() => { clearData('Pantry'); setShowClearMenu(false); }}
+                                                className="text-left px-3 py-2 text-xs text-text-secondary hover:bg-glass-border/50 hover:text-text-primary rounded transition-colors"
+                                            >
+                                                Clear Pantry
+                                            </button>
+                                            <div className="h-px bg-glass-border my-1"></div>
+                                            <button
+                                                onClick={() => { clearData('All Data'); setShowClearMenu(false); }}
+                                                className="text-left px-3 py-2 text-xs text-red-500 hover:bg-red-50 hover:text-red-600 rounded font-bold transition-colors"
+                                            >
+                                                Clear All Data
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
+
+                                <div className="w-px h-8 bg-glass-border mx-2"></div>
 
                                 <button
                                     onClick={() => document.getElementById('menu-upload').click()}
