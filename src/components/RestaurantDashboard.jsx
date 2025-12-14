@@ -1,6 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const RestaurantDashboard = ({ user }) => {
     const navigate = useNavigate();
@@ -8,14 +10,14 @@ const RestaurantDashboard = ({ user }) => {
 
     // Load initial inventory from localStorage (keyed by User ID) or default
     const [inventory, setInventory] = useState(() => {
-        const storageKey = `restaurant_inventory_${user?.id}`;
+        const storageKey = `restaurant_inventory_${user?.id} `;
         const saved = localStorage.getItem(storageKey);
         return saved ? JSON.parse(saved) : [];
     });
 
     // Load profile from localStorage
     const [profile, setProfile] = useState(() => {
-        const storageKey = `restaurant_preferences_${user?.id}`;
+        const storageKey = `restaurant_preferences_${user?.id} `;
         try {
             const saved = localStorage.getItem(storageKey);
             return saved ? JSON.parse(saved) : {
@@ -24,22 +26,23 @@ const RestaurantDashboard = ({ user }) => {
                 description: '',
                 cuisine: 'Modern West African',
                 philosophy: '',
-                logoUrl: '',
-                coverUrl: '',
+                logoUrl: null,
+                coverUrl: null,
                 hours: '',
                 priceTier: '$$',
                 contactEmail: '',
-                dietaryTags: ''
+                dietaryTags: '',
+                apiKey: ''
             };
         } catch (e) {
-            return { name: '', location: '', description: '', cuisine: '', philosophy: '', logoUrl: '', coverUrl: '', hours: '', priceTier: '$$', contactEmail: '', dietaryTags: '' };
+            return { name: '', location: '', description: '', cuisine: '', philosophy: '', logoUrl: null, coverUrl: null, hours: '', priceTier: '$$', contactEmail: '', dietaryTags: '', apiKey: '' };
         }
     });
 
     // Save to localStorage whenever inventory changes
     useEffect(() => {
         if (user?.id) {
-            localStorage.setItem(`restaurant_inventory_${user.id}`, JSON.stringify(inventory));
+            localStorage.setItem(`restaurant_inventory_${user.id} `, JSON.stringify(inventory));
         }
     }, [inventory, user]);
 
@@ -61,47 +64,86 @@ const RestaurantDashboard = ({ user }) => {
 
     // Load Menu Items (Meals)
     const [menuItems, setMenuItems] = useState(() => {
-        const storageKey = `restaurant_menu_${user?.id}`;
+        const storageKey = `restaurant_menu_${user?.id} `;
         const saved = localStorage.getItem(storageKey);
         return saved ? JSON.parse(saved) : [];
     });
 
     useEffect(() => {
         if (user?.id) {
-            localStorage.setItem(`restaurant_menu_${user.id}`, JSON.stringify(menuItems));
+            localStorage.setItem(`restaurant_menu_${user.id} `, JSON.stringify(menuItems));
         }
     }, [menuItems, user]);
 
     const [inventoryView, setInventoryView] = useState('meals'); // 'meals' | 'pantry'
     const [analyzingMenu, setAnalyzingMenu] = useState(false);
 
-    const handleMenuUpload = (e) => {
+    const handleMenuUpload = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
+        if (!profile.apiKey) {
+            alert("⚠️ Missing Brain Power!\n\nPlease go to the Profile tab and enter your Google Gemini API Key to enable AI analysis.");
+            setActiveTab('profile');
+            return;
+        }
+
         setAnalyzingMenu(true);
-        // Simulate AI Analysis Delay
-        setTimeout(() => {
-            // Mock Extracted Data
-            const extractedMeals = [
-                { id: Date.now() + 1, name: 'Smoked Jollof Rice', price: '£24', status: 'Active', ingredients: ['Rice', 'Tomato', 'Scotch Bonnet'] },
-                { id: Date.now() + 2, name: 'Plantain Miso', price: '£18', status: 'Active', ingredients: ['Plantain', 'Miso', 'Spices'] },
-                { id: Date.now() + 3, name: 'Aged Beef Suya', price: '£32', status: 'Sold Out', ingredients: ['Wagyu Beef', 'Peanuts', 'Spices'] }
-            ];
 
-            const extractedIngredients = [
-                { id: Date.now() + 4, item: 'Jollof Base', category: 'Pantry', stock: 'Medium', status: 'Active' },
-                { id: Date.now() + 5, item: 'Goat Meat', category: 'Protein', stock: 'High', status: 'Active' },
-                { id: Date.now() + 6, item: 'Tiger Nuts', category: 'Produce', stock: 'Low', status: 'Active' },
-                { id: Date.now() + 7, item: 'Miso Paste', category: 'Pantry', stock: 'High', status: 'Active' },
-            ];
+        try {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = async () => {
+                const base64Data = reader.result.split(',')[1];
 
-            setMenuItems(prev => [...prev, ...extractedMeals]);
-            setInventory(prev => [...prev, ...extractedIngredients]);
+                const genAI = new GoogleGenerativeAI(profile.apiKey);
+                const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+                const prompt = `
+                    You are a Restaurant Inventory AI. 
+                    Analyze this menu image. 
+                    1. Extract every distinct MEAL / DISH name and price.
+                    2. Infer the core basic ingredients needed for each dish.
+                    3. List any other distinct ingredients or pantry items found.
+                    
+                    Return ONLY raw JSON(no markdown formatting) with this structure:
+{
+    "meals": [
+        { "name": "Dish Name", "price": "£XX", "status": "Active", "ingredients": ["Ing1", "Ing2"] }
+    ],
+        "pantry": [
+            { "item": "Ingredient Name", "category": "Produce/Protein/Pantry", "stock": "High", "status": "Active" }
+        ]
+}
+`;
+
+                const imagePart = {
+                    inlineData: {
+                        data: base64Data,
+                        mimeType: file.type
+                    }
+                };
+
+                const result = await model.generateContent([prompt, imagePart]);
+                const response = await result.response;
+                const text = response.text();
+
+                // Clean JSON
+                const cleanedText = text.replace(/```json/g, '').replace(/```/g, '').trim();
+                const data = JSON.parse(cleanedText);
+
+                if (data.meals) setMenuItems(prev => [...prev, ...data.meals.map(m => ({ ...m, id: Date.now() + Math.random() }))]);
+                if (data.pantry) setInventory(prev => [...prev, ...data.pantry.map(i => ({ ...i, id: Date.now() + Math.random() }))]);
+
+                setInventoryView('meals');
+                alert(`✨ Analysis Complete!\n\nExtracted:\n- ${data.meals?.length || 0} Meals\n- ${data.pantry?.length || 0} Ingredients`);
+            };
+        } catch (error) {
+            console.error("Gemini Error:", error);
+            alert("AI Analysis Failed. Please check your API Key and internet connection.");
+        } finally {
             setAnalyzingMenu(false);
-            setInventoryView('meals'); // Switch to meals view to show results
-            alert("Menu Analysis Complete! Identified 3 Meals and 4 New Ingredients.");
-        }, 3000); // 3 second delay
+        }
     };
 
     const [showAddItem, setShowAddItem] = useState(false);
@@ -465,6 +507,27 @@ const RestaurantDashboard = ({ user }) => {
                             </div>
 
                             <div className="space-y-8">
+                                {/* API Key Configuration */}
+                                <section className="glass-panel p-8 border border-accent-jp/30 bg-accent-jp/5">
+                                    <h3 className="text-lg font-bold text-text-primary mb-2 flex items-center gap-2">
+                                        <span>🧠</span> AI Brain Configuration
+                                    </h3>
+                                    <p className="text-xs text-text-secondary mb-4">
+                                        Connect your own Google Gemini API Key to enable real-time image analysis.
+                                        <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-accent-jp hover:underline ml-1">Get a free key here</a>.
+                                    </p>
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-mono text-text-secondary uppercase">Gemini API Key</label>
+                                        <input
+                                            type="password"
+                                            placeholder="AIzaSy..."
+                                            value={profile.apiKey || ''}
+                                            onChange={(e) => setProfile({ ...profile, apiKey: e.target.value })}
+                                            className="w-full bg-white/50 border border-glass-border rounded p-3 text-text-primary font-mono focus:border-accent-jp focus:outline-none"
+                                        />
+                                    </div>
+                                </section>
+
                                 {/* Basic Info */}
                                 <section className="glass-panel p-8">
                                     <h3 className="text-lg font-bold text-text-primary mb-6 flex items-center gap-2">
