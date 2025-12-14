@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
-import { GoogleGenerativeAI } from "@google/generative-ai";
+
 
 const RestaurantDashboard = ({ user }) => {
     const navigate = useNavigate();
@@ -32,10 +32,9 @@ const RestaurantDashboard = ({ user }) => {
                 priceTier: '$$',
                 contactEmail: '',
                 dietaryTags: '',
-                apiKey: ''
             };
         } catch (e) {
-            return { name: '', location: '', description: '', cuisine: '', philosophy: '', logoUrl: null, coverUrl: null, hours: '', priceTier: '$$', contactEmail: '', dietaryTags: '', apiKey: '' };
+            return { name: '', location: '', description: '', cuisine: '', philosophy: '', logoUrl: null, coverUrl: null, hours: '', priceTier: '$$', contactEmail: '', dietaryTags: '' };
         }
     });
 
@@ -82,12 +81,6 @@ const RestaurantDashboard = ({ user }) => {
         const file = e.target.files[0];
         if (!file) return;
 
-        if (!profile.apiKey) {
-            alert("⚠️ Missing Brain Power!\n\nPlease go to the Profile tab and enter your Google Gemini API Key to enable AI analysis.");
-            setActiveTab('profile');
-            return;
-        }
-
         setAnalyzingMenu(true);
 
         try {
@@ -96,41 +89,19 @@ const RestaurantDashboard = ({ user }) => {
             reader.onload = async () => {
                 const base64Data = reader.result.split(',')[1];
 
-                const genAI = new GoogleGenerativeAI(profile.apiKey);
-                const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
-                const prompt = `
-                    You are a Restaurant Inventory AI. 
-                    Analyze this menu image. 
-                    1. Extract every distinct MEAL / DISH name and price.
-                    2. Infer the core basic ingredients needed for each dish.
-                    3. List any other distinct ingredients or pantry items found.
-                    
-                    Return ONLY raw JSON(no markdown formatting) with this structure:
-{
-    "meals": [
-        { "name": "Dish Name", "price": "£XX", "status": "Active", "ingredients": ["Ing1", "Ing2"] }
-    ],
-        "pantry": [
-            { "item": "Ingredient Name", "category": "Produce/Protein/Pantry", "stock": "High", "status": "Active" }
-        ]
-}
-`;
-
-                const imagePart = {
-                    inlineData: {
-                        data: base64Data,
+                // Call our secure Backend API
+                const response = await fetch('/api/analyze-menu', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        image: base64Data,
                         mimeType: file.type
-                    }
-                };
+                    })
+                });
 
-                const result = await model.generateContent([prompt, imagePart]);
-                const response = await result.response;
-                const text = response.text();
+                if (!response.ok) throw new Error('Analysis failed');
 
-                // Clean JSON
-                const cleanedText = text.replace(/```json/g, '').replace(/```/g, '').trim();
-                const data = JSON.parse(cleanedText);
+                const data = await response.json();
 
                 if (data.meals) setMenuItems(prev => [...prev, ...data.meals.map(m => ({ ...m, id: Date.now() + Math.random() }))]);
                 if (data.pantry) setInventory(prev => [...prev, ...data.pantry.map(i => ({ ...i, id: Date.now() + Math.random() }))]);
@@ -139,8 +110,8 @@ const RestaurantDashboard = ({ user }) => {
                 alert(`✨ Analysis Complete!\n\nExtracted:\n- ${data.meals?.length || 0} Meals\n- ${data.pantry?.length || 0} Ingredients`);
             };
         } catch (error) {
-            console.error("Gemini Error:", error);
-            alert("AI Analysis Failed. Please check your API Key and internet connection.");
+            console.error("Analysis Error:", error);
+            alert("Analysis Failed. Please try again.");
         } finally {
             setAnalyzingMenu(false);
         }
@@ -344,7 +315,7 @@ const RestaurantDashboard = ({ user }) => {
                         {!analyzingMenu && inventory.length === 0 && menuItems.length === 0 && (
                             <div className="glass-panel p-12 text-center border border-dashed border-glass-border mb-8">
                                 <div className="text-6xl mb-4">🍽️</div>
-                                <h3 className="text-2xl font-bold text-text-primary mb-2">Start Your Kitchen</h3>
+                                <h3 className="2xl font-bold text-text-primary mb-2">Start Your Kitchen</h3>
                                 <p className="text-text-secondary max-w-md mx-auto mb-8">
                                     The Generative Engine needs to know what you serve. Upload your existing menu to instantly populate your Meals and Pantry.
                                 </p>
@@ -507,27 +478,6 @@ const RestaurantDashboard = ({ user }) => {
                             </div>
 
                             <div className="space-y-8">
-                                {/* API Key Configuration */}
-                                <section className="glass-panel p-8 border border-accent-jp/30 bg-accent-jp/5">
-                                    <h3 className="text-lg font-bold text-text-primary mb-2 flex items-center gap-2">
-                                        <span>🧠</span> AI Brain Configuration
-                                    </h3>
-                                    <p className="text-xs text-text-secondary mb-4">
-                                        Connect your own Google Gemini API Key to enable real-time image analysis.
-                                        <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-accent-jp hover:underline ml-1">Get a free key here</a>.
-                                    </p>
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-mono text-text-secondary uppercase">Gemini API Key</label>
-                                        <input
-                                            type="password"
-                                            placeholder="AIzaSy..."
-                                            value={profile.apiKey || ''}
-                                            onChange={(e) => setProfile({ ...profile, apiKey: e.target.value })}
-                                            className="w-full bg-white/50 border border-glass-border rounded p-3 text-text-primary font-mono focus:border-accent-jp focus:outline-none"
-                                        />
-                                    </div>
-                                </section>
-
                                 {/* Basic Info */}
                                 <section className="glass-panel p-8">
                                     <h3 className="text-lg font-bold text-text-primary mb-6 flex items-center gap-2">
