@@ -135,6 +135,17 @@ const RestaurantDashboard = ({ user }) => {
         }
     };
 
+    const clearData = (type) => {
+        if (!window.confirm(`Are you sure you want to clear ${type}? This cannot be undone.`)) return;
+
+        if (type === 'Menu') setMenuItems([]);
+        if (type === 'Pantry') setInventory([]);
+        if (type === 'All Data') {
+            setMenuItems([]);
+            setInventory([]);
+        }
+    };
+
     return (
         <div className="min-h-screen w-full bg-bg-primary flex flex-col md:flex-row">
             {/* Sidebar */}
@@ -185,7 +196,7 @@ const RestaurantDashboard = ({ user }) => {
                     <div className="flex gap-4">
                         <div className="glass-panel px-4 py-2 flex items-center gap-2">
                             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                            <span className="text-xs font-mono font-bold text-text-primary">System Online v2.2</span>
+                            <span className="text-xs font-mono font-bold text-text-primary">System Online v2.3</span>
                         </div>
                     </div>
                 </header>
@@ -215,7 +226,20 @@ const RestaurantDashboard = ({ user }) => {
                                 </button>
                             </div>
 
-                            <div className="flex gap-2">
+                            <div className="flex gap-2 items-center">
+                                {/* Clear Data Options */}
+                                <div className="relative group">
+                                    <button className="px-3 py-2 text-text-secondary hover:text-red-500 text-sm font-bold transition-colors">
+                                        Clear...
+                                    </button>
+                                    <div className="absolute right-0 top-full mt-2 w-32 bg-white border border-glass-border rounded-lg shadow-xl overflow-hidden hidden group-hover:block z-50">
+                                        <button onClick={() => clearData('Menu')} className="w-full text-left px-4 py-2 text-xs hover:bg-red-50 text-text-secondary hover:text-red-600">Clear Menu</button>
+                                        <button onClick={() => clearData('Pantry')} className="w-full text-left px-4 py-2 text-xs hover:bg-red-50 text-text-secondary hover:text-red-600">Clear Pantry</button>
+                                        <div className="h-px bg-glass-border my-1"></div>
+                                        <button onClick={() => clearData('All Data')} className="w-full text-left px-4 py-2 text-xs hover:bg-red-50 text-red-600 font-bold">Clear All</button>
+                                    </div>
+                                </div>
+
                                 <button
                                     onClick={() => document.getElementById('menu-upload').click()}
                                     className="px-4 py-2 border border-accent-jp/50 text-accent-jp rounded-lg text-sm font-bold hover:bg-accent-jp/10 transition-colors flex items-center gap-2"
