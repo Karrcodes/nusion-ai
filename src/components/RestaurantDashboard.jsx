@@ -59,6 +59,51 @@ const RestaurantDashboard = ({ user }) => {
         }));
     };
 
+    // Load Menu Items (Meals)
+    const [menuItems, setMenuItems] = useState(() => {
+        const storageKey = `restaurant_menu_${user?.id}`;
+        const saved = localStorage.getItem(storageKey);
+        return saved ? JSON.parse(saved) : [];
+    });
+
+    useEffect(() => {
+        if (user?.id) {
+            localStorage.setItem(`restaurant_menu_${user.id}`, JSON.stringify(menuItems));
+        }
+    }, [menuItems, user]);
+
+    const [inventoryView, setInventoryView] = useState('meals'); // 'meals' | 'pantry'
+    const [analyzingMenu, setAnalyzingMenu] = useState(false);
+
+    const handleMenuUpload = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        setAnalyzingMenu(true);
+        // Simulate AI Analysis Delay
+        setTimeout(() => {
+            // Mock Extracted Data
+            const extractedMeals = [
+                { id: Date.now() + 1, name: 'Smoked Jollof Rice', price: '£24', status: 'Active', ingredients: ['Rice', 'Tomato', 'Scotch Bonnet'] },
+                { id: Date.now() + 2, name: 'Plantain Miso', price: '£18', status: 'Active', ingredients: ['Plantain', 'Miso', 'Spices'] },
+                { id: Date.now() + 3, name: 'Aged Beef Suya', price: '£32', status: 'Sold Out', ingredients: ['Wagyu Beef', 'Peanuts', 'Spices'] }
+            ];
+
+            const extractedIngredients = [
+                { id: Date.now() + 4, item: 'Jollof Base', category: 'Pantry', stock: 'Medium', status: 'Active' },
+                { id: Date.now() + 5, item: 'Goat Meat', category: 'Protein', stock: 'High', status: 'Active' },
+                { id: Date.now() + 6, item: 'Tiger Nuts', category: 'Produce', stock: 'Low', status: 'Active' },
+                { id: Date.now() + 7, item: 'Miso Paste', category: 'Pantry', stock: 'High', status: 'Active' },
+            ];
+
+            setMenuItems(prev => [...prev, ...extractedMeals]);
+            setInventory(prev => [...prev, ...extractedIngredients]);
+            setAnalyzingMenu(false);
+            setInventoryView('meals'); // Switch to meals view to show results
+            alert("Menu Analysis Complete! Identified 3 Meals and 4 New Ingredients.");
+        }, 3000); // 3 second delay
+    };
+
     const [showAddItem, setShowAddItem] = useState(false);
 
     const [uploading, setUploading] = useState(null); // 'logoUrl' | 'coverUrl' | null
@@ -144,56 +189,6 @@ const RestaurantDashboard = ({ user }) => {
                         </div>
                     </div>
                 </header>
-
-    // Load Menu Items (Meals)
-    const [menuItems, setMenuItems] = useState(() => {
-        const storageKey = `restaurant_menu_${user?.id}`;
-                const saved = localStorage.getItem(storageKey);
-                return saved ? JSON.parse(saved) : [];
-    });
-
-    useEffect(() => {
-        if (user?.id) {
-                    localStorage.setItem(`restaurant_menu_${user.id}`, JSON.stringify(menuItems));
-        }
-    }, [menuItems, user]);
-
-                const [inventoryView, setInventoryView] = useState('meals'); // 'meals' | 'pantry'
-
-    // ... (keep handleStockChange, showAddItem etc. below)
-
-    const handleMenuUpload = (e) => {
-        const file = e.target.files[0];
-                if (!file) return;
-
-                setAnalyzingMenu(true);
-        // Simulate AI Analysis Delay
-        setTimeout(() => {
-            // Mock Extracted Data
-            const extractedMeals = [
-                {id: Date.now() + 1, name: 'Smoked Jollof Rice', price: '£24', status: 'Active', ingredients: ['Rice', 'Tomato', 'Scotch Bonnet'] },
-                {id: Date.now() + 2, name: 'Plantain Miso', price: '£18', status: 'Active', ingredients: ['Plantain', 'Miso', 'Spices'] },
-                {id: Date.now() + 3, name: 'Aged Beef Suya', price: '£32', status: 'Sold Out', ingredients: ['Wagyu Beef', 'Peanuts', 'Spices'] }
-                ];
-
-                const extractedIngredients = [
-                {id: Date.now() + 4, item: 'Jollof Base', category: 'Pantry', stock: 'Medium', status: 'Active' },
-                {id: Date.now() + 5, item: 'Goat Meat', category: 'Protein', stock: 'High', status: 'Active' },
-                {id: Date.now() + 6, item: 'Tiger Nuts', category: 'Produce', stock: 'Low', status: 'Active' },
-                {id: Date.now() + 7, item: 'Miso Paste', category: 'Pantry', stock: 'High', status: 'Active' },
-                ];
-
-            setMenuItems(prev => [...prev, ...extractedMeals]);
-            setInventory(prev => [...prev, ...extractedIngredients]);
-                setAnalyzingMenu(false);
-                setInventoryView('meals'); // Switch to meals view to show results
-                alert("Menu Analysis Complete! Identified 3 Meals and 4 New Ingredients.");
-        }, 3000); // 3 second delay
-    };
-
-                // ... (keep uploading state)
-
-                // ... (keep return statement and sidebar)
 
                 {/* --- INVENTORY VIEW --- */}
                 {activeTab === 'inventory' && (
@@ -401,265 +396,264 @@ const RestaurantDashboard = ({ user }) => {
                         </div>
                     </div>
                 )}
-        </div>
-    )
-}
 
-{/* --- PROFILE VIEW --- */ }
-{
-    activeTab === 'profile' && (
-        <div className="animate-[fadeIn_0.3s] max-w-3xl">
-            <div className="flex justify-between items-center mb-8">
-                <h2 className="text-xl font-bold text-text-primary">Restaurant Profile</h2>
-                <button
-                    onClick={() => {
-                        localStorage.setItem(`restaurant_preferences_${user.id}`, JSON.stringify(profile));
-                        alert('Profile saved!');
-                    }}
-                    className="px-6 py-2 bg-text-primary text-bg-primary rounded-lg text-sm font-bold hover:opacity-90 transition-opacity"
-                >
-                    Save Changes
-                </button>
-            </div>
 
-            <div className="space-y-8">
-                {/* Basic Info */}
-                <section className="glass-panel p-8">
-                    <h3 className="text-lg font-bold text-text-primary mb-6 flex items-center gap-2">
-                        <span>📍</span> General Information
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                            <label className="text-xs font-mono text-text-secondary uppercase">Restaurant Name</label>
-                            <input
-                                type="text"
-                                value={profile.name}
-                                onChange={(e) => setProfile({ ...profile, name: e.target.value })}
-                                className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-xs font-mono text-text-secondary uppercase">Location City</label>
-                            <input
-                                type="text"
-                                value={profile.location}
-                                onChange={(e) => setProfile({ ...profile, location: e.target.value })}
-                                className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none"
-                            />
-                        </div>
-                        <div className="md:col-span-2 space-y-2">
-                            <label className="text-xs font-mono text-text-secondary uppercase">Description</label>
-                            <textarea
-                                value={profile.description}
-                                onChange={(e) => setProfile({ ...profile, description: e.target.value })}
-                                rows={3}
-                                className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none resize-none"
-                            />
-                        </div>
-                    </div>
-                </section>
+                {/* --- PROFILE VIEW --- */}
+                {
+                    activeTab === 'profile' && (
+                        <div className="animate-[fadeIn_0.3s] max-w-3xl">
+                            <div className="flex justify-between items-center mb-8">
+                                <h2 className="text-xl font-bold text-text-primary">Restaurant Profile</h2>
+                                <button
+                                    onClick={() => {
+                                        localStorage.setItem(`restaurant_preferences_${user.id}`, JSON.stringify(profile));
+                                        alert('Profile saved!');
+                                    }}
+                                    className="px-6 py-2 bg-text-primary text-bg-primary rounded-lg text-sm font-bold hover:opacity-90 transition-opacity"
+                                >
+                                    Save Changes
+                                </button>
+                            </div>
 
-                {/* Culinary Identity */}
-                <section className="glass-panel p-8 relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-accent-jp/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
-                    <h3 className="text-lg font-bold text-text-primary mb-6 flex items-center gap-2 relative z-10">
-                        <span>🍳</span> Culinary Identity
-                    </h3>
-                    <p className="text-sm text-text-secondary mb-6 relative z-10">These settings guide the Generative Engine's creativity.</p>
+                            <div className="space-y-8">
+                                {/* Basic Info */}
+                                <section className="glass-panel p-8">
+                                    <h3 className="text-lg font-bold text-text-primary mb-6 flex items-center gap-2">
+                                        <span>📍</span> General Information
+                                    </h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-mono text-text-secondary uppercase">Restaurant Name</label>
+                                            <input
+                                                type="text"
+                                                value={profile.name}
+                                                onChange={(e) => setProfile({ ...profile, name: e.target.value })}
+                                                className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-mono text-text-secondary uppercase">Location City</label>
+                                            <input
+                                                type="text"
+                                                value={profile.location}
+                                                onChange={(e) => setProfile({ ...profile, location: e.target.value })}
+                                                className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none"
+                                            />
+                                        </div>
+                                        <div className="md:col-span-2 space-y-2">
+                                            <label className="text-xs font-mono text-text-secondary uppercase">Description</label>
+                                            <textarea
+                                                value={profile.description}
+                                                onChange={(e) => setProfile({ ...profile, description: e.target.value })}
+                                                rows={3}
+                                                className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none resize-none"
+                                            />
+                                        </div>
+                                    </div>
+                                </section>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
-                        <div className="space-y-2">
-                            <label className="text-xs font-mono text-text-secondary uppercase">Cuisine Type</label>
-                            <input
-                                type="text"
-                                placeholder="e.g. Modern West African"
-                                value={profile.cuisine}
-                                onChange={(e) => setProfile({ ...profile, cuisine: e.target.value })}
-                                className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-xs font-mono text-text-secondary uppercase">Philosophy</label>
-                            <input
-                                type="text"
-                                placeholder="e.g. Hyper-seasonal, Fermentation"
-                                value={profile.philosophy}
-                                onChange={(e) => setProfile({ ...profile, philosophy: e.target.value })}
-                                className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none"
-                            />
-                        </div>
-                    </div>
-                </section>
+                                {/* Culinary Identity */}
+                                <section className="glass-panel p-8 relative overflow-hidden">
+                                    <div className="absolute top-0 right-0 w-32 h-32 bg-accent-jp/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+                                    <h3 className="text-lg font-bold text-text-primary mb-6 flex items-center gap-2 relative z-10">
+                                        <span>🍳</span> Culinary Identity
+                                    </h3>
+                                    <p className="text-sm text-text-secondary mb-6 relative z-10">These settings guide the Generative Engine's creativity.</p>
 
-                {/* Operations & Context */}
-                <section className="glass-panel p-8">
-                    <h3 className="text-lg font-bold text-text-primary mb-6 flex items-center gap-2">
-                        <span>⚙️</span> Operations & Context
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                            <label className="text-xs font-mono text-text-secondary uppercase">Operating Hours</label>
-                            <input
-                                type="text"
-                                placeholder="e.g. Tue-Sun, 18:00 - 23:00"
-                                value={profile.hours}
-                                onChange={(e) => setProfile({ ...profile, hours: e.target.value })}
-                                className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-xs font-mono text-text-secondary uppercase">Price Tier</label>
-                            <select
-                                value={profile.priceTier}
-                                onChange={(e) => setProfile({ ...profile, priceTier: e.target.value })}
-                                className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none"
-                            >
-                                <option value="$">Low ($)</option>
-                                <option value="$$">Medium ($$)</option>
-                                <option value="$$$">High ($$$)</option>
-                                <option value="$$$$">Ultra-Premium ($$$$)</option>
-                            </select>
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-xs font-mono text-text-secondary uppercase">Contact Email</label>
-                            <input
-                                type="email"
-                                placeholder="chef@example.com"
-                                value={profile.contactEmail}
-                                onChange={(e) => setProfile({ ...profile, contactEmail: e.target.value })}
-                                className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-xs font-mono text-text-secondary uppercase">Dietary Accommodations (comma sep.)</label>
-                            <input
-                                type="text"
-                                placeholder="e.g. Vegan, Halal, Gluten-Free"
-                                value={profile.dietaryTags}
-                                onChange={(e) => setProfile({ ...profile, dietaryTags: e.target.value })}
-                                className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none"
-                            />
-                        </div>
-                    </div>
-                </section>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-mono text-text-secondary uppercase">Cuisine Type</label>
+                                            <input
+                                                type="text"
+                                                placeholder="e.g. Modern West African"
+                                                value={profile.cuisine}
+                                                onChange={(e) => setProfile({ ...profile, cuisine: e.target.value })}
+                                                className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-mono text-text-secondary uppercase">Philosophy</label>
+                                            <input
+                                                type="text"
+                                                placeholder="e.g. Hyper-seasonal, Fermentation"
+                                                value={profile.philosophy}
+                                                onChange={(e) => setProfile({ ...profile, philosophy: e.target.value })}
+                                                className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none"
+                                            />
+                                        </div>
+                                    </div>
+                                </section>
 
-                {/* Visuals */}
-                <section className="glass-panel p-8">
-                    <h3 className="text-lg font-bold text-text-primary mb-6 flex items-center gap-2">
-                        <span>📸</span> Brand Visuals
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* Logo Upload */}
-                        <div className="space-y-2">
-                            <label className="text-xs font-mono text-text-secondary uppercase">Logo</label>
-                            <div className="flex items-center gap-4">
-                                <div className="w-16 h-16 rounded-full border border-glass-border overflow-hidden bg-bg-primary/50 flex items-center justify-center">
-                                    {profile.logoUrl ? (
-                                        <img src={profile.logoUrl} alt="Logo" className="w-full h-full object-cover" />
-                                    ) : (
-                                        <span className="text-2xl opacity-20">🖼️</span>
-                                    )}
-                                </div>
-                                <div className="flex-1">
-                                    <input
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={(e) => handleImageUpload(e.target.files[0], 'logoUrl')}
-                                        className="w-full text-xs text-text-secondary file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-accent-jp/10 file:text-accent-jp hover:file:bg-accent-jp/20"
-                                    />
-                                    {uploading === 'logoUrl' && <span className="text-xs text-accent-jp animate-pulse ml-2">Uploading...</span>}
-                                </div>
+                                {/* Operations & Context */}
+                                <section className="glass-panel p-8">
+                                    <h3 className="text-lg font-bold text-text-primary mb-6 flex items-center gap-2">
+                                        <span>⚙️</span> Operations & Context
+                                    </h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-mono text-text-secondary uppercase">Operating Hours</label>
+                                            <input
+                                                type="text"
+                                                placeholder="e.g. Tue-Sun, 18:00 - 23:00"
+                                                value={profile.hours}
+                                                onChange={(e) => setProfile({ ...profile, hours: e.target.value })}
+                                                className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-mono text-text-secondary uppercase">Price Tier</label>
+                                            <select
+                                                value={profile.priceTier}
+                                                onChange={(e) => setProfile({ ...profile, priceTier: e.target.value })}
+                                                className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none"
+                                            >
+                                                <option value="$">Low ($)</option>
+                                                <option value="$$">Medium ($$)</option>
+                                                <option value="$$$">High ($$$)</option>
+                                                <option value="$$$$">Ultra-Premium ($$$$)</option>
+                                            </select>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-mono text-text-secondary uppercase">Contact Email</label>
+                                            <input
+                                                type="email"
+                                                placeholder="chef@example.com"
+                                                value={profile.contactEmail}
+                                                onChange={(e) => setProfile({ ...profile, contactEmail: e.target.value })}
+                                                className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-mono text-text-secondary uppercase">Dietary Accommodations (comma sep.)</label>
+                                            <input
+                                                type="text"
+                                                placeholder="e.g. Vegan, Halal, Gluten-Free"
+                                                value={profile.dietaryTags}
+                                                onChange={(e) => setProfile({ ...profile, dietaryTags: e.target.value })}
+                                                className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none"
+                                            />
+                                        </div>
+                                    </div>
+                                </section>
+
+                                {/* Visuals */}
+                                <section className="glass-panel p-8">
+                                    <h3 className="text-lg font-bold text-text-primary mb-6 flex items-center gap-2">
+                                        <span>📸</span> Brand Visuals
+                                    </h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        {/* Logo Upload */}
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-mono text-text-secondary uppercase">Logo</label>
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-16 h-16 rounded-full border border-glass-border overflow-hidden bg-bg-primary/50 flex items-center justify-center">
+                                                    {profile.logoUrl ? (
+                                                        <img src={profile.logoUrl} alt="Logo" className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        <span className="text-2xl opacity-20">🖼️</span>
+                                                    )}
+                                                </div>
+                                                <div className="flex-1">
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        onChange={(e) => handleImageUpload(e.target.files[0], 'logoUrl')}
+                                                        className="w-full text-xs text-text-secondary file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-accent-jp/10 file:text-accent-jp hover:file:bg-accent-jp/20"
+                                                    />
+                                                    {uploading === 'logoUrl' && <span className="text-xs text-accent-jp animate-pulse ml-2">Uploading...</span>}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Cover Upload */}
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-mono text-text-secondary uppercase">Cover Image</label>
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-24 h-16 rounded border border-glass-border overflow-hidden bg-bg-primary/50 flex items-center justify-center">
+                                                    {profile.coverUrl ? (
+                                                        <img src={profile.coverUrl} alt="Cover" className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        <span className="text-2xl opacity-20">🌄</span>
+                                                    )}
+                                                </div>
+                                                <div className="flex-1">
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        onChange={(e) => handleImageUpload(e.target.files[0], 'coverUrl')}
+                                                        className="w-full text-xs text-text-secondary file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-accent-jp/10 file:text-accent-jp hover:file:bg-accent-jp/20"
+                                                    />
+                                                    {uploading === 'coverUrl' && <span className="text-xs text-accent-jp animate-pulse ml-2">Uploading...</span>}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
                             </div>
                         </div>
+                    )
+                }
 
-                        {/* Cover Upload */}
-                        <div className="space-y-2">
-                            <label className="text-xs font-mono text-text-secondary uppercase">Cover Image</label>
-                            <div className="flex items-center gap-4">
-                                <div className="w-24 h-16 rounded border border-glass-border overflow-hidden bg-bg-primary/50 flex items-center justify-center">
-                                    {profile.coverUrl ? (
-                                        <img src={profile.coverUrl} alt="Cover" className="w-full h-full object-cover" />
-                                    ) : (
-                                        <span className="text-2xl opacity-20">🌄</span>
-                                    )}
+                {/* --- INSIGHTS VIEW --- */}
+                {
+                    activeTab === 'insights' && (
+                        <div className="animate-[fadeIn_0.3s] grid grid-cols-1 md:grid-cols-2 gap-8">
+                            {/* Stat Card 1 */}
+                            <div className="glass-panel p-8">
+                                <span className="text-sm text-text-secondary uppercase tracking-wider block mb-4">Total Generations</span>
+                                <div className="flex justify-between items-end mb-4">
+                                    <span className="text-5xl font-mono text-text-primary">1,204</span>
+                                    <span className="text-accent-jp text-sm font-bold bg-accent-jp/10 px-2 py-1 rounded">+12.5%</span>
                                 </div>
-                                <div className="flex-1">
-                                    <input
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={(e) => handleImageUpload(e.target.files[0], 'coverUrl')}
-                                        className="w-full text-xs text-text-secondary file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-accent-jp/10 file:text-accent-jp hover:file:bg-accent-jp/20"
-                                    />
-                                    {uploading === 'coverUrl' && <span className="text-xs text-accent-jp animate-pulse ml-2">Uploading...</span>}
+                                <div className="w-full bg-glass-border h-2 rounded-full overflow-hidden">
+                                    <div className="bg-accent-jp h-full w-[75%]"></div>
                                 </div>
                             </div>
+
+                            {/* Stat Card 2 */}
+                            <div className="glass-panel p-8">
+                                <span className="text-sm text-text-secondary uppercase tracking-wider block mb-4">Top Request</span>
+                                <div className="flex justify-between items-end mb-4">
+                                    <span className="text-3xl font-display font-bold text-text-primary">Spicy Plantain</span>
+                                    <span className="text-text-secondary text-sm">42% of orders</span>
+                                </div>
+                                <p className="text-xs text-text-secondary">Most requested flavor profile this week.</p>
+                            </div>
+
+                            {/* Inventory Usage */}
+                            <div className="glass-panel p-8 md:col-span-2">
+                                <h3 className="text-lg font-bold text-text-primary mb-6">Ingredient Utilization</h3>
+                                <div className="space-y-4">
+                                    <div className="flex justify-between items-center text-sm">
+                                        <span>Scotch Bonnet</span>
+                                        <span className="font-mono">89%</span>
+                                    </div>
+                                    <div className="w-full bg-glass-border h-2 rounded-full overflow-hidden">
+                                        <div className="bg-red-500 h-full w-[89%]"></div>
+                                    </div>
+
+                                    <div className="flex justify-between items-center text-sm">
+                                        <span>Wagyu Beef</span>
+                                        <span className="font-mono">94%</span>
+                                    </div>
+                                    <div className="w-full bg-glass-border h-2 rounded-full overflow-hidden">
+                                        <div className="bg-accent-jp h-full w-[94%]"></div>
+                                    </div>
+
+                                    <div className="flex justify-between items-center text-sm">
+                                        <span>Palm Oil</span>
+                                        <span className="font-mono">45%</span>
+                                    </div>
+                                    <div className="w-full bg-glass-border h-2 rounded-full overflow-hidden">
+                                        <div className="bg-yellow-500 h-full w-[45%]"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+
                         </div>
-                    </div>
-                </section>
-            </div>
-        </div>
-    )
-}
-
-{/* --- INSIGHTS VIEW --- */ }
-{
-    activeTab === 'insights' && (
-        <div className="animate-[fadeIn_0.3s] grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Stat Card 1 */}
-            <div className="glass-panel p-8">
-                <span className="text-sm text-text-secondary uppercase tracking-wider block mb-4">Total Generations</span>
-                <div className="flex justify-between items-end mb-4">
-                    <span className="text-5xl font-mono text-text-primary">1,204</span>
-                    <span className="text-accent-jp text-sm font-bold bg-accent-jp/10 px-2 py-1 rounded">+12.5%</span>
-                </div>
-                <div className="w-full bg-glass-border h-2 rounded-full overflow-hidden">
-                    <div className="bg-accent-jp h-full w-[75%]"></div>
-                </div>
-            </div>
-
-            {/* Stat Card 2 */}
-            <div className="glass-panel p-8">
-                <span className="text-sm text-text-secondary uppercase tracking-wider block mb-4">Top Request</span>
-                <div className="flex justify-between items-end mb-4">
-                    <span className="text-3xl font-display font-bold text-text-primary">Spicy Plantain</span>
-                    <span className="text-text-secondary text-sm">42% of orders</span>
-                </div>
-                <p className="text-xs text-text-secondary">Most requested flavor profile this week.</p>
-            </div>
-
-            {/* Inventory Usage */}
-            <div className="glass-panel p-8 md:col-span-2">
-                <h3 className="text-lg font-bold text-text-primary mb-6">Ingredient Utilization</h3>
-                <div className="space-y-4">
-                    <div className="flex justify-between items-center text-sm">
-                        <span>Scotch Bonnet</span>
-                        <span className="font-mono">89%</span>
-                    </div>
-                    <div className="w-full bg-glass-border h-2 rounded-full overflow-hidden">
-                        <div className="bg-red-500 h-full w-[89%]"></div>
-                    </div>
-
-                    <div className="flex justify-between items-center text-sm">
-                        <span>Wagyu Beef</span>
-                        <span className="font-mono">94%</span>
-                    </div>
-                    <div className="w-full bg-glass-border h-2 rounded-full overflow-hidden">
-                        <div className="bg-accent-jp h-full w-[94%]"></div>
-                    </div>
-
-                    <div className="flex justify-between items-center text-sm">
-                        <span>Palm Oil</span>
-                        <span className="font-mono">45%</span>
-                    </div>
-                    <div className="w-full bg-glass-border h-2 rounded-full overflow-hidden">
-                        <div className="bg-yellow-500 h-full w-[45%]"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    )
-}
-
+                    )
+                }
             </main >
         </div >
     );
