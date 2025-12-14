@@ -60,8 +60,9 @@ const RestaurantDashboard = ({ user }) => {
                 // Cycle stock status: High -> Medium -> Low -> High
                 const nextStock = item.stock === 'High' ? 'Medium' : item.stock === 'Medium' ? 'Low' : 'High';
                 return { ...item, stock: nextStock };
-                return item;
-            }));
+            }
+            return item;
+        }));
     };
 
     const [showAddItem, setShowAddItem] = useState(false);
