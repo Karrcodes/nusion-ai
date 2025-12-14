@@ -77,6 +77,33 @@ const RestaurantDashboard = ({ user }) => {
     const [inventoryView, setInventoryView] = useState('meals'); // 'meals' | 'pantry'
     const [analyzingMenu, setAnalyzingMenu] = useState(false);
 
+    const resizeImage = (file) => {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 1024;
+                    const scaleSize = MAX_WIDTH / img.width;
+                    const width = (img.width > MAX_WIDTH) ? MAX_WIDTH : img.width;
+                    const height = (img.width > MAX_WIDTH) ? (img.height * scaleSize) : img.height;
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // Return Base64 string directly (without data:image/... prefix for Gemini)
+                    const dataUrl = canvas.toDataURL(file.type);
+                    resolve(dataUrl.split(',')[1]);
+                };
+            };
+        });
+    };
+
     const handleMenuUpload = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -84,34 +111,35 @@ const RestaurantDashboard = ({ user }) => {
         setAnalyzingMenu(true);
 
         try {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = async () => {
-                const base64Data = reader.result.split(',')[1];
+            // Resize image to max 1024px width to ensure fast upload and avoid Vercel 4.5MB limit
+            const base64Data = await resizeImage(file);
 
-                // Call our secure Backend API
-                const response = await fetch('/api/analyze-menu', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        image: base64Data,
-                        mimeType: file.type
-                    })
-                });
+            // Call our secure Backend API
+            const response = await fetch('/api/analyze-menu', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    image: base64Data,
+                    mimeType: file.type
+                })
+            });
 
-                if (!response.ok) throw new Error('Analysis failed');
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.error || `Server Error: ${response.status}`);
+            }
 
-                const data = await response.json();
+            const data = await response.json();
 
-                if (data.meals) setMenuItems(prev => [...prev, ...data.meals.map(m => ({ ...m, id: Date.now() + Math.random() }))]);
-                if (data.pantry) setInventory(prev => [...prev, ...data.pantry.map(i => ({ ...i, id: Date.now() + Math.random() }))]);
+            if (data.meals) setMenuItems(prev => [...prev, ...data.meals.map(m => ({ ...m, id: Date.now() + Math.random() }))]);
+            if (data.pantry) setInventory(prev => [...prev, ...data.pantry.map(i => ({ ...i, id: Date.now() + Math.random() }))]);
 
-                setInventoryView('meals');
-                alert(`✨ Analysis Complete!\n\nExtracted:\n- ${data.meals?.length || 0} Meals\n- ${data.pantry?.length || 0} Ingredients`);
-            };
+            setInventoryView('meals');
+            alert(`✨ Analysis Complete!\n\nExtracted:\n- ${data.meals?.length || 0} Meals\n- ${data.pantry?.length || 0} Ingredients`);
+
         } catch (error) {
             console.error("Analysis Error:", error);
-            alert("Analysis Failed. Please try again.");
+            alert(`Analysis Failed: ${error.message}\n\nTry a smaller image or clear your cache.`);
         } finally {
             setAnalyzingMenu(false);
         }
@@ -211,7 +239,7 @@ const RestaurantDashboard = ({ user }) => {
                     <div className="flex gap-4">
                         <div className="glass-panel px-4 py-2 flex items-center gap-2">
                             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                            <span className="text-xs font-mono font-bold text-text-primary">System Online v2.6</span>
+                            <span className="text-xs font-mono font-bold text-text-primary">System Online v2.7</span>
                         </div>
                     </div>
                 </header>
