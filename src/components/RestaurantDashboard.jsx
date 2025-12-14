@@ -139,7 +139,7 @@ const RestaurantDashboard = ({ user }) => {
 
         } catch (error) {
             console.error("Analysis Error:", error);
-            alert(`Analysis Failed: ${error.message}\n\nTry a smaller image or clear your cache.`);
+            alert(`Analysis Failed!\n\nDetails: ${error.message}\n\nPlease try again or report this error.`);
         } finally {
             setAnalyzingMenu(false);
         }
@@ -239,7 +239,7 @@ const RestaurantDashboard = ({ user }) => {
                     <div className="flex gap-4">
                         <div className="glass-panel px-4 py-2 flex items-center gap-2">
                             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                            <span className="text-xs font-mono font-bold text-text-primary">System Online v2.7</span>
+                            <span className="text-xs font-mono font-bold text-text-primary">System Online v2.8 (Debug)</span>
                         </div>
                     </div>
                 </header>
