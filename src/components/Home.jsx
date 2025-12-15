@@ -77,7 +77,7 @@ const Home = ({ user, onStart, onLogin, onSignup, onPartnerSignup }) => {
                     {/* Badge */}
                     <div className="mb-6 md:mb-8 inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-accent-wa/20 bg-glass-bg backdrop-blur-sm animate-[fadeIn_0.5s_ease-out]">
                         <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                        <span className="text-xs font-mono text-text-secondary uppercase tracking-wider">Engine v3.5 Online</span>
+                        <span className="text-xs font-mono text-text-secondary uppercase tracking-wider">Engine v3.6 Online</span>
                     </div>
 
                     {/* Main Title */}

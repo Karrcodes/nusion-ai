@@ -9,8 +9,13 @@ export default async function handler(req, res) {
     try {
         const { image, mimeType } = req.body;
 
-        // Use the provided key securely on the server side
-        const genAI = new GoogleGenerativeAI("AIzaSyAaFAfyd7mQ8-05ufX57gChwaJ9LsLiWi8");
+        // Use environment variable for security (prevents leaked key errors)
+        const apiKey = process.env.GEMINI_API_KEY;
+        if (!apiKey) {
+            throw new Error("GEMINI_API_KEY is not set in server environment.");
+        }
+
+        const genAI = new GoogleGenerativeAI(apiKey);
         const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
         const prompt = `
