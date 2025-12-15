@@ -254,7 +254,7 @@ const RestaurantDashboard = ({ user }) => {
                     <div className="flex gap-4">
                         <div className="glass-panel px-4 py-2 flex items-center gap-2">
                             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                            <span className="text-xs font-mono font-bold text-text-primary">System Online v3.1 (Force JPEG)</span>
+                            <span className="text-xs font-mono font-bold text-text-primary">System Online v3.2 (Model Fix)</span>
                         </div>
                     </div>
                 </header>
