@@ -11,7 +11,7 @@ export default async function handler(req, res) {
 
         // Use the provided key securely on the server side
         const genAI = new GoogleGenerativeAI("AIzaSyAaFAfyd7mQ8-05ufX57gChwaJ9LsLiWi8");
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+        const model = genAI.getGenerativeModel({ model: "gemini-pro-vision" });
 
         const prompt = `
             You are a Restaurant Inventory AI. 
