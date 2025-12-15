@@ -96,8 +96,9 @@ const RestaurantDashboard = ({ user }) => {
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
 
-                    // Return Base64 string directly (without data:image/... prefix for Gemini)
-                    const dataUrl = canvas.toDataURL(file.type);
+                    // Force JPEG conversion for heavy compression (0.7 quality)
+                    // This prevents hitting Vercel's 4.5MB payload limit even with PNGs
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
                     resolve(dataUrl.split(',')[1]);
                 };
                 img.onerror = (e) => reject(new Error("Invalid Image File"));
@@ -133,7 +134,7 @@ const RestaurantDashboard = ({ user }) => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     image: base64Data,
-                    mimeType: file.type
+                    mimeType: file.type === 'application/pdf' ? 'application/pdf' : 'image/jpeg' // Force JPEG mime if not PDF
                 })
             });
 
@@ -153,7 +154,7 @@ const RestaurantDashboard = ({ user }) => {
 
         } catch (error) {
             console.error("Analysis Error:", error);
-            alert(`ANALYSIS FAILED (v3.0)\n\nReason: ${error.message}\n\nPlease take a screenshot of this error.`);
+            alert(`ANALYSIS FAILED (v3.1 - Force JPEG)\n\nReason: ${error.message}\n\nPlease take a screenshot of this error.`);
         } finally {
             setAnalyzingMenu(false);
         }
@@ -253,7 +254,7 @@ const RestaurantDashboard = ({ user }) => {
                     <div className="flex gap-4">
                         <div className="glass-panel px-4 py-2 flex items-center gap-2">
                             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                            <span className="text-xs font-mono font-bold text-text-primary">System Online v3.0 (Major Debug)</span>
+                            <span className="text-xs font-mono font-bold text-text-primary">System Online v3.1 (Force JPEG)</span>
                         </div>
                     </div>
                 </header>
