@@ -16,46 +16,58 @@ export default async function handler(req, res) {
         }
 
         const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
         const prompt = `
-            You are a Restaurant Inventory AI. 
-            Analyze this menu image. 
-            1. Extract every distinct MEAL/DISH name and price.
-            2. Infer the core basic ingredients needed for each dish.
-            3. List any other distinct ingredients or pantry items found.
-            
-            Return ONLY raw JSON (no markdown formatting) with this structure:
+            You are a Restaurant Inventory AI.
+            Analyze the provided menu image (or PDF) and extract two things:
+            1. 'meals': A list of menu items (Meal Name, Price, Description, Ingredients).
+               - Infer potential ingredients if not explicitly listed.
+            2. 'pantry': A list of unique base ingredients found (e.g. Chicken, Tomato, Rice).
+               - Estimate 'currentStock' as 'Medium' for all.
+               - Estimate 'costPerUnit' reasonably.
+
+            Return JSON ONLY. Format:
             {
-                "meals": [
-                    { "name": "Dish Name", "price": "£XX", "status": "Active", "ingredients": ["Ing1", "Ing2"] }
-                ],
-                "pantry": [
-                    { "item": "Ingredient Name", "category": "Produce/Protein/Pantry", "stock": "High", "status": "Active" }
-                ]
+              "meals": [{ "name": "...", "price": 0, "description": "...", "ingredients": ["..."] }],
+              "pantry": [{ "name": "...", "currentStock": "Medium", "unit": "kg/liter/unit" }]
             }
         `;
 
-        const imagePart = {
-            inlineData: {
-                data: image,
-                mimeType: mimeType
+        // Retry logic for 503 (Overloaded) or 429 (Quota) errors
+        const generateWithRetry = async (attempts = 3, delay = 2000) => {
+            for (let i = 0; i < attempts; i++) {
+                try {
+                    const result = await model.generateContent([prompt, { inlineData: { data: image, mimeType } }]);
+                    return result;
+                } catch (error) {
+                    console.log(`Attempt ${i + 1} failed: ${error.message}`);
+                    if (i === attempts - 1) throw error; // Throw on last attempt
+                    // Wait before retrying (exponential backoff: 2s, 4s, 8s...)
+                    await new Promise(resolve => setTimeout(resolve, delay * (i + 1)));
+                }
             }
         };
 
-        const result = await model.generateContent([prompt, imagePart]);
+        const result = await generateWithRetry();
         const response = await result.response;
         const text = response.text();
 
-        const cleanedText = text.replace(/```json/g, '').replace(/```/g, '').trim();
-        const data = JSON.parse(cleanedText);
+        // Clean markdown code blocks if present
+        const jsonStr = text.replace(/```json/g, '').replace(/```/g, '').trim();
+        const data = JSON.parse(jsonStr);
 
         res.status(200).json(data);
 
     } catch (error) {
         console.error('Gemini API Error (Backtrace):');
         console.error(error);
+
+        // Enhance error message for client
+        let clientMessage = error.message;
+        if (error.message.includes('503')) clientMessage += " (Server Busy - Auto-retired)";
+
         if (error.response) console.error(JSON.stringify(error.response, null, 2));
-        res.status(500).json({ error: 'Failed to analyze menu', details: error.message, stack: error.stack });
+        res.status(500).json({ error: 'Failed to analyze menu', details: clientMessage, stack: error.stack });
     }
 }

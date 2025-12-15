@@ -154,7 +154,7 @@ const RestaurantDashboard = ({ user }) => {
 
         } catch (error) {
             console.error("Analysis Error:", error);
-            alert(`ANALYSIS FAILED (v3.8 - Flash Latest)\n\nReason: ${error.message}\n\nPlease take a screenshot of this error.`);
+            alert(`ANALYSIS FAILED (v3.9 - Gemini 2.5)\n\nReason: ${error.message}\n\nPlease take a screenshot of this error.`);
         } finally {
             setAnalyzingMenu(false);
         }
@@ -254,7 +254,7 @@ const RestaurantDashboard = ({ user }) => {
                     <div className="flex gap-4">
                         <div className="glass-panel px-4 py-2 flex items-center gap-2">
                             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                            <span className="text-xs font-mono font-bold text-text-primary">System Online v3.8 (Flash Latest)</span>
+                            <span className="text-xs font-mono font-bold text-text-primary">System Online v3.9 (Gemini 2.5)</span>
                         </div>
                     </div>
                 </header>
