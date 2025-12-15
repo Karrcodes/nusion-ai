@@ -78,7 +78,7 @@ const RestaurantDashboard = ({ user }) => {
     const [analyzingMenu, setAnalyzingMenu] = useState(false);
 
     const resizeImage = (file) => {
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.readAsDataURL(file);
             reader.onload = (event) => {
@@ -100,7 +100,9 @@ const RestaurantDashboard = ({ user }) => {
                     const dataUrl = canvas.toDataURL(file.type);
                     resolve(dataUrl.split(',')[1]);
                 };
+                img.onerror = (e) => reject(new Error("Invalid Image File"));
             };
+            reader.onerror = (e) => reject(error);
         });
     };
 
@@ -111,8 +113,19 @@ const RestaurantDashboard = ({ user }) => {
         setAnalyzingMenu(true);
 
         try {
-            // Resize image to max 1024px width to ensure fast upload and avoid Vercel 4.5MB limit
-            const base64Data = await resizeImage(file);
+            let base64Data;
+
+            // Bypass resize for PDFs, only resize images
+            if (file.type === 'application/pdf') {
+                base64Data = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result.split(',')[1]);
+                    reader.onerror = (e) => reject(new Error("PDF Read Failed"));
+                    reader.readAsDataURL(file);
+                });
+            } else {
+                base64Data = await resizeImage(file);
+            }
 
             // Call our secure Backend API
             const response = await fetch('/api/analyze-menu', {
@@ -126,7 +139,8 @@ const RestaurantDashboard = ({ user }) => {
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.error || `Server Error: ${response.status}`);
+                const detailedError = JSON.stringify(errorData, null, 2);
+                throw new Error(`Server ${response.status} ${response.statusText}\n\n${detailedError}`);
             }
 
             const data = await response.json();
@@ -139,7 +153,7 @@ const RestaurantDashboard = ({ user }) => {
 
         } catch (error) {
             console.error("Analysis Error:", error);
-            alert(`Analysis Failed!\n\nDetails: ${error.message}\n\nPlease try again or report this error.`);
+            alert(`ANALYSIS FAILED (v3.0)\n\nReason: ${error.message}\n\nPlease take a screenshot of this error.`);
         } finally {
             setAnalyzingMenu(false);
         }
@@ -239,7 +253,7 @@ const RestaurantDashboard = ({ user }) => {
                     <div className="flex gap-4">
                         <div className="glass-panel px-4 py-2 flex items-center gap-2">
                             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                            <span className="text-xs font-mono font-bold text-text-primary">System Online v2.9 (Route Fix)</span>
+                            <span className="text-xs font-mono font-bold text-text-primary">System Online v3.0 (Major Debug)</span>
                         </div>
                     </div>
                 </header>
