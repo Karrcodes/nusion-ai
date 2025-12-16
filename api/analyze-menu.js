@@ -53,8 +53,15 @@ export default async function handler(req, res) {
         const response = await result.response;
         const text = response.text();
 
-        // Clean markdown code blocks if present
-        const jsonStr = text.replace(/```json/g, '').replace(/```/g, '').trim();
+        // Robust JSON extraction: Find first '{' and last '}'
+        const firstOpen = text.indexOf('{');
+        const lastClose = text.lastIndexOf('}');
+
+        if (firstOpen === -1 || lastClose === -1) {
+            throw new Error("No JSON found in response.");
+        }
+
+        const jsonStr = text.substring(firstOpen, lastClose + 1);
         const data = JSON.parse(jsonStr);
 
         res.status(200).json(data);
