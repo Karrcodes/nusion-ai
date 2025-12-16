@@ -87,6 +87,8 @@ const RestaurantDashboard = ({ user }) => {
 
     const [inventoryView, setInventoryView] = useState('meals'); // 'meals' | 'pantry'
     const [analyzingMenu, setAnalyzingMenu] = useState(false);
+    const [analysisProgress, setAnalysisProgress] = useState(0);
+
     // --- ACTIONS ---
 
     const handleMenuUpload = async (e) => {
@@ -94,7 +96,13 @@ const RestaurantDashboard = ({ user }) => {
         if (!file) return;
 
         setAnalyzingMenu(true);
-        alert('Analyzing menu with Gemini AI... This may take a moment.');
+        setAnalysisProgress(10);
+        // alert('Analyzing menu with Gemini AI... This may take a moment.'); // Removing alert in favor of UI progress
+
+        // Simulate progress
+        const progressInterval = setInterval(() => {
+            setAnalysisProgress(prev => Math.min(prev + 5, 90));
+        }, 500);
 
         try {
             let base64Image = null;
@@ -129,17 +137,27 @@ const RestaurantDashboard = ({ user }) => {
 
             const data = await response.json();
 
-            if (data.meals) setMenuItems(prev => [...prev, ...data.meals.map(m => ({ ...m, id: Date.now() + Math.random() }))]);
-            if (data.pantry) setInventory(prev => [...prev, ...data.pantry.map(i => ({ ...i, id: Date.now() + Math.random() }))]);
+            const newMeals = data.meals ? data.meals.map(m => ({ ...m, id: Date.now() + Math.random() })) : [];
+            const newInventory = data.pantry ? data.pantry.map(i => ({ ...i, id: Date.now() + Math.random() })) : [];
 
-            setInventoryView('meals');
-            alert(`✨ Analysis Complete!\n\nExtracted:\n- ${data.meals?.length || 0} Meals\n- ${data.pantry?.length || 0} Ingredients`);
+            setMenuItems(prev => [...prev, ...newMeals]);
+            setInventory(prev => {
+                // Merge logic could go here, for now just append
+                return [...prev, ...newInventory];
+            });
+
+            clearInterval(progressInterval);
+            setAnalysisProgress(100);
+            alert(`Success! Added ${newMeals.length} items and ${newInventory.length} pantry ingredients.`);
 
         } catch (error) {
+            clearInterval(progressInterval);
             console.error("Analysis Error:", error);
             alert(`ANALYSIS FAILED (v4.0.2 - Stable)\n\nReason: ${error.message}\n\nPlease take a screenshot of this error.`);
         } finally {
+            clearInterval(progressInterval);
             setAnalyzingMenu(false);
+            setAnalysisProgress(0);
         }
     };
 
@@ -407,15 +425,31 @@ const RestaurantDashboard = ({ user }) => {
 
                         {/* Analysis Loading State */}
                         {analyzingMenu && (
-                            <div className="glass-panel p-6 mb-8 flex items-center gap-6 animate-pulse border-accent-jp/30 border">
-                                <div className="w-12 h-12 rounded-full border-4 border-accent-jp border-t-transparent animate-spin"></div>
-                                <div>
-                                    <h4 className="text-lg font-bold text-text-primary">AI Agent Analyzing Menu...</h4>
-                                    <p className="text-sm text-text-secondary">Extracting dishes, identifying ingredients, and mapping flavor profiles.</p>
+                            <div className="absolute inset-0 bg-bg-primary/80 backdrop-blur-sm z-50 flex items-center justify-center p-8">
+                                <div className="glass-panel p-8 max-w-sm w-full text-center space-y-4 shadow-2xl border-accent-jp/30">
+                                    <div className="w-16 h-16 bg-accent-jp/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <span className="text-2xl animate-pulse">🧠</span>
+                                    </div>
+                                    <h3 className="text-xl font-bold text-text-primary">Gemini AI is Thinking...</h3>
+
+                                    <div className="w-full bg-glass-border rounded-full h-2 overflow-hidden relative">
+                                        <div
+                                            className="bg-accent-jp h-full transition-all duration-300 rounded-full"
+                                            style={{ width: `${analysisProgress}%` }}
+                                        ></div>
+                                    </div>
+
+                                    <div className="flex justify-between text-xs text-text-secondary font-mono">
+                                        <span>Processing...</span>
+                                        <span>{analysisProgress}%</span>
+                                    </div>
+
+                                    <p className="text-sm text-text-secondary">
+                                        {analysisProgress < 40 ? 'Extracting text from image...' : analysisProgress < 80 ? 'Identifying ingredients & prices...' : 'Structuring data for you...'}
+                                    </p>
                                 </div>
                             </div>
                         )}
-
                         {/* Empty State Hero - Only if BOTH empty */}
                         {!analyzingMenu && inventory.length === 0 && menuItems.length === 0 && (
                             <div className="glass-panel p-12 text-center border border-dashed border-glass-border mb-8">

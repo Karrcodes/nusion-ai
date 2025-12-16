@@ -29,6 +29,7 @@ const OnboardingWizard = ({ user }) => {
 
     const [scannedData, setScannedData] = useState(null); // { meals: [], inventory: [] }
     const [analyzing, setAnalyzing] = useState(false);
+    const [analysisProgress, setAnalysisProgress] = useState(0);
 
     const [showCitySuggestions, setShowCitySuggestions] = useState(false);
     const filteredCities = cities.filter(c => c.city.toLowerCase().includes(data.city.toLowerCase()));
@@ -38,6 +39,12 @@ const OnboardingWizard = ({ user }) => {
         if (!file) return;
 
         setAnalyzing(true);
+        setAnalysisProgress(10);
+
+        // Simulate progress
+        const progressInterval = setInterval(() => {
+            setAnalysisProgress(prev => Math.min(prev + 5, 90));
+        }, 500);
 
         try {
             let base64Image = null;
@@ -81,11 +88,14 @@ const OnboardingWizard = ({ user }) => {
             const newInventory = result.pantry?.map((p, i) => ({ ...p, id: i + 1 })) || [];
 
             setScannedData({ meals: newMeals, inventory: newInventory });
+            clearInterval(progressInterval);
+            setAnalysisProgress(100);
 
             // Auto advance after short delay
             setTimeout(() => handleNext(), 1500);
 
         } catch (error) {
+            clearInterval(progressInterval);
             console.error("Analysis Error:", error);
             alert(`Scan Failed: ${error.message}`);
         } finally {
@@ -273,9 +283,20 @@ const OnboardingWizard = ({ user }) => {
                         </div>
 
                         {analyzing ? (
-                            <div className="p-8 border border-glass-border bg-bg-secondary rounded-xl text-center space-y-4 animate-pulse">
-                                <div className="w-12 h-12 border-4 border-accent-jp border-t-transparent rounded-full animate-spin mx-auto"></div>
-                                <p className="text-sm font-mono text-accent-jp">Analyzing Menu Structure...</p>
+                            <div className="p-8 border border-glass-border bg-bg-secondary rounded-xl text-center space-y-4">
+                                <div className="w-full bg-glass-border rounded-full h-2 overflow-hidden relative">
+                                    <div
+                                        className="bg-accent-jp h-full transition-all duration-300 rounded-full"
+                                        style={{ width: `${analysisProgress}%` }}
+                                    ></div>
+                                </div>
+                                <div className="flex justify-between text-xs text-text-secondary font-mono">
+                                    <span>Reading Menu...</span>
+                                    <span>{analysisProgress}%</span>
+                                </div>
+                                <p className="text-sm text-text-secondary animate-pulse">
+                                    {analysisProgress < 40 ? 'Extracting text...' : analysisProgress < 70 ? 'Identifying ingredients...' : 'Structuring data...'}
+                                </p>
                             </div>
                         ) : scannedData ? (
                             <div className="p-6 border border-green-500/30 bg-green-500/10 rounded-xl text-center space-y-2">
