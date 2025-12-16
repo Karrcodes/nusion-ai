@@ -144,7 +144,7 @@ const AuthForms = ({ type, mode }) => {
                                 className="w-full py-3 bg-text-primary text-bg-primary rounded font-bold hover:opacity-90 transition-all shadow-lg hover:shadow-xl"
                             >
                                 Back to Login
-                                Back to Login
+
                             </button>
 
                             <div className="mt-4 border-t border-glass-border pt-4">
