@@ -80,314 +80,311 @@ const DinerDashboard = ({ user }) => {
     const handleLogout = async () => {
         await supabase.auth.signOut();
         navigate('/');
-        const handleLogout = async () => {
-            await supabase.auth.signOut();
-            navigate('/');
-        };
-
-        const handleDeleteAccount = async () => {
-            if (!window.confirm("ARE YOU SURE? \n\nThis will delete your dining profile and history from this device.")) return;
-
-            try {
-                // 1. Clear Local Storage Keys for this user
-                localStorage.removeItem(`diner_preferences_${user.id}`);
-                // Also clear history if we were storing it locally (currently Supabase, but let's clear local just in case)
-
-                // 2. Sign Out
-                await supabase.auth.signOut();
-
-                // 3. Redirect
-                navigate('/');
-            } catch (error) {
-                console.error(error);
-                alert('Error deleting account');
-            }
-        };
-
-        return (
-            <div className="min-h-screen w-full bg-bg-primary">
-                <nav className="px-4 py-4 md:px-8 md:py-6 flex justify-between items-center border-b border-glass-border bg-white/50 backdrop-blur-md sticky top-0 z-50">
-                    <Link to="/" className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity" title="Back to Home">
-                        <img src="/nusion-logo.png" alt="Logo" className="h-8 w-auto opacity-80" style={{ filter: 'brightness(0) saturate(100%) invert(23%) sepia(13%) saturate(928%) hue-rotate(338deg) brightness(96%) contrast(90%)' }} />
-                        <span className="font-display font-medium text-lg md:text-xl text-text-primary tracking-wide opacity-80 pt-1">AI</span>
-                    </Link>
-                    <div className="flex items-center gap-3 md:gap-6">
-                        <button
-                            onClick={() => setView('dashboard')}
-                            className={`text-xs md:text-sm font-medium transition-colors ${view === 'dashboard' ? 'text-text-primary font-bold' : 'text-text-secondary hover:text-text-primary'}`}
-                        >
-                            My Palate
-                        </button>
-                        <button
-                            onClick={() => setView('profile')}
-                            className={`text-xs md:text-sm font-medium transition-colors ${view === 'profile' ? 'text-text-primary font-bold' : 'text-text-secondary hover:text-text-primary'}`}
-                        >
-                            Profile
-                        </button>
-                        <div className="w-px h-6 bg-glass-border"></div>
-                        <button
-                            onClick={() => setView('profile')}
-                            className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center transition-all shadow-sm hover:ring-2 hover:ring-accent-wa/50 ${preferences.photo ? 'border-2 border-accent-wa/50 p-0 overflow-hidden' : 'bg-accent-wa/20 text-accent-wa font-bold'}`}
-                        >
-                            {preferences.photo ? (
-                                <img src={preferences.photo} alt="Profile" className="w-full h-full object-cover" />
-                            ) : (
-                                user?.name ? user.name.charAt(0).toUpperCase() : 'G'
-                            )}
-                        </button>
-                    </div>
-                </nav>
-
-                <main className="p-4 md:p-12 max-w-6xl mx-auto animate-[fadeIn_0.5s]">
-
-                    {view === 'dashboard' ? (
-                        <>
-                            <header className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
-                                <div>
-                                    <h1 className="text-3xl font-display font-bold text-text-primary mb-2">My Palate</h1>
-                                    <p className="text-text-secondary">Manage your dining DNA and view generative history.</p>
-                                </div>
-                                <Link
-                                    to="/dashboard"
-                                    className="px-6 py-3 bg-text-primary text-bg-primary rounded-full font-bold hover:opacity-90 transition-opacity shadow-lg hover:shadow-xl"
-                                >
-                                    + Generate New Meal
-                                </Link>
-                            </header>
-
-                            {/* --- DIETARY PREFERENCES (Quick View) --- */}
-                            <section className="mb-16">
-                                <h2 className="text-lg font-bold text-text-primary mb-6 flex items-center gap-2">
-                                    <span className="text-xl">🧬</span> Dietary DNA
-                                </h2>
-                                <div className="glass-panel p-6 flex flex-wrap gap-4">
-                                    {Object.entries(preferences).filter(([k, v]) => typeof v === 'boolean').map(([key, value]) => (
-                                        <button
-                                            key={key}
-                                            onClick={() => togglePref(key)}
-                                            className={`px-4 py-2 rounded-full text-sm font-medium border transition-all ${value
-                                                ? 'bg-accent-wa text-white border-accent-wa'
-                                                : 'bg-transparent text-text-secondary border-glass-border hover:border-text-secondary'
-                                                }`}
-                                        >
-                                            {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
-                                        </button>
-                                    ))}
-                                </div>
-                            </section>
-
-                            {/* --- SAVED GENERATIONS --- */}
-                            <section>
-                                <h2 className="text-lg font-bold text-text-primary mb-6 flex items-center gap-2">
-                                    <span className="text-xl">🕰️</span> Generative History
-                                </h2>
-
-                                {history.length === 0 ? (
-                                    <div className="text-center py-12 glass-panel">
-                                        <p className="text-text-secondary mb-4">No generations yet.</p>
-                                        <Link to="/dashboard" className="text-accent-jp font-bold hover:underline">Start your first creation →</Link>
-                                    </div>
-                                ) : (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                                        {history.map((gen, idx) => (
-                                            <div
-                                                key={idx}
-                                                onClick={() => navigate('/ikoyi', { state: { historicalResult: gen } })}
-                                                className="glass-panel overflow-hidden group cursor-pointer hover:-translate-y-1 transition-transform duration-300"
-                                                title="View this Menu"
-                                            >
-                                                {/* Collage Image Section */}
-                                                <div className="h-48 w-full bg-stone-200 grid grid-cols-3 relative">
-                                                    {gen.courses && gen.courses.slice(0, 3).map((course, i) => (
-                                                        <div key={i} className="h-full w-full relative border-r border-white/10 last:border-r-0">
-                                                            {course.image ? (
-                                                                <img src={course.image} alt={course.name} className="w-full h-full object-cover" />
-                                                            ) : (
-                                                                <div className="w-full h-full flex items-center justify-center bg-gray-200 text-xs">🍽️</div>
-                                                            )}
-                                                        </div>
-                                                    ))}
-                                                    {/* Status Badge */}
-                                                    <div className="absolute top-3 right-3 bg-white/90 backdrop-blur px-2 py-1 rounded text-[10px] font-bold text-text-primary shadow-sm uppercase tracking-wider">
-                                                        Generated
-                                                    </div>
-                                                </div>
-
-                                                <div className="p-6">
-                                                    <h3 className="text-lg font-display font-bold text-text-primary mb-1 line-clamp-1">
-                                                        {gen.courses?.[1]?.name || "Custom Menu"}
-                                                    </h3>
-                                                    <p className="text-xs text-text-secondary uppercase tracking-widest mb-4">
-                                                        Ikoyi London • {new Date(gen.created_at || gen.date || Date.now()).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-                                                    </p>
-                                                    <div className="flex justify-between items-center text-sm font-mono text-text-secondary/80">
-                                                        <span>{currentConfig.currency}{gen.totalCost}</span>
-                                                        <span>{gen.courses?.length || 3} Courses</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </section>
-                        </>
-                    ) : (
-                        /* --- PROFILE VIEW --- */
-                        <div className="max-w-3xl mx-auto">
-                            <header className="mb-12">
-                                <h1 className="text-3xl font-display font-bold text-text-primary mb-2">Engine Settings</h1>
-                                <p className="text-text-secondary">Input your biometrics and optimization parameters for the Nusion Engine.</p>
-                            </header>
-
-                            <div className="glass-panel p-8 space-y-8">
-
-                                {/* Personal Info */}
-                                <div className="flex flex-col md:flex-row gap-8 items-start">
-                                    {/* Profile Photo Upload */}
-                                    <div className="flex flex-col items-center gap-3">
-                                        <div className="w-24 h-24 rounded-full bg-bg-secondary border-2 border-dashed border-accent-wa flex items-center justify-center relative overflow-hidden group cursor-pointer hover:border-solid hover:shadow-lg transition-all">
-                                            {preferences.photo ? (
-                                                <img src={preferences.photo} alt="Profile" className="w-full h-full object-cover" />
-                                            ) : (
-                                                <span className="text-2xl text-accent-wa">📷</span>
-                                            )}
-                                            <input
-                                                type="file"
-                                                className="absolute inset-0 opacity-0 cursor-pointer"
-                                                accept="image/*"
-                                                onChange={(e) => {
-                                                    const file = e.target.files[0];
-                                                    if (file) {
-                                                        const reader = new FileReader();
-                                                        reader.onloadend = () => handleChange('photo', reader.result);
-                                                        reader.readAsDataURL(file);
-                                                    }
-                                                }}
-                                            />
-                                        </div>
-                                        <span className="text-xs text-text-secondary uppercase">Upload Photo</span>
-                                    </div>
-
-                                    <div className="flex-1 grid md:grid-cols-2 gap-6 w-full">
-                                        <div className="space-y-2">
-                                            <label className="text-xs font-mono text-text-secondary uppercase">Full Name</label>
-                                            <input
-                                                type="text"
-                                                value={preferences.name || user?.name || ''}
-                                                onChange={(e) => handleChange('name', e.target.value)}
-                                                placeholder="Enter your name"
-                                                className="glass-input bg-white/50 focus:bg-white"
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label className="text-xs font-mono text-text-secondary uppercase">Email</label>
-                                            <input type="text" value={user?.email || ''} readOnly className="glass-input opacity-60 cursor-not-allowed" />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="w-full h-px bg-glass-border"></div>
-
-                                {/* Optimization Metrics */}
-                                <div className="grid md:grid-cols-2 gap-6">
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-mono text-text-secondary uppercase">Primary Location</label>
-                                        <select
-                                            value={preferences.location || ''}
-                                            onChange={(e) => handleChange('location', e.target.value)}
-                                            className="glass-input bg-white/50 focus:bg-white appearance-none"
-                                        >
-                                            <option value="" disabled>Select Location</option>
-                                            <option value="London">London, UK</option>
-                                            <option value="New York">New York, USA</option>
-                                            <option value="Lagos">Lagos, Nigeria</option>
-                                            <option value="Tokyo">Tokyo, Japan</option>
-                                            <option value="Paris">Paris, France</option>
-                                            <option value="Accra">Accra, Ghana</option>
-                                        </select>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-mono text-text-secondary uppercase">Budget Range</label>
-                                        <select
-                                            value={preferences.budget}
-                                            onChange={(e) => handleChange('budget', e.target.value)}
-                                            className="glass-input bg-white/50 focus:bg-white appearance-none"
-                                        >
-                                            <option value="$">$ (Cheap Eats)</option>
-                                            <option value="$$">$$ (Casual)</option>
-                                            <option value="$$$">$$$ (Upscale)</option>
-                                            <option value="$$$$">$$$$ (Fine Dining)</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div className="space-y-2">
-                                    <label className="text-xs font-mono text-text-secondary uppercase">Specific Allergies & Aversions</label>
-                                    <div className="flex flex-wrap gap-2 mb-2">
-                                        {['Peanuts', 'Shellfish', 'Dairy', 'Gluten', 'Soy', 'Eggs', 'Tree Nuts', 'Fish'].map(allergen => {
-                                            const isActive = (preferences.allergiesList || []).includes(allergen);
-                                            return (
-                                                <button
-                                                    key={allergen}
-                                                    onClick={() => {
-                                                        const current = preferences.allergiesList || [];
-                                                        const updated = isActive
-                                                            ? current.filter(a => a !== allergen)
-                                                            : [...current, allergen];
-                                                        handleChange('allergiesList', updated);
-                                                    }}
-                                                    className={`px-3 py-1 rounded-full text-xs font-bold border transition-all ${isActive
-                                                        ? 'bg-red-500 text-white border-red-500' // Alert color for allergies
-                                                        : 'bg-transparent text-text-secondary border-glass-border hover:border-text-secondary'
-                                                        }`}
-                                                >
-                                                    {allergen}
-                                                </button>
-                                            )
-                                        })}
-                                    </div>
-                                    <textarea
-                                        rows="2"
-                                        value={preferences.allergies || ''}
-                                        onChange={(e) => handleChange('allergies', e.target.value)}
-                                        placeholder="Any other restrictions? (e.g. Cilantro, Mushrooms...)"
-                                        className="glass-input bg-white/50 focus:bg-white"
-                                    ></textarea>
-                                </div>
-
-                                {/* Save Indicator */}
-                                <div className="flex justify-end items-center gap-2 pt-4">
-                                    <span className="text-xs text-green-600 font-mono animate-pulse">● System Saving...</span>
-                                </div>
-
-                            </div>
-
-                            {/* Danger Zone */}
-                            <div className="glass-panel p-8 border border-red-500/20 bg-red-500/5 mt-8">
-                                <div className="flex justify-between items-center">
-                                    <div className="text-sm text-text-secondary">
-                                        <p className="font-bold text-red-500">Delete Account</p>
-                                        <p>Permanently remove your profile and data.</p>
-                                    </div>
-                                    <button
-                                        onClick={handleDeleteAccount}
-                                        className="px-4 py-2 border border-red-500 text-red-500 rounded-lg text-sm font-bold hover:bg-red-500 hover:text-white transition-all"
-                                    >
-                                        Delete
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    <div className="mt-20 border-t border-glass-border pt-8 text-center">
-                        <button onClick={handleLogout} className="text-text-secondary hover:text-text-primary text-sm">
-                            Sign Out
-                        </button>
-                    </div>
-                </main>
-            </div>
-        );
     };
 
-    export default DinerDashboard;
+    const handleDeleteAccount = async () => {
+        if (!window.confirm("ARE YOU SURE? \n\nThis will delete your dining profile and history from this device.")) return;
+
+        try {
+            // 1. Clear Local Storage Keys for this user
+            localStorage.removeItem(`diner_preferences_${user.id}`);
+            // Also clear history if we were storing it locally (currently Supabase, but let's clear local just in case)
+
+            // 2. Sign Out
+            await supabase.auth.signOut();
+
+            // 3. Redirect
+            navigate('/');
+        } catch (error) {
+            console.error(error);
+            alert('Error deleting account');
+        }
+    };
+
+    return (
+        <div className="min-h-screen w-full bg-bg-primary">
+            <nav className="px-4 py-4 md:px-8 md:py-6 flex justify-between items-center border-b border-glass-border bg-white/50 backdrop-blur-md sticky top-0 z-50">
+                <Link to="/" className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity" title="Back to Home">
+                    <img src="/nusion-logo.png" alt="Logo" className="h-8 w-auto opacity-80" style={{ filter: 'brightness(0) saturate(100%) invert(23%) sepia(13%) saturate(928%) hue-rotate(338deg) brightness(96%) contrast(90%)' }} />
+                    <span className="font-display font-medium text-lg md:text-xl text-text-primary tracking-wide opacity-80 pt-1">AI</span>
+                </Link>
+                <div className="flex items-center gap-3 md:gap-6">
+                    <button
+                        onClick={() => setView('dashboard')}
+                        className={`text-xs md:text-sm font-medium transition-colors ${view === 'dashboard' ? 'text-text-primary font-bold' : 'text-text-secondary hover:text-text-primary'}`}
+                    >
+                        My Palate
+                    </button>
+                    <button
+                        onClick={() => setView('profile')}
+                        className={`text-xs md:text-sm font-medium transition-colors ${view === 'profile' ? 'text-text-primary font-bold' : 'text-text-secondary hover:text-text-primary'}`}
+                    >
+                        Profile
+                    </button>
+                    <div className="w-px h-6 bg-glass-border"></div>
+                    <button
+                        onClick={() => setView('profile')}
+                        className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center transition-all shadow-sm hover:ring-2 hover:ring-accent-wa/50 ${preferences.photo ? 'border-2 border-accent-wa/50 p-0 overflow-hidden' : 'bg-accent-wa/20 text-accent-wa font-bold'}`}
+                    >
+                        {preferences.photo ? (
+                            <img src={preferences.photo} alt="Profile" className="w-full h-full object-cover" />
+                        ) : (
+                            user?.name ? user.name.charAt(0).toUpperCase() : 'G'
+                        )}
+                    </button>
+                </div>
+            </nav>
+
+            <main className="p-4 md:p-12 max-w-6xl mx-auto animate-[fadeIn_0.5s]">
+
+                {view === 'dashboard' ? (
+                    <>
+                        <header className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
+                            <div>
+                                <h1 className="text-3xl font-display font-bold text-text-primary mb-2">My Palate</h1>
+                                <p className="text-text-secondary">Manage your dining DNA and view generative history.</p>
+                            </div>
+                            <Link
+                                to="/dashboard"
+                                className="px-6 py-3 bg-text-primary text-bg-primary rounded-full font-bold hover:opacity-90 transition-opacity shadow-lg hover:shadow-xl"
+                            >
+                                + Generate New Meal
+                            </Link>
+                        </header>
+
+                        {/* --- DIETARY PREFERENCES (Quick View) --- */}
+                        <section className="mb-16">
+                            <h2 className="text-lg font-bold text-text-primary mb-6 flex items-center gap-2">
+                                <span className="text-xl">🧬</span> Dietary DNA
+                            </h2>
+                            <div className="glass-panel p-6 flex flex-wrap gap-4">
+                                {Object.entries(preferences).filter(([k, v]) => typeof v === 'boolean').map(([key, value]) => (
+                                    <button
+                                        key={key}
+                                        onClick={() => togglePref(key)}
+                                        className={`px-4 py-2 rounded-full text-sm font-medium border transition-all ${value
+                                            ? 'bg-accent-wa text-white border-accent-wa'
+                                            : 'bg-transparent text-text-secondary border-glass-border hover:border-text-secondary'
+                                            }`}
+                                    >
+                                        {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+                                    </button>
+                                ))}
+                            </div>
+                        </section>
+
+                        {/* --- SAVED GENERATIONS --- */}
+                        <section>
+                            <h2 className="text-lg font-bold text-text-primary mb-6 flex items-center gap-2">
+                                <span className="text-xl">🕰️</span> Generative History
+                            </h2>
+
+                            {history.length === 0 ? (
+                                <div className="text-center py-12 glass-panel">
+                                    <p className="text-text-secondary mb-4">No generations yet.</p>
+                                    <Link to="/dashboard" className="text-accent-jp font-bold hover:underline">Start your first creation →</Link>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                    {history.map((gen, idx) => (
+                                        <div
+                                            key={idx}
+                                            onClick={() => navigate('/ikoyi', { state: { historicalResult: gen } })}
+                                            className="glass-panel overflow-hidden group cursor-pointer hover:-translate-y-1 transition-transform duration-300"
+                                            title="View this Menu"
+                                        >
+                                            {/* Collage Image Section */}
+                                            <div className="h-48 w-full bg-stone-200 grid grid-cols-3 relative">
+                                                {gen.courses && gen.courses.slice(0, 3).map((course, i) => (
+                                                    <div key={i} className="h-full w-full relative border-r border-white/10 last:border-r-0">
+                                                        {course.image ? (
+                                                            <img src={course.image} alt={course.name} className="w-full h-full object-cover" />
+                                                        ) : (
+                                                            <div className="w-full h-full flex items-center justify-center bg-gray-200 text-xs">🍽️</div>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                                {/* Status Badge */}
+                                                <div className="absolute top-3 right-3 bg-white/90 backdrop-blur px-2 py-1 rounded text-[10px] font-bold text-text-primary shadow-sm uppercase tracking-wider">
+                                                    Generated
+                                                </div>
+                                            </div>
+
+                                            <div className="p-6">
+                                                <h3 className="text-lg font-display font-bold text-text-primary mb-1 line-clamp-1">
+                                                    {gen.courses?.[1]?.name || "Custom Menu"}
+                                                </h3>
+                                                <p className="text-xs text-text-secondary uppercase tracking-widest mb-4">
+                                                    Ikoyi London • {new Date(gen.created_at || gen.date || Date.now()).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                                                </p>
+                                                <div className="flex justify-between items-center text-sm font-mono text-text-secondary/80">
+                                                    <span>{currentConfig.currency}{gen.totalCost}</span>
+                                                    <span>{gen.courses?.length || 3} Courses</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </section>
+                    </>
+                ) : (
+                    /* --- PROFILE VIEW --- */
+                    <div className="max-w-3xl mx-auto">
+                        <header className="mb-12">
+                            <h1 className="text-3xl font-display font-bold text-text-primary mb-2">Engine Settings</h1>
+                            <p className="text-text-secondary">Input your biometrics and optimization parameters for the Nusion Engine.</p>
+                        </header>
+
+                        <div className="glass-panel p-8 space-y-8">
+
+                            {/* Personal Info */}
+                            <div className="flex flex-col md:flex-row gap-8 items-start">
+                                {/* Profile Photo Upload */}
+                                <div className="flex flex-col items-center gap-3">
+                                    <div className="w-24 h-24 rounded-full bg-bg-secondary border-2 border-dashed border-accent-wa flex items-center justify-center relative overflow-hidden group cursor-pointer hover:border-solid hover:shadow-lg transition-all">
+                                        {preferences.photo ? (
+                                            <img src={preferences.photo} alt="Profile" className="w-full h-full object-cover" />
+                                        ) : (
+                                            <span className="text-2xl text-accent-wa">📷</span>
+                                        )}
+                                        <input
+                                            type="file"
+                                            className="absolute inset-0 opacity-0 cursor-pointer"
+                                            accept="image/*"
+                                            onChange={(e) => {
+                                                const file = e.target.files[0];
+                                                if (file) {
+                                                    const reader = new FileReader();
+                                                    reader.onloadend = () => handleChange('photo', reader.result);
+                                                    reader.readAsDataURL(file);
+                                                }
+                                            }}
+                                        />
+                                    </div>
+                                    <span className="text-xs text-text-secondary uppercase">Upload Photo</span>
+                                </div>
+
+                                <div className="flex-1 grid md:grid-cols-2 gap-6 w-full">
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-mono text-text-secondary uppercase">Full Name</label>
+                                        <input
+                                            type="text"
+                                            value={preferences.name || user?.name || ''}
+                                            onChange={(e) => handleChange('name', e.target.value)}
+                                            placeholder="Enter your name"
+                                            className="glass-input bg-white/50 focus:bg-white"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-mono text-text-secondary uppercase">Email</label>
+                                        <input type="text" value={user?.email || ''} readOnly className="glass-input opacity-60 cursor-not-allowed" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="w-full h-px bg-glass-border"></div>
+
+                            {/* Optimization Metrics */}
+                            <div className="grid md:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <label className="text-xs font-mono text-text-secondary uppercase">Primary Location</label>
+                                    <select
+                                        value={preferences.location || ''}
+                                        onChange={(e) => handleChange('location', e.target.value)}
+                                        className="glass-input bg-white/50 focus:bg-white appearance-none"
+                                    >
+                                        <option value="" disabled>Select Location</option>
+                                        <option value="London">London, UK</option>
+                                        <option value="New York">New York, USA</option>
+                                        <option value="Lagos">Lagos, Nigeria</option>
+                                        <option value="Tokyo">Tokyo, Japan</option>
+                                        <option value="Paris">Paris, France</option>
+                                        <option value="Accra">Accra, Ghana</option>
+                                    </select>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-xs font-mono text-text-secondary uppercase">Budget Range</label>
+                                    <select
+                                        value={preferences.budget}
+                                        onChange={(e) => handleChange('budget', e.target.value)}
+                                        className="glass-input bg-white/50 focus:bg-white appearance-none"
+                                    >
+                                        <option value="$">$ (Cheap Eats)</option>
+                                        <option value="$$">$$ (Casual)</option>
+                                        <option value="$$$">$$$ (Upscale)</option>
+                                        <option value="$$$$">$$$$ (Fine Dining)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-xs font-mono text-text-secondary uppercase">Specific Allergies & Aversions</label>
+                                <div className="flex flex-wrap gap-2 mb-2">
+                                    {['Peanuts', 'Shellfish', 'Dairy', 'Gluten', 'Soy', 'Eggs', 'Tree Nuts', 'Fish'].map(allergen => {
+                                        const isActive = (preferences.allergiesList || []).includes(allergen);
+                                        return (
+                                            <button
+                                                key={allergen}
+                                                onClick={() => {
+                                                    const current = preferences.allergiesList || [];
+                                                    const updated = isActive
+                                                        ? current.filter(a => a !== allergen)
+                                                        : [...current, allergen];
+                                                    handleChange('allergiesList', updated);
+                                                }}
+                                                className={`px-3 py-1 rounded-full text-xs font-bold border transition-all ${isActive
+                                                    ? 'bg-red-500 text-white border-red-500' // Alert color for allergies
+                                                    : 'bg-transparent text-text-secondary border-glass-border hover:border-text-secondary'
+                                                    }`}
+                                            >
+                                                {allergen}
+                                            </button>
+                                        )
+                                    })}
+                                </div>
+                                <textarea
+                                    rows="2"
+                                    value={preferences.allergies || ''}
+                                    onChange={(e) => handleChange('allergies', e.target.value)}
+                                    placeholder="Any other restrictions? (e.g. Cilantro, Mushrooms...)"
+                                    className="glass-input bg-white/50 focus:bg-white"
+                                ></textarea>
+                            </div>
+
+                            {/* Save Indicator */}
+                            <div className="flex justify-end items-center gap-2 pt-4">
+                                <span className="text-xs text-green-600 font-mono animate-pulse">● System Saving...</span>
+                            </div>
+
+                        </div>
+
+                        {/* Danger Zone */}
+                        <div className="glass-panel p-8 border border-red-500/20 bg-red-500/5 mt-8">
+                            <div className="flex justify-between items-center">
+                                <div className="text-sm text-text-secondary">
+                                    <p className="font-bold text-red-500">Delete Account</p>
+                                    <p>Permanently remove your profile and data.</p>
+                                </div>
+                                <button
+                                    onClick={handleDeleteAccount}
+                                    className="px-4 py-2 border border-red-500 text-red-500 rounded-lg text-sm font-bold hover:bg-red-500 hover:text-white transition-all"
+                                >
+                                    Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                <div className="mt-20 border-t border-glass-border pt-8 text-center">
+                    <button onClick={handleLogout} className="text-text-secondary hover:text-text-primary text-sm">
+                        Sign Out
+                    </button>
+                </div>
+            </main>
+        </div>
+    );
+};
+
+export default DinerDashboard;
