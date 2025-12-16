@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
+import { cities } from '../lib/cities';
 
 
 const RestaurantDashboard = ({ user }) => {
@@ -27,14 +28,16 @@ const RestaurantDashboard = ({ user }) => {
                 cuisine: 'Modern West African',
                 philosophy: '',
                 logoUrl: null,
+                logoUrl: null,
                 coverUrl: null,
                 hours: '',
                 priceTier: '$$',
                 contactEmail: '',
                 dietaryTags: '',
+                currency: 'GBP', // Default currency
             };
         } catch (e) {
-            return { name: '', location: '', description: '', cuisine: '', philosophy: '', logoUrl: null, coverUrl: null, hours: '', priceTier: '$$', contactEmail: '', dietaryTags: '' };
+            return { name: '', location: '', description: '', cuisine: '', philosophy: '', logoUrl: null, coverUrl: null, hours: '', priceTier: '$$', contactEmail: '', dietaryTags: '', currency: 'GBP' };
         }
     });
 
@@ -271,6 +274,18 @@ const RestaurantDashboard = ({ user }) => {
 
     const [showClearMenu, setShowClearMenu] = useState(false);
 
+    const [showCitySuggestions, setShowCitySuggestions] = useState(false);
+    const filteredCities = cities.filter(c => c.city.toLowerCase().includes(profile.location.toLowerCase()));
+
+    const handleCitySelect = (cityData) => {
+        setProfile(prev => ({
+            ...prev,
+            location: cityData.city,
+            currency: cityData.symbol // Auto-set currency symbol (e.g. £, ₦)
+        }));
+        setShowCitySuggestions(false);
+    };
+
     return (
         <div className="min-h-screen w-full bg-bg-primary flex flex-col md:flex-row">
             {/* Sidebar */}
@@ -456,7 +471,9 @@ const RestaurantDashboard = ({ user }) => {
                                         {menuItems.map((meal) => (
                                             <tr key={meal.id} className="hover:bg-glass-border/10 transition-colors">
                                                 <td className="p-4 font-bold text-text-primary">{meal.name}</td>
-                                                <td className="p-4 font-mono text-text-secondary">{meal.price}</td>
+                                                <td className="p-4 font-mono text-text-secondary">
+                                                    {profile.currency || '£'}{meal.price.toString().replace(/[^0-9.]/g, '')}
+                                                </td>
                                                 <td className="p-4">
                                                     <span className={`px-2 py-1 rounded-full text-xs font-bold ${meal.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
                                                         }`}>
@@ -641,14 +658,58 @@ const RestaurantDashboard = ({ user }) => {
                                                 className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none"
                                             />
                                         </div>
-                                        <div className="space-y-2">
+                                        <div className="space-y-2 relative">
                                             <label className="text-xs font-mono text-text-secondary uppercase">Location City</label>
                                             <input
                                                 type="text"
                                                 value={profile.location}
-                                                onChange={(e) => setProfile({ ...profile, location: e.target.value })}
+                                                onChange={(e) => {
+                                                    setProfile({ ...profile, location: e.target.value });
+                                                    setShowCitySuggestions(true);
+                                                }}
+                                                onFocus={() => setShowCitySuggestions(true)}
                                                 className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none"
+                                                placeholder="Start typing..."
                                             />
+                                            {/* City Suggestions Dropdown */}
+                                            {showCitySuggestions && profile.location.length > 0 && (
+                                                <div className="absolute top-full left-0 w-full bg-bg-primary border border-glass-border rounded-lg shadow-xl z-50 max-h-48 overflow-y-auto mt-1">
+                                                    {filteredCities.length > 0 ? (
+                                                        filteredCities.map((city, index) => (
+                                                            <div
+                                                                key={index}
+                                                                onClick={() => handleCitySelect(city)}
+                                                                className="px-4 py-2 hover:bg-glass-border/30 cursor-pointer text-sm text-text-primary flex justify-between"
+                                                            >
+                                                                <span>{city.city}, {city.country}</span>
+                                                                <span className="text-text-secondary font-mono">{city.currency} ({city.symbol})</span>
+                                                            </div>
+                                                        ))
+                                                    ) : (
+                                                        <div className="px-4 py-2 text-xs text-text-secondary">No matching cities found</div>
+                                                    )}
+                                                </div>
+                                            )}
+                                            {/* Click outside listener could be added here, currently relies on selection */}
+                                        </div>
+
+                                        {/* Currency Selector */}
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-mono text-text-secondary uppercase">Currency</label>
+                                            <select
+                                                value={profile.currency}
+                                                onChange={(e) => setProfile({ ...profile, currency: e.target.value })}
+                                                className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none font-mono"
+                                            >
+                                                {/* Unique Currencies from list */}
+                                                {[...new Set(cities.map(c => c.symbol))].map(symbol => (
+                                                    <option key={symbol} value={symbol}>{symbol} - {cities.find(c => c.symbol === symbol)?.currency}</option>
+                                                ))}
+                                                <option value="£">£ - GBP</option>
+                                                <option value="$">$ - USD</option>
+                                                <option value="€">€ - EUR</option>
+                                                <option value="₦">₦ - NGN</option>
+                                            </select>
                                         </div>
                                         <div className="md:col-span-2 space-y-2">
                                             <label className="text-xs font-mono text-text-secondary uppercase">Description</label>
