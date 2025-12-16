@@ -257,7 +257,7 @@ const Home = ({ user, onStart, onLogin, onSignup, onPartnerSignup }) => {
             </main>
 
             <footer className="w-full p-8 text-center text-xs text-text-secondary/40 font-mono border-t border-glass-border">
-                Studio AikinKarr 2026 • NusionAI Generative Gastronomy
+                Studio AikinKarr 2026 • NusionAI Generative Gastronomy • v4.3.6
             </footer>
         </div>
     );
