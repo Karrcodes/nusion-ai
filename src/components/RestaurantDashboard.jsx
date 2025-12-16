@@ -154,10 +154,7 @@ const RestaurantDashboard = ({ user }) => {
 
         } catch (error) {
             console.error("Analysis Error:", error);
-        } catch (error) {
-            console.error("Analysis Error:", error);
             alert(`ANALYSIS FAILED (v3.9.2 - Stable)\n\nReason: ${error.message}\n\nPlease take a screenshot of this error.`);
-        } finally {
         } finally {
             setAnalyzingMenu(false);
         }
