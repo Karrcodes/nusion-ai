@@ -18,10 +18,17 @@ const RestaurantDashboard = ({ user }) => {
 
     // Load profile from localStorage
     const [profile, setProfile] = useState(() => {
-        const storageKey = `restaurant_preferences_${user?.id} `;
         try {
-            const saved = localStorage.getItem(storageKey);
-            return saved ? JSON.parse(saved) : {
+            // Check for user-specific preferences first (from Onboarding)
+            const userPrefs = user?.id ? localStorage.getItem(`restaurant_preferences_${user.id}`) : null;
+            if (userPrefs) return JSON.parse(userPrefs);
+
+            // Fallback to legacy global key
+            const savedProfile = localStorage.getItem('restaurant_profile');
+            if (savedProfile) return JSON.parse(savedProfile);
+
+            // Default profile if nothing found
+            return {
                 name: user?.user_metadata?.name || '',
                 location: 'London', // Default
                 description: '',

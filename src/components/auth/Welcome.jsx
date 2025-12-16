@@ -23,7 +23,7 @@ const Welcome = ({ user, onContinue }) => {
                         onClick={onContinue}
                         className="w-full py-3 bg-text-primary text-bg-primary rounded font-bold hover:opacity-90 transition-all shadow-lg hover:shadow-xl"
                     >
-                        Continue to Dashboard
+                        Begin Experience
                     </button>
 
                     {user?.type === 'diner' && (

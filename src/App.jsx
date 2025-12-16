@@ -140,8 +140,7 @@ function App() {
             <Welcome
               user={currentUser}
               onContinue={() => {
-                // Clear URL params visually by navigating clean
-                navigate(currentUser?.type === 'restaurant' ? '/dashboard/restaurant' : '/dashboard/diner', { replace: true });
+                navigate('/onboarding', { replace: true });
               }}
             />
           </ProtectedRoute>
