@@ -92,7 +92,7 @@ const OnboardingWizard = ({ user }) => {
             setAnalysisProgress(100);
 
             // Auto advance after short delay
-            setTimeout(() => handleNext(), 1500);
+            setTimeout(() => handleComplete(), 1500);
 
         } catch (error) {
             clearInterval(progressInterval);
