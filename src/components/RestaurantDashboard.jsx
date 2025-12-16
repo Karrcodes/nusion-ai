@@ -963,63 +963,87 @@ const RestaurantDashboard = ({ user }) => {
                 }
 
                 {/* --- INSIGHTS VIEW --- */}
+                {/* --- INSIGHTS VIEW --- */}
                 {
                     activeTab === 'insights' && (
-                        <div className="animate-[fadeIn_0.3s] grid grid-cols-1 md:grid-cols-2 gap-8">
-                            {/* Stat Card 1 */}
-                            <div className="glass-panel p-8">
-                                <span className="text-sm text-text-secondary uppercase tracking-wider block mb-4">Total Generations</span>
-                                <div className="flex justify-between items-end mb-4">
-                                    <span className="text-5xl font-mono text-text-primary">1,204</span>
-                                    <span className="text-accent-jp text-sm font-bold bg-accent-jp/10 px-2 py-1 rounded">+12.5%</span>
-                                </div>
-                                <div className="w-full bg-glass-border h-2 rounded-full overflow-hidden">
-                                    <div className="bg-accent-jp h-full w-[75%]"></div>
-                                </div>
-                            </div>
+                        <div className="animate-[fadeIn_0.3s] relative min-h-[400px]">
 
-                            {/* Stat Card 2 */}
-                            <div className="glass-panel p-8">
-                                <span className="text-sm text-text-secondary uppercase tracking-wider block mb-4">Top Request</span>
-                                <div className="flex justify-between items-end mb-4">
-                                    <span className="text-3xl font-display font-bold text-text-primary">Spicy Plantain</span>
-                                    <span className="text-text-secondary text-sm">42% of orders</span>
-                                </div>
-                                <p className="text-xs text-text-secondary">Most requested flavor profile this week.</p>
-                            </div>
+                            {/* PENDING APPROVAL OVERLAY */}
+                            {approvalStatus === 'pending' && (
+                                <div className="absolute inset-0 z-50 bg-bg-primary/80 backdrop-blur-sm flex flex-col items-center justify-center text-center p-8 rounded-xl border border-glass-border">
+                                    <div className="w-16 h-16 bg-yellow-500/10 text-yellow-500 rounded-full flex items-center justify-center mb-4 animate-pulse">
+                                        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                                    </div>
+                                    <h3 className="text-2xl font-bold text-text-primary mb-2">Account Verification Pending</h3>
+                                    <p className="text-text-secondary max-w-md mb-8">
+                                        Your restaurant profile is currently under review by our curation team.
+                                        Insights and live data access will be enabled once approved.
+                                    </p>
 
-                            {/* Inventory Usage */}
-                            <div className="glass-panel p-8 md:col-span-2">
-                                <h3 className="text-lg font-bold text-text-primary mb-6">Ingredient Utilization</h3>
-                                <div className="space-y-4">
-                                    <div className="flex justify-between items-center text-sm">
-                                        <span>Scotch Bonnet</span>
-                                        <span className="font-mono">89%</span>
+                                    {/* SIMULATION BUTTON (For Demo) */}
+                                    <button
+                                        onClick={() => {
+                                            setApprovalStatus('approved');
+                                            localStorage.setItem(`restaurant_approval_${user.id}`, 'approved');
+                                        }}
+                                        className="text-xs font-mono text-text-secondary border border-dashed border-text-secondary/30 px-3 py-1 rounded hover:bg-text-secondary/10 transition-colors"
+                                    >
+                                        [DEV: Simulate Approval]
+                                    </button>
+                                </div>
+                            )}
+
+                            <div className={`grid grid-cols-1 md:grid-cols-2 gap-8 ${approvalStatus === 'pending' ? 'blur-sm select-none opacity-50' : ''}`}>
+                                {/* Stat Card 1 */}
+                                <div className="glass-panel p-8">
+                                    <span className="text-sm text-text-secondary uppercase tracking-wider block mb-4">Total Generations</span>
+                                    <div className="flex justify-between items-end mb-4">
+                                        <span className="text-5xl font-mono text-text-primary">{insights.totalGenerations}</span>
+                                        <span className="text-accent-jp text-sm font-bold bg-accent-jp/10 px-2 py-1 rounded">Live</span>
                                     </div>
                                     <div className="w-full bg-glass-border h-2 rounded-full overflow-hidden">
-                                        <div className="bg-red-500 h-full w-[89%]"></div>
-                                    </div>
-
-                                    <div className="flex justify-between items-center text-sm">
-                                        <span>Wagyu Beef</span>
-                                        <span className="font-mono">94%</span>
-                                    </div>
-                                    <div className="w-full bg-glass-border h-2 rounded-full overflow-hidden">
-                                        <div className="bg-accent-jp h-full w-[94%]"></div>
-                                    </div>
-
-                                    <div className="flex justify-between items-center text-sm">
-                                        <span>Palm Oil</span>
-                                        <span className="font-mono">45%</span>
-                                    </div>
-                                    <div className="w-full bg-glass-border h-2 rounded-full overflow-hidden">
-                                        <div className="bg-yellow-500 h-full w-[45%]"></div>
+                                        <div className="bg-accent-jp h-full w-full animate-[pulse_3s_infinite]"></div>
                                     </div>
                                 </div>
+
+                                {/* Stat Card 2 */}
+                                <div className="glass-panel p-8">
+                                    <span className="text-sm text-text-secondary uppercase tracking-wider block mb-4">Total Value Generated</span>
+                                    <div className="flex justify-between items-end mb-4">
+                                        <span className="text-3xl font-display font-bold text-text-primary">
+                                            {profile.currency}{insights.totalRevenue.toLocaleString()}
+                                        </span>
+                                        <span className="text-text-secondary text-sm">Est. Revenue</span>
+                                    </div>
+                                    <p className="text-xs text-text-secondary">Cumulative value of all generated menus.</p>
+                                </div>
+
+                                {/* Inventory Usage (Top Ingredients) */}
+                                <div className="glass-panel p-8 md:col-span-2">
+                                    <h3 className="text-lg font-bold text-text-primary mb-6">Trending Ingredients</h3>
+                                    {insights.topIngredients.length > 0 ? (
+                                        <div className="space-y-4">
+                                            {insights.topIngredients.map((ing, i) => (
+                                                <div key={i}>
+                                                    <div className="flex justify-between items-center text-sm mb-1">
+                                                        <span>{ing.name}</span>
+                                                        <span className="font-mono text-xs opacity-70">{ing.count} orders</span>
+                                                    </div>
+                                                    <div className="w-full bg-glass-border h-2 rounded-full overflow-hidden">
+                                                        <div
+                                                            className="bg-accent-jp h-full transition-all duration-1000"
+                                                            style={{ width: `${(ing.count / insights.maxIngredientCount) * 100}%` }}
+                                                        ></div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <p className="text-text-secondary italic text-sm">No analysis data available yet.</p>
+                                    )}
+                                </div>
                             </div>
-
-
-                        </div>
+                        </div >
                     )
                 }
             </main >
