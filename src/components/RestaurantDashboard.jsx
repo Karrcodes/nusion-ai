@@ -90,12 +90,30 @@ const RestaurantDashboard = ({ user }) => {
         return saved ? JSON.parse(saved) : [];
     });
 
+    // --- DATA SYNC FIX (v4.3.5) ---
+    // The initial state load might fail if 'user' is null on first render.
+    // This effect ensures we try again once we have a valid user ID.
+    useEffect(() => {
+        if (user?.id) {
+            // Re-check Inventory if empty
+            if (inventory.length === 0) {
+                const wizardKey = `restaurant_inventory_${user.id}`;
+                const saved = localStorage.getItem(wizardKey);
+                if (saved) setInventory(JSON.parse(saved));
+            }
+
+            // Re-check Menu if empty
+            if (menuItems.length === 0) {
+                const wizardKey = `restaurant_meals_${user.id}`;
+                const saved = localStorage.getItem(wizardKey);
+                if (saved) setMenuItems(JSON.parse(saved));
+            }
+        }
+    }, [user?.id]); // Only run when user ID changes (e.g. from null to configured)
+
     useEffect(() => {
         if (user?.id) {
             localStorage.setItem(`restaurant_menu_${user.id}`, JSON.stringify(menuItems));
-            // Also update the wizard key to keep them in sync? Or just migrate to one key.
-            // Let's migrate to using `restaurant_meals_` as the source of truth if we can,
-            // but for now, let's just save to the primary key used by dashboard.
         }
     }, [menuItems, user]);
 
