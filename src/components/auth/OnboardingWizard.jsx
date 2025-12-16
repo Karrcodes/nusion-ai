@@ -87,12 +87,13 @@ const OnboardingWizard = ({ user }) => {
             const newMeals = result.meals?.map((m, i) => ({ ...m, id: i + 1, status: 'Active' })) || [];
             const newInventory = result.pantry?.map((p, i) => ({ ...p, id: i + 1 })) || [];
 
-            setScannedData({ meals: newMeals, inventory: newInventory });
+            const resultData = { meals: newMeals, inventory: newInventory };
+            setScannedData(resultData);
             clearInterval(progressInterval);
             setAnalysisProgress(100);
 
-            // Auto advance after short delay
-            setTimeout(() => handleComplete(), 1500);
+            // Auto advance after short delay, passing data explicitly to avoid stale state closure issues
+            setTimeout(() => handleComplete(resultData), 1500);
 
         } catch (error) {
             clearInterval(progressInterval);
@@ -119,7 +120,7 @@ const OnboardingWizard = ({ user }) => {
         }, 300);
     };
 
-    const handleComplete = async () => {
+    const handleComplete = async (manualScannedData = null) => {
         setLoading(true);
         try {
             // Save preferences to local storage (simulating DB for now)
@@ -141,10 +142,12 @@ const OnboardingWizard = ({ user }) => {
                 };
                 localStorage.setItem(`restaurant_preferences_${user.id}`, JSON.stringify(profile));
 
-                // Save Inventory if scanned
-                if (scannedData) {
-                    localStorage.setItem(`restaurant_inventory_${user.id}`, JSON.stringify(scannedData.inventory));
-                    localStorage.setItem(`restaurant_meals_${user.id}`, JSON.stringify(scannedData.meals));
+                // Save Inventory if scanned (use manual override if provided to bypass stale state)
+                const finalScannedData = manualScannedData || scannedData;
+
+                if (finalScannedData) {
+                    localStorage.setItem(`restaurant_inventory_${user.id}`, JSON.stringify(finalScannedData.inventory));
+                    localStorage.setItem(`restaurant_meals_${user.id}`, JSON.stringify(finalScannedData.meals));
                 }
 
                 navigate('/dashboard/restaurant');
