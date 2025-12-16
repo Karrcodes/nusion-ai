@@ -9,6 +9,7 @@ import IkoyiInterface from './components/restaurants/IkoyiInterface';
 import DinerDashboard from './components/DinerDashboard';
 import RestaurantDashboard from './components/RestaurantDashboard';
 import Welcome from './components/auth/Welcome';
+import OnboardingWizard from './components/auth/OnboardingWizard';
 import ProtectedRoute from './components/ProtectedRoute';
 import './index.css';
 
@@ -143,6 +144,12 @@ function App() {
                 navigate(currentUser?.type === 'restaurant' ? '/dashboard/restaurant' : '/dashboard/diner', { replace: true });
               }}
             />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/onboarding" element={
+          <ProtectedRoute user={currentUser}>
+            <OnboardingWizard user={currentUser} />
           </ProtectedRoute>
         } />
 
