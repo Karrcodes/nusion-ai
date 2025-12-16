@@ -12,7 +12,13 @@ const RestaurantDashboard = ({ user }) => {
 
     // Load initial inventory from localStorage (keyed by User ID) or default
     const [inventory, setInventory] = useState(() => {
-        const storageKey = `restaurant_inventory_${user?.id} `;
+        // Check for wizard-saved inventory first
+        const wizardKey = `restaurant_inventory_${user?.id}`;
+        const wizardSaved = localStorage.getItem(wizardKey);
+        if (wizardSaved) return JSON.parse(wizardSaved);
+
+        // Fallback to previous dashboard key (if any)
+        const storageKey = `restaurant_inventory_${user?.id}`; // Ensure no trailing space
         const saved = localStorage.getItem(storageKey);
         return saved ? JSON.parse(saved) : [];
     });
@@ -52,7 +58,7 @@ const RestaurantDashboard = ({ user }) => {
     // Save to localStorage whenever inventory changes
     useEffect(() => {
         if (user?.id) {
-            localStorage.setItem(`restaurant_inventory_${user.id} `, JSON.stringify(inventory));
+            localStorage.setItem(`restaurant_inventory_${user.id}`, JSON.stringify(inventory));
         }
     }, [inventory, user]);
 
@@ -74,14 +80,22 @@ const RestaurantDashboard = ({ user }) => {
 
     // Load Menu Items (Meals)
     const [menuItems, setMenuItems] = useState(() => {
-        const storageKey = `restaurant_menu_${user?.id} `;
+        // Check for wizard-saved meals first
+        const wizardKey = `restaurant_meals_${user?.id}`;
+        const wizardSaved = localStorage.getItem(wizardKey);
+        if (wizardSaved) return JSON.parse(wizardSaved);
+
+        const storageKey = `restaurant_menu_${user?.id}`;
         const saved = localStorage.getItem(storageKey);
         return saved ? JSON.parse(saved) : [];
     });
 
     useEffect(() => {
         if (user?.id) {
-            localStorage.setItem(`restaurant_menu_${user.id} `, JSON.stringify(menuItems));
+            localStorage.setItem(`restaurant_menu_${user.id}`, JSON.stringify(menuItems));
+            // Also update the wizard key to keep them in sync? Or just migrate to one key.
+            // Let's migrate to using `restaurant_meals_` as the source of truth if we can,
+            // but for now, let's just save to the primary key used by dashboard.
         }
     }, [menuItems, user]);
 
