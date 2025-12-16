@@ -94,30 +94,31 @@ const RestaurantDashboard = ({ user }) => {
         if (!file) return;
 
         setAnalyzingMenu(true);
+        alert('Analyzing menu with Gemini AI... This may take a moment.');
 
         try {
-            let base64Data;
+            let base64Image = null;
+            let mimeType = file.type;
 
-            // Bypass resize for PDFs, only resize images
             if (file.type === 'application/pdf') {
-                base64Data = await new Promise((resolve, reject) => {
+                base64Image = await new Promise((resolve, reject) => {
                     const reader = new FileReader();
-                    reader.onload = (e) => resolve(e.target.result.split(',')[1]);
-                    reader.onerror = (e) => reject(new Error("PDF Read Failed"));
+                    reader.onload = () => resolve(reader.result.split(',')[1]);
+                    reader.onerror = reject;
                     reader.readAsDataURL(file);
                 });
             } else {
-                base64Data = await resizeImage(file);
+                base64Image = await resizeImage(file);
+                mimeType = 'image/jpeg';
             }
 
-            // Call our secure Backend API
             const response = await fetch('/api/analyze-menu', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    image: base64Data,
-                    mimeType: file.type === 'application/pdf' ? 'application/pdf' : 'image/jpeg' // Force JPEG mime if not PDF
-                })
+                    image: base64Image,
+                    mimeType: mimeType
+                }),
             });
 
             if (!response.ok) {

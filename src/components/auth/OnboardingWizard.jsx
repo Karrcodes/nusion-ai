@@ -40,26 +40,38 @@ const OnboardingWizard = ({ user }) => {
         setAnalyzing(true);
 
         try {
-            let processedFile = file;
+            let base64Image = null;
             let mimeType = file.type;
 
-            if (file.type.startsWith('image/') && file.type !== 'image/jpeg') {
-                processedFile = await resizeImage(file);
+            // Always resize/process to get Base64 (Gemini needs Base64)
+            // Even if PDF, we might need to handle it diff, but logic below assumes image for resize
+            // If it's a PDF, we need to read it as base64 without resize
+            if (file.type === 'application/pdf') {
+                base64Image = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result.split(',')[1]);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+            } else {
+                // Resize utils now returns base64 string
+                base64Image = await resizeImage(file);
                 mimeType = 'image/jpeg';
             }
 
-            const formData = new FormData();
-            formData.append('menu', processedFile);
-            formData.append('mimeType', mimeType);
-
             const response = await fetch('/api/analyze-menu', {
                 method: 'POST',
-                body: formData,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    image: base64Image,
+                    mimeType: mimeType
+                }),
             });
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+                // Show detailed backend error if available
+                throw new Error(errorData.details || errorData.error || `HTTP error! status: ${response.status}`);
             }
 
             const result = await response.json();

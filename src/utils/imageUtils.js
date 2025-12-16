@@ -29,12 +29,12 @@ export const resizeImage = (file) => {
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, width, height);
 
-                canvas.toBlob((blob) => {
-                    resolve(new File([blob], "resized_menu.jpg", {
-                        type: "image/jpeg",
-                        lastModified: Date.now(),
-                    }));
-                }, 'image/jpeg', 0.7);
+                // Force JPEG conversion
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                // content-type is image/jpeg
+                // return base64 string without prefix
+                resolve(dataUrl.split(',')[1]);
+
             };
             img.onerror = (error) => reject(error);
         };
