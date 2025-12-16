@@ -29,8 +29,8 @@ export default async function handler(req, res) {
 
             Return JSON ONLY. Format:
             {
-              "meals": [{ "name": "...", "price": 0, "description": "...", "ingredients": ["..."] }],
-              "pantry": [{ "name": "...", "currentStock": "Medium", "unit": "kg/liter/unit" }]
+              "meals": [{ "name": "Dish Name", "price": "£XX", "status": "Active", "ingredients": ["Ing1", "Ing2"] }],
+              "pantry": [{ "item": "Ingredient Name", "category": "Produce/Protein/Pantry", "stock": "Medium", "status": "Active" }]
             }
         `;
 
