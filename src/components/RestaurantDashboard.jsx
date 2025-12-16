@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
 import { cities } from '../lib/cities';
+import { resizeImage } from '../utils/imageUtils';
 
 
 const RestaurantDashboard = ({ user }) => {
@@ -86,36 +87,7 @@ const RestaurantDashboard = ({ user }) => {
 
     const [inventoryView, setInventoryView] = useState('meals'); // 'meals' | 'pantry'
     const [analyzingMenu, setAnalyzingMenu] = useState(false);
-
-    const resizeImage = (file) => {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = (event) => {
-                const img = new Image();
-                img.src = event.target.result;
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 1024;
-                    const scaleSize = MAX_WIDTH / img.width;
-                    const width = (img.width > MAX_WIDTH) ? MAX_WIDTH : img.width;
-                    const height = (img.width > MAX_WIDTH) ? (img.height * scaleSize) : img.height;
-
-                    canvas.width = width;
-                    canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
-
-                    // Force JPEG conversion for heavy compression (0.7 quality)
-                    // This prevents hitting Vercel's 4.5MB payload limit even with PNGs
-                    const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-                    resolve(dataUrl.split(',')[1]);
-                };
-                img.onerror = (e) => reject(new Error("Invalid Image File"));
-            };
-            reader.onerror = (e) => reject(error);
-        });
-    };
+    // --- ACTIONS ---
 
     const handleMenuUpload = async (e) => {
         const file = e.target.files[0];
