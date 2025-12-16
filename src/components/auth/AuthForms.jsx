@@ -78,6 +78,40 @@ const AuthForms = ({ type, mode }) => {
         }
     };
 
+    const [resendLoading, setResendLoading] = useState(false);
+    const [resendSuccess, setResendSuccess] = useState(false);
+
+    const handleResendEmail = async () => {
+        if (!formData.email) return;
+        setResendLoading(true);
+        setError(null);
+        setResendSuccess(false);
+
+        try {
+            const { error } = await supabase.auth.resend({
+                type: 'signup',
+                email: formData.email,
+                options: {
+                    emailRedirectTo: `${import.meta.env.VITE_SITE_URL || window.location.origin}?welcome=true`
+                }
+            });
+
+            if (error) throw error;
+            setResendSuccess(true);
+            // Hide success message after 5 seconds
+            setTimeout(() => setResendSuccess(false), 5000);
+        } catch (err) {
+            console.error("Resend Error:", err);
+            let errorMessage = err.message;
+            if (errorMessage.includes("rate_limit")) {
+                errorMessage = "Too many requests. Please wait a minute before retrying.";
+            }
+            setError(errorMessage);
+        } finally {
+            setResendLoading(false);
+        }
+    };
+
     return (
         <div className="min-h-screen w-full flex items-center justify-center bg-bg-primary p-4 animate-[fadeIn_0.5s]">
             <Link
@@ -110,7 +144,24 @@ const AuthForms = ({ type, mode }) => {
                                 className="w-full py-3 bg-text-primary text-bg-primary rounded font-bold hover:opacity-90 transition-all shadow-lg hover:shadow-xl"
                             >
                                 Back to Login
+                                Back to Login
                             </button>
+
+                            <div className="mt-4 border-t border-glass-border pt-4">
+                                <p className="text-xs text-text-secondary mb-2">Didn't receive the email? Check your spam folder or:</p>
+                                <button
+                                    onClick={handleResendEmail}
+                                    disabled={resendLoading || resendSuccess}
+                                    className={`text-sm font-bold underline decoration-dotted transition-colors ${resendSuccess ? 'text-green-500 cursor-default no-underline' : 'text-accent-jp hover:text-text-primary'}`}
+                                >
+                                    {resendLoading ? 'Sending...' : resendSuccess ? '✓ Email Resent!' : 'Resend Confirmation Email'}
+                                </button>
+                                {error && (
+                                    <p className="text-xs text-red-500 mt-2 bg-red-500/10 p-2 rounded">
+                                        ⚠️ {error}
+                                    </p>
+                                )}
+                            </div>
                         </div>
                     ) : (
                         <>
