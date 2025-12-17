@@ -556,7 +556,7 @@ const RestaurantDashboard = ({ user }) => {
                     <div className="flex gap-4">
                         <div className="glass-panel px-4 py-2 flex items-center gap-2">
                             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                            <span className="text-xs font-mono font-bold text-text-primary">System Online v4.5.3 (Global)</span>
+                            <span className="text-xs font-mono font-bold text-text-primary">System Online v4.5.4 (Global)</span>
                         </div>
                     </div>
                 </header>
@@ -893,11 +893,7 @@ const RestaurantDashboard = ({ user }) => {
                                                 </div>
                                                 {/* Image */}
                                                 <div className="absolute inset-0 top-6">
-                                                    {profile.coverUrl || profile.logoUrl ? (
-                                                        <img src={profile.coverUrl || profile.logoUrl} alt="Live Preview" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
-                                                    ) : (
-                                                        <img src="/ikoyi-interior.png" alt="Live Preview" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
-                                                    )}
+                                                    <img src="/portal-preview.png" alt="Live Preview" className="w-full h-full object-cover object-top opacity-90 group-hover:opacity-100 transition-opacity" />
                                                 </div>
 
                                                 {/* Live Pulse */}
