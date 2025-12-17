@@ -1038,9 +1038,9 @@ const RestaurantDashboard = ({ user }) => {
                     }
 
                     {/* --- INSIGHTS VIEW --- */}
-                    {/* --- INSIGHTS VIEW --- */}
-                    {
-                        activeTab === 'insights' && console.log('Rendering Insights Tab. Status:', approvalStatus, 'Insights Data:', insights) && (false) || activeTab === 'insights' && (
+                    {activeTab === 'insights' && (() => {
+                        console.log('Rendering Insights. Status:', approvalStatus, insights);
+                        return (
                             <div className="animate-[fadeIn_0.3s] relative min-h-[500px] w-full isolate">
 
                                 {/* PENDING APPROVAL OVERLAY */}
@@ -1118,9 +1118,9 @@ const RestaurantDashboard = ({ user }) => {
                                         )}
                                     </div>
                                 </div>
-                            </div >
-                        )
-                    }
+                            </div>
+                        );
+                    })()}
                 </main >
             </div >
         );
