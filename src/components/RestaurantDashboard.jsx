@@ -556,7 +556,7 @@ const RestaurantDashboard = ({ user }) => {
                     <div className="flex gap-4">
                         <div className="glass-panel px-4 py-2 flex items-center gap-2">
                             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                            <span className="text-xs font-mono font-bold text-text-primary">System Online v4.5.4 (Global)</span>
+                            <span className="text-xs font-mono font-bold text-text-primary">System Online v4.5.5 (Global)</span>
                         </div>
                     </div>
                 </header>
@@ -891,9 +891,19 @@ const RestaurantDashboard = ({ user }) => {
                                                     <div className="w-2 h-2 rounded-full bg-yellow-500/50"></div>
                                                     <div className="w-2 h-2 rounded-full bg-green-500/50"></div>
                                                 </div>
-                                                {/* Image */}
-                                                <div className="absolute inset-0 top-6">
-                                                    <img src="/portal-preview.png" alt="Live Preview" className="w-full h-full object-cover object-top opacity-90 group-hover:opacity-100 transition-opacity" />
+                                                {/* Image with CSS Simulated UI */}
+                                                <div className="absolute inset-0 top-6 relative">
+                                                    <img src="/ikoyi-interior.png" alt="Live Preview" className="w-full h-full object-cover object-center opacity-90" />
+
+                                                    {/* Simulated "Meal Gen" Card Overlay */}
+                                                    <div className="absolute inset-0 flex items-center justify-center p-4">
+                                                        <div className="w-3/4 h-3/4 bg-black/40 backdrop-blur-sm border border-white/10 rounded flex flex-col items-center justify-center gap-2 p-2 shadow-2xl">
+                                                            <div className="w-8 h-8 rounded-full bg-accent-wa/20 mb-1"></div>
+                                                            <div className="w-16 h-2 bg-white/20 rounded-full"></div>
+                                                            <div className="w-20 h-2 bg-white/10 rounded-full"></div>
+                                                            <div className="w-full h-8 mt-2 border border-dashed border-white/10 rounded bg-white/5"></div>
+                                                        </div>
+                                                    </div>
                                                 </div>
 
                                                 {/* Live Pulse */}
