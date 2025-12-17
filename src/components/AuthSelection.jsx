@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-const AuthSelection = ({ onSelect }) => {
+const AuthSelection = ({ onSelect, mode, onSwitchMode }) => {
     return (
         <div className="min-h-screen w-full flex flex-col items-center justify-center p-8 bg-bg-primary animate-[fadeIn_0.5s]">
             <Link
@@ -43,6 +43,31 @@ const AuthSelection = ({ onSelect }) => {
                     </p>
                 </div>
 
+            </div>
+
+            {/* Mode Toggle Footer */}
+            <div className="mt-12 text-center text-text-secondary animate-[fadeIn_0.5s_0.2s]">
+                {mode === 'login' ? (
+                    <p>
+                        Don't have an account?{' '}
+                        <button
+                            onClick={() => onSwitchMode('signup')}
+                            className="font-bold text-text-primary hover:text-accent-wa transition-colors underline decoration-dotted underline-offset-4"
+                        >
+                            Sign up
+                        </button>
+                    </p>
+                ) : (
+                    <p>
+                        Already have an account?{' '}
+                        <button
+                            onClick={() => onSwitchMode('login')}
+                            className="font-bold text-text-primary hover:text-accent-wa transition-colors underline decoration-dotted underline-offset-4"
+                        >
+                            Log in
+                        </button>
+                    </p>
+                )}
             </div>
         </div>
     );

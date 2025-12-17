@@ -121,6 +121,8 @@ function App() {
 
         <Route path="/auth" element={
           <AuthSelection
+            mode={authMode}
+            onSwitchMode={setAuthMode}
             onSelect={(type) => {
               setSelectedAuthType(type);
               navigate('/auth/forms');
