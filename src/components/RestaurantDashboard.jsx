@@ -41,8 +41,11 @@ const RestaurantDashboard = ({ user }) => {
                 description: '',
                 cuisine: 'Modern West African',
                 philosophy: '',
-                logoUrl: null,
-                coverUrl: null,
+                logoUrl: '',
+                coverUrl: '',
+                accentColor: '#10b981',
+                font: 'Modern Sans',
+                uiStyle: 'soft',
                 hours: '',
                 priceTier: '$$',
                 contactEmail: '',
@@ -556,7 +559,7 @@ const RestaurantDashboard = ({ user }) => {
                     <div className="flex gap-4">
                         <div className="glass-panel px-4 py-2 flex items-center gap-2">
                             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                            <span className="text-xs font-mono font-bold text-text-primary">System Online v4.5.5 (Global)</span>
+                            <span className="text-xs font-mono font-bold text-text-primary">System Online v4.6.0 (Global)</span>
                         </div>
                     </div>
                 </header>
@@ -959,7 +962,7 @@ const RestaurantDashboard = ({ user }) => {
                                     </div>
                                 </section>
 
-                                {/* Basic Info */}
+                                {/* 2. General Information */}
                                 <section className="glass-panel p-8">
                                     <h3 className="text-lg font-bold text-text-primary mb-6 flex items-center gap-2">
                                         <span>📍</span> General Information
@@ -1039,7 +1042,7 @@ const RestaurantDashboard = ({ user }) => {
                                     </div>
                                 </section>
 
-                                {/* Culinary Identity */}
+                                {/* 3. Culinary Identity */}
                                 <section className="glass-panel p-8 relative overflow-hidden">
                                     <div className="absolute top-0 right-0 w-32 h-32 bg-accent-jp/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
                                     <h3 className="text-lg font-bold text-text-primary mb-6 flex items-center gap-2 relative z-10">
@@ -1071,7 +1074,129 @@ const RestaurantDashboard = ({ user }) => {
                                     </div>
                                 </section>
 
-                                {/* Operations & Context */}
+                                {/* 4. Brand Visuals & App Control (Moved Up) */}
+                                <section className="glass-panel p-8">
+                                    <h3 className="text-lg font-bold text-text-primary mb-6 flex items-center gap-2">
+                                        <span>🎨</span> Brand Visuals & App Control
+                                    </h3>
+                                    <div className="space-y-8">
+                                        {/* Visual Assets */}
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div className="space-y-2">
+                                                <label className="text-xs font-mono text-text-secondary uppercase">Logo URL</label>
+                                                <div className="flex gap-2">
+                                                    <input
+                                                        type="text"
+                                                        placeholder="https://..."
+                                                        value={profile.logoUrl || ''}
+                                                        onChange={(e) => setProfile({ ...profile, logoUrl: e.target.value })}
+                                                        className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none text-sm"
+                                                    />
+                                                    {profile.logoUrl && (
+                                                        <div className="w-12 h-12 rounded bg-bg-primary border border-glass-border flex items-center justify-center overflow-hidden flex-shrink-0">
+                                                            <img src={profile.logoUrl} alt="Logo" className="w-full h-full object-cover" onError={(e) => e.target.style.display = 'none'} />
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-xs font-mono text-text-secondary uppercase">Cover Image URL</label>
+                                                <div className="flex gap-2">
+                                                    <input
+                                                        type="text"
+                                                        placeholder="https://..."
+                                                        value={profile.coverUrl || ''}
+                                                        onChange={(e) => setProfile({ ...profile, coverUrl: e.target.value })}
+                                                        className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none text-sm"
+                                                    />
+                                                    {profile.coverUrl && (
+                                                        <div className="w-20 h-12 rounded bg-bg-primary border border-glass-border flex items-center justify-center overflow-hidden flex-shrink-0">
+                                                            <img src={profile.coverUrl} alt="Cover" className="w-full h-full object-cover" onError={(e) => e.target.style.display = 'none'} />
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="w-full h-px bg-glass-border"></div>
+
+                                        {/* App Customization Controls */}
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                                            {/* Accent Color */}
+                                            <div className="space-y-3">
+                                                <label className="text-xs font-mono text-text-secondary uppercase">Accent Color</label>
+                                                <div className="flex flex-wrap gap-2">
+                                                    {['#10b981', '#f59e0b', '#ef4444', '#3b82f6', '#8b5cf6'].map(color => (
+                                                        <button
+                                                            key={color}
+                                                            onClick={() => setProfile({ ...profile, accentColor: color })}
+                                                            className={`w-8 h-8 rounded-full border-2 transition-all ${profile.accentColor === color ? 'border-text-primary scale-110' : 'border-transparent hover:scale-105'}`}
+                                                            style={{ backgroundColor: color }}
+                                                        />
+                                                    ))}
+                                                    <input
+                                                        type="color"
+                                                        value={profile.accentColor || '#10b981'}
+                                                        onChange={(e) => setProfile({ ...profile, accentColor: e.target.value })}
+                                                        className="w-8 h-8 rounded-full cursor-pointer opacity-0 absolute"
+                                                        style={{ marginLeft: '160px' }} // Quick hack to place it
+                                                    />
+                                                    <div className="w-8 h-8 rounded-full border border-glass-border flex items-center justify-center text-xs text-text-secondary hover:bg-glass-border/20 cursor-pointer" title="Custom">
+                                                        +
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Typography */}
+                                            <div className="space-y-3">
+                                                <label className="text-xs font-mono text-text-secondary uppercase">Typography</label>
+                                                <div className="space-y-2">
+                                                    {['Modern Sans', 'Elegant Serif', 'Tech Mono'].map(font => (
+                                                        <button
+                                                            key={font}
+                                                            onClick={() => setProfile({ ...profile, font: font })}
+                                                            className={`w-full text-left px-4 py-2 text-sm rounded border transition-all ${profile.font === font
+                                                                ? 'bg-text-primary text-bg-primary border-text-primary'
+                                                                : 'bg-transparent border-glass-border text-text-secondary hover:border-text-secondary'
+                                                                }`}
+                                                        >
+                                                            {font}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+
+                                            {/* UI Style */}
+                                            <div className="space-y-3">
+                                                <label className="text-xs font-mono text-text-secondary uppercase">Interface Style</label>
+                                                <div className="flex gap-2">
+                                                    <button
+                                                        onClick={() => setProfile({ ...profile, uiStyle: 'soft' })}
+                                                        className={`flex-1 py-6 rounded-xl border flex flex-col items-center justify-center gap-2 transition-all ${profile.uiStyle === 'soft' || !profile.uiStyle // Default
+                                                            ? 'bg-bg-secondary/50 border-accent-wa text-accent-wa'
+                                                            : 'bg-transparent border-glass-border text-text-secondary hover:border-text-secondary'
+                                                            }`}
+                                                    >
+                                                        <div className="w-8 h-6 border-2 border-current rounded-lg"></div>
+                                                        <span className="text-xs">Rounded</span>
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setProfile({ ...profile, uiStyle: 'sharp' })}
+                                                        className={`flex-1 py-6 rounded-none border flex flex-col items-center justify-center gap-2 transition-all ${profile.uiStyle === 'sharp'
+                                                            ? 'bg-bg-secondary/50 border-accent-wa text-accent-wa'
+                                                            : 'bg-transparent border-glass-border text-text-secondary hover:border-text-secondary'
+                                                            }`}
+                                                    >
+                                                        <div className="w-8 h-6 border-2 border-current rounded-none"></div>
+                                                        <span className="text-xs">Sharp</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
+
+                                {/* 5. Operations & Context */}
                                 <section className="glass-panel p-8">
                                     <h3 className="text-lg font-bold text-text-primary mb-6 flex items-center gap-2">
                                         <span>⚙️</span> Operations & Context
@@ -1123,61 +1248,6 @@ const RestaurantDashboard = ({ user }) => {
                                     </div>
                                 </section>
 
-                                {/* Visuals */}
-                                <section className="glass-panel p-8">
-                                    <h3 className="text-lg font-bold text-text-primary mb-6 flex items-center gap-2">
-                                        <span>📸</span> Brand Visuals
-                                    </h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        {/* Logo Upload */}
-                                        <div className="space-y-2">
-                                            <label className="text-xs font-mono text-text-secondary uppercase">Logo</label>
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-16 h-16 rounded-full border border-glass-border overflow-hidden bg-bg-primary/50 flex items-center justify-center">
-                                                    {profile.logoUrl ? (
-                                                        <img src={profile.logoUrl} alt="Logo" className="w-full h-full object-cover" />
-                                                    ) : (
-                                                        <span className="text-2xl opacity-20">🖼️</span>
-                                                    )}
-                                                </div>
-                                                <div className="flex-1">
-                                                    <input
-                                                        type="file"
-                                                        accept="image/*"
-                                                        onChange={(e) => handleImageUpload(e.target.files[0], 'logoUrl')}
-                                                        className="w-full text-xs text-text-secondary file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-accent-jp/10 file:text-accent-jp hover:file:bg-accent-jp/20"
-                                                    />
-                                                    {uploading === 'logoUrl' && <span className="text-xs text-accent-jp animate-pulse ml-2">Uploading...</span>}
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Cover Upload */}
-                                        <div className="space-y-2">
-                                            <label className="text-xs font-mono text-text-secondary uppercase">Cover Image</label>
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-24 h-16 rounded border border-glass-border overflow-hidden bg-bg-primary/50 flex items-center justify-center">
-                                                    {profile.coverUrl ? (
-                                                        <img src={profile.coverUrl} alt="Cover" className="w-full h-full object-cover" />
-                                                    ) : (
-                                                        <span className="text-2xl opacity-20">🌄</span>
-                                                    )}
-                                                </div>
-                                                <div className="flex-1">
-                                                    <input
-                                                        type="file"
-                                                        accept="image/*"
-                                                        onChange={(e) => handleImageUpload(e.target.files[0], 'coverUrl')}
-                                                        className="w-full text-xs text-text-secondary file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-accent-jp/10 file:text-accent-jp hover:file:bg-accent-jp/20"
-                                                    />
-                                                    {uploading === 'coverUrl' && <span className="text-xs text-accent-jp animate-pulse ml-2">Uploading...</span>}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                </section>
-
                                 {/* Danger Zone */}
                                 <section className="glass-panel p-8 border border-red-500/20 bg-red-500/5">
                                     <h3 className="text-lg font-bold text-red-500 mb-2 flex items-center gap-2">
@@ -1195,8 +1265,8 @@ const RestaurantDashboard = ({ user }) => {
                                             Delete Account
                                         </button>
                                     </div>
-                                </section>
-                            </div>
+                                </section >
+                            </div >
                         </div >
                     )
                 }
