@@ -556,7 +556,7 @@ const RestaurantDashboard = ({ user }) => {
                     <div className="flex gap-4">
                         <div className="glass-panel px-4 py-2 flex items-center gap-2">
                             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                            <span className="text-xs font-mono font-bold text-text-primary">System Online v4.5.0 (Global)</span>
+                            <span className="text-xs font-mono font-bold text-text-primary">System Online v4.5.1 (Global)</span>
                         </div>
                     </div>
                 </header>
@@ -883,55 +883,62 @@ const RestaurantDashboard = ({ user }) => {
                                 <section className="glass-panel p-0 overflow-hidden group">
                                     <div className="p-6 md:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                                         <div className="flex items-start gap-6">
-                                            {/* Thumbnail / Icon */}
-                                            <div className="w-24 h-16 md:w-32 md:h-20 bg-gradient-to-br from-bg-secondary to-bg-primary rounded border border-glass-border flex-shrink-0 relative overflow-hidden">
-                                                <div className="absolute inset-0 flex items-center justify-center">
-                                                    <span className="text-2xl">🌍</span>
+                                            {/* Thumbnail / Icon (Live Screengrab) */}
+                                            <div className="w-24 h-16 md:w-32 md:h-20 bg-bg-secondary rounded border border-glass-border flex-shrink-0 relative overflow-hidden group-hover:border-accent-jp/50 transition-colors">
+                                                {profile.coverUrl || profile.logoUrl ? (
+                                                    <img src={profile.coverUrl || profile.logoUrl} alt="Live Preview" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                                                ) : (
+                                                    <img src="/ikoyi-interior.png" alt="Live Preview" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                                                )}
+                                                {/* Live Pulse */}
+                                                <div className="absolute bottom-1 right-1 flex items-center justify-center">
+                                                    <div className="w-2 h-2 bg-green-500 rounded-full shadow-[0_0_8px_rgba(34,197,94,0.8)] z-10"></div>
+                                                    <div className="absolute w-2 h-2 bg-green-500 rounded-full animate-ping opacity-75"></div>
                                                 </div>
-                                                {/* Mini status dot on thumbnail */}
-                                                <div className="absolute bottom-1 right-1 w-2 h-2 bg-green-500 rounded-full shadow-[0_0_8px_rgba(34,197,94,0.8)]"></div>
                                             </div>
 
                                             <div>
                                                 <h3 className="text-lg font-bold text-text-primary mb-1 flex items-center gap-2">
                                                     Generation Portal
                                                     <span className="text-xs font-mono font-normal text-green-500 bg-green-500/10 px-2 py-0.5 rounded-full border border-green-500/20 flex items-center gap-1">
-                                                        <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
                                                         Live
                                                     </span>
                                                 </h3>
                                                 <div className="flex flex-col gap-1 text-sm text-text-secondary font-mono">
-                                                    <a href="https://nusion.vercel.app" target="_blank" rel="noreferrer" className="hover:text-text-primary hover:underline transition-colors flex items-center gap-1">
-                                                        nusion.vercel.app
+                                                    <a href="https://nusion.vercel.app/ikoyi" target="_blank" rel="noreferrer" className="hover:text-text-primary hover:underline transition-colors flex items-center gap-1">
+                                                        nusion.vercel.app/ikoyi
                                                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
                                                     </a>
                                                     <span className="opacity-60 flex items-center gap-2">
-                                                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
-                                                        Latest build: Just now (main)
+                                                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                                        Menu Sync: Active
                                                     </span>
                                                 </div>
                                             </div>
                                         </div>
 
                                         <div className="flex gap-3 w-full md:w-auto">
-                                            <a
-                                                href="/"
+                                            <Link
+                                                to="/ikoyi"
                                                 target="_blank"
                                                 className="flex-1 md:flex-none px-4 py-2 bg-white text-black font-bold text-sm rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
                                             >
-                                                Visit
+                                                Visit Brand Page
                                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-                                            </a>
+                                            </Link>
                                         </div>
                                     </div>
-                                    {/* Analytics strip */}
+                                    {/* Operational Footer */}
                                     <div className="bg-bg-secondary/30 border-t border-glass-border p-4 flex gap-6 text-xs font-mono text-text-secondary">
                                         <div className="flex items-center gap-2">
-                                            <span className="w-2 h-2 rounded-full bg-gray-500"></span>
-                                            Ready (34ms)
+                                            <span className="w-2 h-2 rounded-full bg-green-500/50"></span>
+                                            Status: Accepting Orders
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <span>git: 5b7fc34</span>
+                                            <span>Traffic: Moderate</span>
+                                        </div>
+                                        <div className="flex items-center gap-2 ml-auto opacity-50">
+                                            <span>Region: London (LDN1)</span>
                                         </div>
                                     </div>
                                 </section>
