@@ -115,940 +115,1014 @@ const RestaurantDashboard = ({ user }) => {
         if (user?.id) {
             localStorage.setItem(`restaurant_menu_${user.id}`, JSON.stringify(menuItems));
         }
-    }, [menuItems, user]);
+        // --- APPROVAL & INSIGHTS (v4.4) ---
+        const [approvalStatus, setApprovalStatus] = useState(() => {
+            // Simple mock persistence
+            if (user?.id) {
+                return localStorage.getItem(`restaurant_approval_${user.id}`) || 'pending';
+            }
+            return 'pending';
+        });
 
-    const [inventoryView, setInventoryView] = useState('meals'); // 'meals' | 'pantry'
-    const [analyzingMenu, setAnalyzingMenu] = useState(false);
-    const [analysisProgress, setAnalysisProgress] = useState(0);
+        const [insights, setInsights] = useState({
+            totalGenerations: 0,
+            totalRevenue: 0,
+            topIngredients: [],
+            maxIngredientCount: 1
+        });
 
-    // --- ACTIONS ---
+        // Fetch Insights from Real Backend
+        useEffect(() => {
+            if (activeTab === 'insights' && approvalStatus === 'approved') {
+                const fetchInsights = async () => {
+                    try {
+                        // Fetch ALL generations (Demo mode: assuming all activity is relevant)
+                        // In a real multi-tenant app, we would filter by restaurant_id
+                        const { data, error } = await supabase
+                            .from('generations')
+                            .select('*');
 
-    const handleMenuUpload = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
+                        if (error) throw error;
 
-        setAnalyzingMenu(true);
-        setAnalysisProgress(10);
-        // alert('Analyzing menu with Gemini AI... This may take a moment.'); // Removing alert in favor of UI progress
+                        const totalGenerations = data.length;
 
-        // Simulate progress
-        const progressInterval = setInterval(() => {
-            setAnalysisProgress(prev => Math.min(prev + 5, 90));
-        }, 500);
+                        // Sum up cost
+                        const totalRevenue = data.reduce((acc, curr) => acc + (Number(curr.total_cost) || 0), 0);
 
-        try {
-            let base64Image = null;
-            let mimeType = file.type;
+                        // Analyze Ingredients from JSONB
+                        const ingredientMap = {};
+                        data.forEach(gen => {
+                            const courses = gen.courses; // JSON array
+                            if (Array.isArray(courses)) {
+                                courses.forEach(course => {
+                                    // Extract ingredients from description (naive regex for demo)
+                                    // Creating a list of common ingredients to look for would be better, 
+                                    // but let's just count 'courses' as a proxy for "Requests" for now if parsing is too hard,
+                                    // OR assumes course names are ingredients. 
+                                    // Actually, let's use the 'name' of the course.
+                                    const name = course.name;
+                                    if (name) {
+                                        ingredientMap[name] = (ingredientMap[name] || 0) + 1;
+                                    }
+                                });
+                            }
+                        });
 
-            if (file.type === 'application/pdf') {
-                base64Image = await new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onload = () => resolve(reader.result.split(',')[1]);
-                    reader.onerror = reject;
-                    reader.readAsDataURL(file);
+                        // Convert map to sorted array
+                        const sortedIngredients = Object.entries(ingredientMap)
+                            .map(([name, count]) => ({ name, count }))
+                            .sort((a, b) => b.count - a.count)
+                            .slice(0, 5); // Start with top 5
+
+                        const maxCount = sortedIngredients.length > 0 ? sortedIngredients[0].count : 1;
+
+                        setInsights({
+                            totalGenerations,
+                            totalRevenue,
+                            topIngredients: sortedIngredients,
+                            maxIngredientCount: maxCount
+                        });
+
+                    } catch (e) {
+                        console.error("Error fetching insights:", e);
+                    }
+                };
+
+                fetchInsights();
+            }
+        }, [activeTab, approvalStatus]);
+
+        const [inventoryView, setInventoryView] = useState('meals'); // 'meals' | 'pantry'
+        const [analyzingMenu, setAnalyzingMenu] = useState(false);
+        const [analysisProgress, setAnalysisProgress] = useState(0);
+
+        // --- ACTIONS ---
+
+        const handleMenuUpload = async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            setAnalyzingMenu(true);
+            setAnalysisProgress(10);
+            // alert('Analyzing menu with Gemini AI... This may take a moment.'); // Removing alert in favor of UI progress
+
+            // Simulate progress
+            const progressInterval = setInterval(() => {
+                setAnalysisProgress(prev => Math.min(prev + 5, 90));
+            }, 500);
+
+            try {
+                let base64Image = null;
+                let mimeType = file.type;
+
+                if (file.type === 'application/pdf') {
+                    base64Image = await new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = () => resolve(reader.result.split(',')[1]);
+                        reader.onerror = reject;
+                        reader.readAsDataURL(file);
+                    });
+                } else {
+                    base64Image = await resizeImage(file);
+                    mimeType = 'image/jpeg';
+                }
+
+                const response = await fetch('/api/analyze-menu', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        image: base64Image,
+                        mimeType: mimeType
+                    }),
                 });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    const detailedError = JSON.stringify(errorData, null, 2);
+                    throw new Error(`Server ${response.status} ${response.statusText}\n\n${detailedError}`);
+                }
+
+                const data = await response.json();
+
+                const newMeals = data.meals ? data.meals.map(m => ({ ...m, id: Date.now() + Math.random() })) : [];
+                const newInventory = data.pantry ? data.pantry.map(i => ({ ...i, id: Date.now() + Math.random() })) : [];
+
+                setMenuItems(prev => [...prev, ...newMeals]);
+                setInventory(prev => {
+                    // Merge logic could go here, for now just append
+                    return [...prev, ...newInventory];
+                });
+
+                clearInterval(progressInterval);
+                setAnalysisProgress(100);
+                alert(`Success! Added ${newMeals.length} items and ${newInventory.length} pantry ingredients.`);
+
+            } catch (error) {
+                clearInterval(progressInterval);
+                console.error("Analysis Error:", error);
+                alert(`ANALYSIS FAILED (v4.0.2 - Stable)\n\nReason: ${error.message}\n\nPlease take a screenshot of this error.`);
+            } finally {
+                clearInterval(progressInterval);
+                setAnalyzingMenu(false);
+                setAnalysisProgress(0);
+            }
+        };
+
+        const [showAddItem, setShowAddItem] = useState(false);
+        const [editingItem, setEditingItem] = useState(null); // If set, we are editing this object
+
+        // Unified handler for Adding OR Updating an item (Meal or Pantry)
+        const handleSaveItem = (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+
+            // Pantry Item Logic
+            if (inventoryView === 'pantry') {
+                const newItem = {
+                    id: editingItem ? editingItem.id : Date.now(),
+                    item: formData.get('item'),
+                    category: formData.get('category'),
+                    stock: formData.get('stock'),
+                    status: 'Active'
+                };
+
+                if (editingItem) {
+                    setInventory(prev => prev.map(i => i.id === editingItem.id ? newItem : i));
+                } else {
+                    setInventory(prev => [...prev, newItem]);
+                }
+            }
+
+            // Meal Item Logic (Simplified for now, just editing Name/Price)
+            if (inventoryView === 'meals') {
+                const newMeal = {
+                    id: editingItem ? editingItem.id : Date.now(),
+                    name: formData.get('item'), // We re-use 'item' input for Name
+                    price: formData.get('price') || '£0',
+                    status: 'Active',
+                    ingredients: editingItem ? editingItem.ingredients : [] // Keep existing ingredients for now
+                };
+
+                if (editingItem) {
+                    setMenuItems(prev => prev.map(m => m.id === editingItem.id ? newMeal : m));
+                } else {
+                    setMenuItems(prev => [...prev, newMeal]);
+                }
+            }
+
+            setShowAddItem(false);
+            setEditingItem(null);
+        };
+
+        const handleDeleteItem = () => {
+            if (!editingItem) return;
+            if (!window.confirm("Delete this item?")) return;
+
+            if (inventoryView === 'pantry') {
+                setInventory(prev => prev.filter(i => i.id !== editingItem.id));
             } else {
-                base64Image = await resizeImage(file);
-                mimeType = 'image/jpeg';
+                setMenuItems(prev => prev.filter(m => m.id !== editingItem.id));
             }
+            setShowAddItem(false);
+            setEditingItem(null);
+        };
 
-            const response = await fetch('/api/analyze-menu', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    image: base64Image,
-                    mimeType: mimeType
-                }),
-            });
+        const openAddModal = () => {
+            setEditingItem(null);
+            setShowAddItem(true);
+        };
 
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                const detailedError = JSON.stringify(errorData, null, 2);
-                throw new Error(`Server ${response.status} ${response.statusText}\n\n${detailedError}`);
+        const openEditModal = (item) => {
+            setEditingItem(item);
+            setShowAddItem(true);
+        };
+
+        const [uploading, setUploading] = useState(null); // 'logoUrl' | 'coverUrl' | null
+
+        const handleImageUpload = async (file, field) => {
+            if (!file) return;
+            setUploading(field);
+            try {
+                const fileExt = file.name.split('.').pop();
+                const fileName = `${user.id}/${Math.random()}.${fileExt}`;
+                const filePath = `${fileName}`;
+
+                const { error: uploadError } = await supabase.storage
+                    .from('restaurant-assets')
+                    .upload(filePath, file);
+
+                if (uploadError) throw uploadError;
+
+                const { data } = supabase.storage
+                    .from('restaurant-assets')
+                    .getPublicUrl(filePath);
+
+                setProfile(prev => ({ ...prev, [field]: data.publicUrl }));
+            } catch (error) {
+                console.error('Error uploading image: ', error);
+                alert('Error uploading image!');
+            } finally {
+                setUploading(null);
             }
+        };
 
-            const data = await response.json();
+        const clearData = (type) => {
+            if (!window.confirm(`Are you sure you want to clear ${type}? This cannot be undone.`)) return;
 
-            const newMeals = data.meals ? data.meals.map(m => ({ ...m, id: Date.now() + Math.random() })) : [];
-            const newInventory = data.pantry ? data.pantry.map(i => ({ ...i, id: Date.now() + Math.random() })) : [];
-
-            setMenuItems(prev => [...prev, ...newMeals]);
-            setInventory(prev => {
-                // Merge logic could go here, for now just append
-                return [...prev, ...newInventory];
-            });
-
-            clearInterval(progressInterval);
-            setAnalysisProgress(100);
-            alert(`Success! Added ${newMeals.length} items and ${newInventory.length} pantry ingredients.`);
-
-        } catch (error) {
-            clearInterval(progressInterval);
-            console.error("Analysis Error:", error);
-            alert(`ANALYSIS FAILED (v4.0.2 - Stable)\n\nReason: ${error.message}\n\nPlease take a screenshot of this error.`);
-        } finally {
-            clearInterval(progressInterval);
-            setAnalyzingMenu(false);
-            setAnalysisProgress(0);
-        }
-    };
-
-    const [showAddItem, setShowAddItem] = useState(false);
-    const [editingItem, setEditingItem] = useState(null); // If set, we are editing this object
-
-    // Unified handler for Adding OR Updating an item (Meal or Pantry)
-    const handleSaveItem = (e) => {
-        e.preventDefault();
-        const formData = new FormData(e.target);
-
-        // Pantry Item Logic
-        if (inventoryView === 'pantry') {
-            const newItem = {
-                id: editingItem ? editingItem.id : Date.now(),
-                item: formData.get('item'),
-                category: formData.get('category'),
-                stock: formData.get('stock'),
-                status: 'Active'
-            };
-
-            if (editingItem) {
-                setInventory(prev => prev.map(i => i.id === editingItem.id ? newItem : i));
-            } else {
-                setInventory(prev => [...prev, newItem]);
+            if (type === 'Menu') setMenuItems([]);
+            if (type === 'Pantry') setInventory([]);
+            if (type === 'All Data') {
+                setMenuItems([]);
+                setInventory([]);
             }
-        }
-
-        // Meal Item Logic (Simplified for now, just editing Name/Price)
-        if (inventoryView === 'meals') {
-            const newMeal = {
-                id: editingItem ? editingItem.id : Date.now(),
-                name: formData.get('item'), // We re-use 'item' input for Name
-                price: formData.get('price') || '£0',
-                status: 'Active',
-                ingredients: editingItem ? editingItem.ingredients : [] // Keep existing ingredients for now
-            };
-
-            if (editingItem) {
-                setMenuItems(prev => prev.map(m => m.id === editingItem.id ? newMeal : m));
-            } else {
-                setMenuItems(prev => [...prev, newMeal]);
+            if (type === 'All Data') {
+                setMenuItems([]);
+                setInventory([]);
             }
-        }
+        };
 
-        setShowAddItem(false);
-        setEditingItem(null);
-    };
+        const handleDeleteAccount = async () => {
+            if (!window.confirm("ARE YOU SURE? \n\nThis will permanently delete your restaurant profile, menu, and inventory from this device and sign you out.\n\nType 'DELETE' to confirm.")) return;
 
-    const handleDeleteItem = () => {
-        if (!editingItem) return;
-        if (!window.confirm("Delete this item?")) return;
+            // In a real app we'd verify the 'DELETE' input, but simple confirm is okay for prototype
+            // Actually adhering to prompt:
+            /* const confirmation = prompt("Type 'DELETE' to confirm account deletion:");
+            if (confirmation !== 'DELETE') return; */
+            // Let's stick to simple confirm for speed unless requested otherwise.
 
-        if (inventoryView === 'pantry') {
-            setInventory(prev => prev.filter(i => i.id !== editingItem.id));
-        } else {
-            setMenuItems(prev => prev.filter(m => m.id !== editingItem.id));
-        }
-        setShowAddItem(false);
-        setEditingItem(null);
-    };
+            try {
+                // 1. Clear Local Storage Keys for this user
+                localStorage.removeItem(`restaurant_inventory_${user.id}`);
+                localStorage.removeItem(`restaurant_meals_${user.id}`);
+                localStorage.removeItem(`restaurant_menu_${user.id}`);
+                localStorage.removeItem(`restaurant_preferences_${user.id}`);
 
-    const openAddModal = () => {
-        setEditingItem(null);
-        setShowAddItem(true);
-    };
+                // 2. Sign Out
+                await supabase.auth.signOut();
 
-    const openEditModal = (item) => {
-        setEditingItem(item);
-        setShowAddItem(true);
-    };
+                // 3. Redirect
+                navigate('/');
+            } catch (error) {
+                console.error(error);
+                alert('Error deleting account');
+            }
+        };
 
-    const [uploading, setUploading] = useState(null); // 'logoUrl' | 'coverUrl' | null
+        const [showClearMenu, setShowClearMenu] = useState(false);
 
-    const handleImageUpload = async (file, field) => {
-        if (!file) return;
-        setUploading(field);
-        try {
-            const fileExt = file.name.split('.').pop();
-            const fileName = `${user.id}/${Math.random()}.${fileExt}`;
-            const filePath = `${fileName}`;
+        const [showCitySuggestions, setShowCitySuggestions] = useState(false);
+        const filteredCities = cities.filter(c => c.city.toLowerCase().includes(profile.location.toLowerCase()));
 
-            const { error: uploadError } = await supabase.storage
-                .from('restaurant-assets')
-                .upload(filePath, file);
+        const handleCitySelect = (cityData) => {
+            setProfile(prev => ({
+                ...prev,
+                location: cityData.city,
+                currency: cityData.symbol // Auto-set currency symbol (e.g. £, ₦)
+            }));
+            setShowCitySuggestions(false);
+        };
 
-            if (uploadError) throw uploadError;
-
-            const { data } = supabase.storage
-                .from('restaurant-assets')
-                .getPublicUrl(filePath);
-
-            setProfile(prev => ({ ...prev, [field]: data.publicUrl }));
-        } catch (error) {
-            console.error('Error uploading image: ', error);
-            alert('Error uploading image!');
-        } finally {
-            setUploading(null);
-        }
-    };
-
-    const clearData = (type) => {
-        if (!window.confirm(`Are you sure you want to clear ${type}? This cannot be undone.`)) return;
-
-        if (type === 'Menu') setMenuItems([]);
-        if (type === 'Pantry') setInventory([]);
-        if (type === 'All Data') {
-            setMenuItems([]);
-            setInventory([]);
-        }
-        if (type === 'All Data') {
-            setMenuItems([]);
-            setInventory([]);
-        }
-    };
-
-    const handleDeleteAccount = async () => {
-        if (!window.confirm("ARE YOU SURE? \n\nThis will permanently delete your restaurant profile, menu, and inventory from this device and sign you out.\n\nType 'DELETE' to confirm.")) return;
-
-        // In a real app we'd verify the 'DELETE' input, but simple confirm is okay for prototype
-        // Actually adhering to prompt:
-        /* const confirmation = prompt("Type 'DELETE' to confirm account deletion:");
-        if (confirmation !== 'DELETE') return; */
-        // Let's stick to simple confirm for speed unless requested otherwise.
-
-        try {
-            // 1. Clear Local Storage Keys for this user
-            localStorage.removeItem(`restaurant_inventory_${user.id}`);
-            localStorage.removeItem(`restaurant_meals_${user.id}`);
-            localStorage.removeItem(`restaurant_menu_${user.id}`);
-            localStorage.removeItem(`restaurant_preferences_${user.id}`);
-
-            // 2. Sign Out
-            await supabase.auth.signOut();
-
-            // 3. Redirect
-            navigate('/');
-        } catch (error) {
-            console.error(error);
-            alert('Error deleting account');
-        }
-    };
-
-    const [showClearMenu, setShowClearMenu] = useState(false);
-
-    const [showCitySuggestions, setShowCitySuggestions] = useState(false);
-    const filteredCities = cities.filter(c => c.city.toLowerCase().includes(profile.location.toLowerCase()));
-
-    const handleCitySelect = (cityData) => {
-        setProfile(prev => ({
-            ...prev,
-            location: cityData.city,
-            currency: cityData.symbol // Auto-set currency symbol (e.g. £, ₦)
-        }));
-        setShowCitySuggestions(false);
-    };
-
-    return (
-        <div className="min-h-screen w-full bg-bg-primary flex flex-col md:flex-row">
-            {/* Sidebar */}
-            <aside className="w-full md:w-64 border-b md:border-b-0 md:border-r border-glass-border p-4 md:p-6 flex flex-col md:pt-8 bg-white/50 backdrop-blur-md md:bg-transparent">
-                <div className="flex justify-between items-center md:block mb-4 md:mb-12">
-                    <Link to="/" className="flex items-center gap-2 md:px-2 cursor-pointer hover:opacity-80 transition-opacity" title="Back to Home">
-                        <img src="/nusion-logo.png" alt="Logo" className="h-6 md:h-8 w-auto opacity-80" style={{ filter: 'brightness(0) saturate(100%) invert(23%) sepia(13%) saturate(928%) hue-rotate(338deg) brightness(96%) contrast(90%)' }} />
-                        <span className="font-display font-medium text-lg md:text-xl text-text-primary tracking-wide opacity-80 pt-1">AI</span>
-                    </Link>
-                    <button onClick={handleLogout} className="md:hidden text-xs text-text-secondary border border-glass-border px-3 py-1 rounded">Log Out</button>
-                </div>
-
-                <nav className="flex md:flex-col gap-2 overflow-x-auto md:overflow-visible pb-2 md:pb-0 scrollbar-hide">
-                    <button
-                        onClick={() => setActiveTab('inventory')}
-                        className={`md:w-full text-left px-4 py-2 md:py-3 rounded-lg font-medium transition-all whitespace-nowrap text-sm md:text-base ${activeTab === 'inventory' ? 'bg-accent-jp/10 text-accent-jp' : 'text-text-secondary hover:bg-glass-border/30'}`}
-                    >
-                        Live Inventory
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('insights')}
-                        className={`md:w-full text-left px-4 py-2 md:py-3 rounded-lg font-medium transition-all whitespace-nowrap text-sm md:text-base ${activeTab === 'insights' ? 'bg-accent-jp/10 text-accent-jp' : 'text-text-secondary hover:bg-glass-border/30'}`}
-                    >
-                        Insights
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('profile')}
-                        className={`md:w-full text-left px-4 py-2 md:py-3 rounded-lg font-medium transition-all whitespace-nowrap text-sm md:text-base ${activeTab === 'profile' ? 'bg-accent-jp/10 text-accent-jp' : 'text-text-secondary hover:bg-glass-border/30'}`}
-                    >
-                        Profile
-                    </button>
-                </nav>
-
-                <div className="mt-auto pt-8 border-t border-glass-border hidden md:block">
-                    <button onClick={handleLogout} className="flex items-center gap-2 text-sm text-text-secondary hover:text-text-primary px-4">
-                        <span>←</span> Log Out
-                    </button>
-                </div>
-            </aside>
-
-            {/* Main Content */}
-            <main className="flex-1 p-4 md:p-12 bg-bg-secondary/30">
-                <header className="mb-6 md:mb-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div>
-                        <h1 className="text-3xl font-display font-bold text-text-primary mb-1">Welcome back, Ikoyi</h1>
-                        <p className="text-text-secondary text-sm">Manage your real-time generative parameters.</p>
+        return (
+            <div className="min-h-screen w-full bg-bg-primary flex flex-col md:flex-row">
+                {/* Sidebar */}
+                <aside className="w-full md:w-64 border-b md:border-b-0 md:border-r border-glass-border p-4 md:p-6 flex flex-col md:pt-8 bg-white/50 backdrop-blur-md md:bg-transparent">
+                    <div className="flex justify-between items-center md:block mb-4 md:mb-12">
+                        <Link to="/" className="flex items-center gap-2 md:px-2 cursor-pointer hover:opacity-80 transition-opacity" title="Back to Home">
+                            <img src="/nusion-logo.png" alt="Logo" className="h-6 md:h-8 w-auto opacity-80" style={{ filter: 'brightness(0) saturate(100%) invert(23%) sepia(13%) saturate(928%) hue-rotate(338deg) brightness(96%) contrast(90%)' }} />
+                            <span className="font-display font-medium text-lg md:text-xl text-text-primary tracking-wide opacity-80 pt-1">AI</span>
+                        </Link>
+                        <button onClick={handleLogout} className="md:hidden text-xs text-text-secondary border border-glass-border px-3 py-1 rounded">Log Out</button>
                     </div>
-                    <div className="flex gap-4">
-                        <div className="glass-panel px-4 py-2 flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                            <span className="text-xs font-mono font-bold text-text-primary">System Online v4.3.6 (Global)</span>
+
+                    <nav className="flex md:flex-col gap-2 overflow-x-auto md:overflow-visible pb-2 md:pb-0 scrollbar-hide">
+                        <button
+                            onClick={() => setActiveTab('inventory')}
+                            className={`md:w-full text-left px-4 py-2 md:py-3 rounded-lg font-medium transition-all whitespace-nowrap text-sm md:text-base ${activeTab === 'inventory' ? 'bg-accent-jp/10 text-accent-jp' : 'text-text-secondary hover:bg-glass-border/30'}`}
+                        >
+                            Live Inventory
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('insights')}
+                            className={`md:w-full text-left px-4 py-2 md:py-3 rounded-lg font-medium transition-all whitespace-nowrap text-sm md:text-base ${activeTab === 'insights' ? 'bg-accent-jp/10 text-accent-jp' : 'text-text-secondary hover:bg-glass-border/30'}`}
+                        >
+                            Insights
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('profile')}
+                            className={`md:w-full text-left px-4 py-2 md:py-3 rounded-lg font-medium transition-all whitespace-nowrap text-sm md:text-base ${activeTab === 'profile' ? 'bg-accent-jp/10 text-accent-jp' : 'text-text-secondary hover:bg-glass-border/30'}`}
+                        >
+                            Profile
+                        </button>
+                    </nav>
+
+                    <div className="mt-auto pt-8 border-t border-glass-border hidden md:block">
+                        <button onClick={handleLogout} className="flex items-center gap-2 text-sm text-text-secondary hover:text-text-primary px-4">
+                            <span>←</span> Log Out
+                        </button>
+                    </div>
+                </aside>
+
+                {/* Main Content */}
+                <main className="flex-1 p-4 md:p-12 bg-bg-secondary/30">
+                    <header className="mb-6 md:mb-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div>
+                            <h1 className="text-3xl font-display font-bold text-text-primary mb-1">Welcome back, Ikoyi</h1>
+                            <p className="text-text-secondary text-sm">Manage your real-time generative parameters.</p>
                         </div>
-                    </div>
-                </header>
-
-                {/* --- INVENTORY VIEW --- */}
-                {activeTab === 'inventory' && (
-                    <div className="animate-[fadeIn_0.3s]">
-                        <div className="flex flex-col md:flex-row justify-between items-end mb-8 gap-4">
-                            <div>
-                                <h2 className="text-xl font-bold text-text-primary mb-1">Kitchen Operations</h2>
-                                <p className="text-xs text-text-secondary">Manage your menu offerings and raw ingredient stock.</p>
+                        <div className="flex gap-4">
+                            <div className="glass-panel px-4 py-2 flex items-center gap-2">
+                                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                                <span className="text-xs font-mono font-bold text-text-primary">System Online v4.3.6 (Global)</span>
                             </div>
+                        </div>
+                    </header>
 
-                            {/* Inventory Sub-Nav */}
-                            <div className="flex bg-glass-border/30 p-1 rounded-lg">
-                                <button
-                                    onClick={() => setInventoryView('meals')}
-                                    className={`px-4 py-2 rounded-md text-sm font-bold transition-all ${inventoryView === 'meals' ? 'bg-bg-primary shadow text-text-primary' : 'text-text-secondary hover:text-text-primary'}`}
-                                >
-                                    Menu Meals
-                                </button>
-                                <button
-                                    onClick={() => setInventoryView('pantry')}
-                                    className={`px-4 py-2 rounded-md text-sm font-bold transition-all ${inventoryView === 'pantry' ? 'bg-bg-primary shadow text-text-primary' : 'text-text-secondary hover:text-text-primary'}`}
-                                >
-                                    Pantry Stock
-                                </button>
-                            </div>
+                    {/* --- INVENTORY VIEW --- */}
+                    {activeTab === 'inventory' && (
+                        <div className="animate-[fadeIn_0.3s]">
+                            <div className="flex flex-col md:flex-row justify-between items-end mb-8 gap-4">
+                                <div>
+                                    <h2 className="text-xl font-bold text-text-primary mb-1">Kitchen Operations</h2>
+                                    <p className="text-xs text-text-secondary">Manage your menu offerings and raw ingredient stock.</p>
+                                </div>
 
-                            <div className="flex gap-2 items-center relative">
-                                {/* Clear Data Options */}
-                                <div className="relative">
+                                {/* Inventory Sub-Nav */}
+                                <div className="flex bg-glass-border/30 p-1 rounded-lg">
                                     <button
-                                        onClick={() => setShowClearMenu(!showClearMenu)}
-                                        className="px-4 py-2 border border-red-200 text-red-400 rounded-lg text-sm font-bold hover:bg-red-50 hover:text-red-500 transition-colors flex items-center gap-1"
+                                        onClick={() => setInventoryView('meals')}
+                                        className={`px-4 py-2 rounded-md text-sm font-bold transition-all ${inventoryView === 'meals' ? 'bg-bg-primary shadow text-text-primary' : 'text-text-secondary hover:text-text-primary'}`}
                                     >
-                                        <span>🗑️</span> Clear
+                                        Menu Meals
                                     </button>
-
-                                    {showClearMenu && (
-                                        <div className="absolute right-0 top-full mt-2 w-40 glass-panel border border-glass-border shadow-2xl overflow-hidden z-50 flex flex-col p-1 animate-[fadeIn_0.1s]">
-                                            <button
-                                                onClick={() => { clearData('Menu'); setShowClearMenu(false); }}
-                                                className="text-left px-3 py-2 text-xs text-text-secondary hover:bg-glass-border/50 hover:text-text-primary rounded transition-colors"
-                                            >
-                                                Clear Menu
-                                            </button>
-                                            <button
-                                                onClick={() => { clearData('Pantry'); setShowClearMenu(false); }}
-                                                className="text-left px-3 py-2 text-xs text-text-secondary hover:bg-glass-border/50 hover:text-text-primary rounded transition-colors"
-                                            >
-                                                Clear Pantry
-                                            </button>
-                                            <div className="h-px bg-glass-border my-1"></div>
-                                            <button
-                                                onClick={() => { clearData('All Data'); setShowClearMenu(false); }}
-                                                className="text-left px-3 py-2 text-xs text-red-500 hover:bg-red-50 hover:text-red-600 rounded font-bold transition-colors"
-                                            >
-                                                Clear All Data
-                                            </button>
-                                        </div>
-                                    )}
-                                </div>
-
-                                <div className="w-px h-8 bg-glass-border mx-2"></div>
-
-                                <button
-                                    onClick={() => document.getElementById('menu-upload').click()}
-                                    className="px-4 py-2 border border-accent-jp/50 text-accent-jp rounded-lg text-sm font-bold hover:bg-accent-jp/10 transition-colors flex items-center gap-2"
-                                >
-                                    <span>📄</span> {analyzingMenu ? 'Analyzing...' : 'Auto-Scan Menu'}
-                                </button>
-                                <input
-                                    type="file"
-                                    id="menu-upload"
-                                    className="hidden"
-                                    accept="image/*,.pdf"
-                                    onChange={(e) => handleMenuUpload(e)}
-                                />
-                                <button
-                                    onClick={openAddModal}
-                                    className="px-4 py-2 bg-text-primary text-bg-primary rounded-lg text-sm font-bold hover:opacity-90 transition-opacity"
-                                >
-                                    + Add Item
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Analysis Loading State */}
-                        {analyzingMenu && (
-                            <div className="absolute inset-0 bg-bg-primary/80 backdrop-blur-sm z-50 flex items-center justify-center p-8">
-                                <div className="glass-panel p-8 max-w-sm w-full text-center space-y-4 shadow-2xl border-accent-jp/30">
-                                    <div className="w-16 h-16 bg-accent-jp/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                                        <span className="text-2xl animate-pulse">🧠</span>
-                                    </div>
-                                    <h3 className="text-xl font-bold text-text-primary">Gemini AI is Thinking...</h3>
-
-                                    <div className="w-full bg-glass-border rounded-full h-2 overflow-hidden relative">
-                                        <div
-                                            className="bg-accent-jp h-full transition-all duration-300 rounded-full"
-                                            style={{ width: `${analysisProgress}%` }}
-                                        ></div>
-                                    </div>
-
-                                    <div className="flex justify-between text-xs text-text-secondary font-mono">
-                                        <span>Processing...</span>
-                                        <span>{analysisProgress}%</span>
-                                    </div>
-
-                                    <p className="text-sm text-text-secondary">
-                                        {analysisProgress < 40 ? 'Extracting text from image...' : analysisProgress < 80 ? 'Identifying ingredients & prices...' : 'Structuring data for you...'}
-                                    </p>
-                                </div>
-                            </div>
-                        )}
-                        {/* Empty State Hero - Only if BOTH empty */}
-                        {!analyzingMenu && inventory.length === 0 && menuItems.length === 0 && (
-                            <div className="glass-panel p-12 text-center border border-dashed border-glass-border mb-8">
-                                <div className="text-6xl mb-4">🍽️</div>
-                                <h3 className="2xl font-bold text-text-primary mb-2">Start Your Kitchen</h3>
-                                <p className="text-text-secondary max-w-md mx-auto mb-8">
-                                    The Generative Engine needs to know what you serve. Upload your existing menu to instantly populate your Meals and Pantry.
-                                </p>
-                                <button
-                                    onClick={() => document.getElementById('menu-upload').click()}
-                                    className="px-8 py-4 bg-accent-jp text-white rounded-full font-bold text-lg shadow-lg hover:shadow-xl hover:scale-105 transition-all animate-[pulse_3s_infinite]"
-                                >
-                                    Upload Menu PDF / Image
-                                </button>
-                            </div>
-                        )}
-
-
-                        {/* MEALS TABLE */}
-                        {inventoryView === 'meals' && menuItems.length > 0 && (
-                            <div className="glass-panel overflow-x-auto animate-[fadeIn_0.3s]">
-                                <table className="w-full text-left">
-                                    <thead className="bg-glass-border/20 text-xs uppercase text-text-secondary font-mono">
-                                        <tr>
-                                            <th className="p-4">Dish Name</th>
-                                            <th className="p-4">Price</th>
-                                            <th className="p-4">Status</th>
-                                            <th className="p-4">Key Ingredients</th>
-                                            <th className="p-4 text-right">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-glass-border">
-                                        {menuItems.map((meal) => (
-                                            <tr key={meal.id} className="hover:bg-glass-border/10 transition-colors">
-                                                <td className="p-4 font-bold text-text-primary">{meal.name}</td>
-                                                <td className="p-4 font-mono text-text-secondary">
-                                                    {profile.currency || '£'}{meal.price.toString().replace(/[^0-9.]/g, '')}
-                                                </td>
-                                                <td className="p-4">
-                                                    <span className={`px-2 py-1 rounded-full text-xs font-bold ${meal.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
-                                                        }`}>
-                                                        {meal.status}
-                                                    </span>
-                                                </td>
-                                                <td className="p-4 text-xs text-text-secondary">
-                                                    {meal.ingredients.join(', ')}
-                                                </td>
-                                                <td className="p-4 text-right">
-                                                    <button onClick={() => openEditModal(meal)} className="text-accent-jp hover:underline text-sm font-mono">Edit</button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        )}
-
-                        {/* PANTRY TABLE */}
-                        {inventoryView === 'pantry' && inventory.length > 0 && (
-                            <div className="glass-panel overflow-x-auto animate-[fadeIn_0.3s]">
-                                <table className="w-full text-left">
-                                    <thead className="bg-glass-border/20 text-xs uppercase text-text-secondary font-mono">
-                                        <tr>
-                                            <th className="p-4">Ingredient</th>
-                                            <th className="p-4">Category</th>
-                                            <th className="p-4">Stock Level</th>
-                                            <th className="p-4">Status</th>
-                                            <th className="p-4 text-right">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-glass-border">
-                                        {inventory.map((item) => (
-                                            <tr key={item.id} className="hover:bg-glass-border/10 transition-colors">
-                                                <td className="p-4 font-bold text-text-primary">{item.item}</td>
-                                                <td className="p-4 text-text-secondary text-sm">{item.category}</td>
-                                                <td className="p-4">
-                                                    <span className={`px-2 py-1 rounded-full text-xs font-bold ${item.stock === 'High' ? 'bg-green-100 text-green-700' :
-                                                        item.stock === 'Medium' ? 'bg-yellow-100 text-yellow-700' :
-                                                            'bg-red-100 text-red-700'
-                                                        }`}>
-                                                        {item.stock}
-                                                    </span>
-                                                </td>
-                                                <td className="p-4 text-sm text-text-secondary">{item.status}</td>
-                                                <td className="p-4 text-right">
-                                                    <button onClick={() => openEditModal(item)} className="text-accent-jp hover:underline text-sm font-mono">Edit</button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        )}
-                    </div>
-                )
-                }
-
-                {/* Add Item Modal */}
-                {
-                    showAddItem && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-[fadeIn_0.2s]">
-                            <div className="bg-bg-primary border border-glass-border p-8 rounded-2xl w-full max-w-md shadow-2xl relative">
-                                <button
-                                    onClick={() => { setShowAddItem(false); setEditingItem(null); }}
-                                    className="absolute top-4 right-4 text-text-secondary hover:text-text-primary"
-                                >✕</button>
-
-                                <h3 className="text-xl font-bold text-text-primary mb-6">
-                                    {editingItem ? 'Edit Item' : 'Add New Item'} <span className="text-xs font-mono text-text-secondary opacity-50 ml-2">({inventoryView === 'meals' ? 'Meal' : 'Pantry'})</span>
-                                </h3>
-
-                                <form onSubmit={handleSaveItem} className="space-y-4">
-                                    <div className="space-y-1">
-                                        <label className="text-xs font-mono text-text-secondary uppercase">
-                                            {inventoryView === 'meals' ? 'Dish Name' : 'Ingredient Name'}
-                                        </label>
-                                        <input
-                                            name="item"
-                                            defaultValue={editingItem ? (editingItem.item || editingItem.name) : ''}
-                                            required
-                                            className="w-full bg-bg-secondary border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp outline-none"
-                                            placeholder={inventoryView === 'meals' ? "e.g. Jollof Rice" : "e.g. Black Truffle"}
-                                        />
-                                    </div>
-
-                                    {inventoryView === 'meals' && (
-                                        <div className="space-y-1">
-                                            <label className="text-xs font-mono text-text-secondary uppercase">Price</label>
-                                            <input
-                                                name="price"
-                                                defaultValue={editingItem ? editingItem.price : ''}
-                                                className="w-full bg-bg-secondary border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp outline-none"
-                                                placeholder="e.g. £24"
-                                            />
-                                        </div>
-                                    )}
-
-                                    {inventoryView === 'pantry' && (
-                                        <>
-                                            <div className="space-y-1">
-                                                <label className="text-xs font-mono text-text-secondary uppercase">Category</label>
-                                                <select
-                                                    name="category"
-                                                    defaultValue={editingItem ? editingItem.category : 'Produce'}
-                                                    className="w-full bg-bg-secondary border border-glass-border rounded p-3 text-text-primary outline-none"
-                                                >
-                                                    <option>Produce</option>
-                                                    <option>Protein</option>
-                                                    <option>Spices</option>
-                                                    <option>Pantry</option>
-                                                    <option>Dry Goods</option>
-                                                </select>
-                                            </div>
-                                            <div className="space-y-1">
-                                                <label className="text-xs font-mono text-text-secondary uppercase">Stock Level</label>
-                                                <select
-                                                    name="stock"
-                                                    defaultValue={editingItem ? editingItem.stock : 'Medium'}
-                                                    className="w-full bg-bg-secondary border border-glass-border rounded p-3 text-text-primary outline-none"
-                                                >
-                                                    <option>High</option>
-                                                    <option>Medium</option>
-                                                    <option>Low</option>
-                                                </select>
-                                            </div>
-                                        </>
-                                    )}
-
-                                    <div className="flex gap-2 pt-4">
-                                        {editingItem && (
-                                            <button
-                                                type="button"
-                                                onClick={handleDeleteItem}
-                                                className="px-4 py-3 border border-red-500/30 text-red-500 rounded-lg font-bold hover:bg-red-500/10 transition-colors"
-                                            >
-                                                Delete
-                                            </button>
-                                        )}
-                                        <button type="submit" className="flex-1 py-3 bg-text-primary text-bg-primary rounded-lg font-bold hover:opacity-90">
-                                            {editingItem ? 'Save Changes' : 'Add to Inventory'}
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    )
-                }
-
-
-                {/* --- PROFILE VIEW --- */}
-                {
-                    activeTab === 'profile' && (
-                        <div className="animate-[fadeIn_0.3s] max-w-3xl">
-                            <div className="flex justify-between items-center mb-8">
-                                <h2 className="text-xl font-bold text-text-primary">Restaurant Profile</h2>
-                                <button
-                                    onClick={() => {
-                                        localStorage.setItem(`restaurant_preferences_${user.id}`, JSON.stringify(profile));
-                                        alert('Profile saved!');
-                                    }}
-                                    className="px-6 py-2 bg-text-primary text-bg-primary rounded-lg text-sm font-bold hover:opacity-90 transition-opacity"
-                                >
-                                    Save Changes
-                                </button>
-                            </div>
-
-                            <div className="space-y-8">
-                                {/* Basic Info */}
-                                <section className="glass-panel p-8">
-                                    <h3 className="text-lg font-bold text-text-primary mb-6 flex items-center gap-2">
-                                        <span>📍</span> General Information
-                                    </h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div className="space-y-2">
-                                            <label className="text-xs font-mono text-text-secondary uppercase">Restaurant Name</label>
-                                            <input
-                                                type="text"
-                                                value={profile.name}
-                                                onChange={(e) => setProfile({ ...profile, name: e.target.value })}
-                                                className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none"
-                                            />
-                                        </div>
-                                        <div className="space-y-2 relative">
-                                            <label className="text-xs font-mono text-text-secondary uppercase">Location City</label>
-                                            <input
-                                                type="text"
-                                                value={profile.location}
-                                                onChange={(e) => {
-                                                    setProfile({ ...profile, location: e.target.value });
-                                                    setShowCitySuggestions(true);
-                                                }}
-                                                onFocus={() => setShowCitySuggestions(true)}
-                                                className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none"
-                                                placeholder="Start typing..."
-                                            />
-                                            {/* City Suggestions Dropdown */}
-                                            {showCitySuggestions && profile.location.length > 0 && (
-                                                <div className="absolute top-full left-0 w-full bg-bg-primary border border-glass-border rounded-lg shadow-xl z-50 max-h-48 overflow-y-auto mt-1">
-                                                    {filteredCities.length > 0 ? (
-                                                        filteredCities.map((city, index) => (
-                                                            <div
-                                                                key={index}
-                                                                onClick={() => handleCitySelect(city)}
-                                                                className="px-4 py-2 hover:bg-glass-border/30 cursor-pointer text-sm text-text-primary flex justify-between"
-                                                            >
-                                                                <span>{city.city}, {city.country}</span>
-                                                                <span className="text-text-secondary font-mono">{city.currency} ({city.symbol})</span>
-                                                            </div>
-                                                        ))
-                                                    ) : (
-                                                        <div className="px-4 py-2 text-xs text-text-secondary">No matching cities found</div>
-                                                    )}
-                                                </div>
-                                            )}
-                                            {/* Click outside listener could be added here, currently relies on selection */}
-                                        </div>
-
-                                        {/* Currency Selector */}
-                                        <div className="space-y-2">
-                                            <label className="text-xs font-mono text-text-secondary uppercase">Currency</label>
-                                            <select
-                                                value={profile.currency}
-                                                onChange={(e) => setProfile({ ...profile, currency: e.target.value })}
-                                                className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none font-mono"
-                                            >
-                                                {/* Unique Currencies from list */}
-                                                {[...new Set(cities.map(c => c.symbol))].map(symbol => (
-                                                    <option key={symbol} value={symbol}>{symbol} - {cities.find(c => c.symbol === symbol)?.currency}</option>
-                                                ))}
-                                                <option value="£">£ - GBP</option>
-                                                <option value="$">$ - USD</option>
-                                                <option value="€">€ - EUR</option>
-                                                <option value="₦">₦ - NGN</option>
-                                            </select>
-                                        </div>
-                                        <div className="md:col-span-2 space-y-2">
-                                            <label className="text-xs font-mono text-text-secondary uppercase">Description</label>
-                                            <textarea
-                                                value={profile.description}
-                                                onChange={(e) => setProfile({ ...profile, description: e.target.value })}
-                                                rows={3}
-                                                className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none resize-none"
-                                            />
-                                        </div>
-                                    </div>
-                                </section>
-
-                                {/* Culinary Identity */}
-                                <section className="glass-panel p-8 relative overflow-hidden">
-                                    <div className="absolute top-0 right-0 w-32 h-32 bg-accent-jp/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
-                                    <h3 className="text-lg font-bold text-text-primary mb-6 flex items-center gap-2 relative z-10">
-                                        <span>🍳</span> Culinary Identity
-                                    </h3>
-                                    <p className="text-sm text-text-secondary mb-6 relative z-10">These settings guide the Generative Engine's creativity.</p>
-
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
-                                        <div className="space-y-2">
-                                            <label className="text-xs font-mono text-text-secondary uppercase">Cuisine Type</label>
-                                            <input
-                                                type="text"
-                                                placeholder="e.g. Modern West African"
-                                                value={profile.cuisine}
-                                                onChange={(e) => setProfile({ ...profile, cuisine: e.target.value })}
-                                                className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none"
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label className="text-xs font-mono text-text-secondary uppercase">Philosophy</label>
-                                            <input
-                                                type="text"
-                                                placeholder="e.g. Hyper-seasonal, Fermentation"
-                                                value={profile.philosophy}
-                                                onChange={(e) => setProfile({ ...profile, philosophy: e.target.value })}
-                                                className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none"
-                                            />
-                                        </div>
-                                    </div>
-                                </section>
-
-                                {/* Operations & Context */}
-                                <section className="glass-panel p-8">
-                                    <h3 className="text-lg font-bold text-text-primary mb-6 flex items-center gap-2">
-                                        <span>⚙️</span> Operations & Context
-                                    </h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div className="space-y-2">
-                                            <label className="text-xs font-mono text-text-secondary uppercase">Operating Hours</label>
-                                            <input
-                                                type="text"
-                                                placeholder="e.g. Tue-Sun, 18:00 - 23:00"
-                                                value={profile.hours}
-                                                onChange={(e) => setProfile({ ...profile, hours: e.target.value })}
-                                                className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none"
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label className="text-xs font-mono text-text-secondary uppercase">Price Tier</label>
-                                            <select
-                                                value={profile.priceTier}
-                                                onChange={(e) => setProfile({ ...profile, priceTier: e.target.value })}
-                                                className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none"
-                                            >
-                                                <option value="$">Low ($)</option>
-                                                <option value="$$">Medium ($$)</option>
-                                                <option value="$$$">High ($$$)</option>
-                                                <option value="$$$$">Ultra-Premium ($$$$)</option>
-                                            </select>
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label className="text-xs font-mono text-text-secondary uppercase">Contact Email</label>
-                                            <input
-                                                type="email"
-                                                placeholder="chef@example.com"
-                                                value={profile.contactEmail}
-                                                onChange={(e) => setProfile({ ...profile, contactEmail: e.target.value })}
-                                                className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none"
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label className="text-xs font-mono text-text-secondary uppercase">Dietary Accommodations (comma sep.)</label>
-                                            <input
-                                                type="text"
-                                                placeholder="e.g. Vegan, Halal, Gluten-Free"
-                                                value={profile.dietaryTags}
-                                                onChange={(e) => setProfile({ ...profile, dietaryTags: e.target.value })}
-                                                className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none"
-                                            />
-                                        </div>
-                                    </div>
-                                </section>
-
-                                {/* Visuals */}
-                                <section className="glass-panel p-8">
-                                    <h3 className="text-lg font-bold text-text-primary mb-6 flex items-center gap-2">
-                                        <span>📸</span> Brand Visuals
-                                    </h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        {/* Logo Upload */}
-                                        <div className="space-y-2">
-                                            <label className="text-xs font-mono text-text-secondary uppercase">Logo</label>
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-16 h-16 rounded-full border border-glass-border overflow-hidden bg-bg-primary/50 flex items-center justify-center">
-                                                    {profile.logoUrl ? (
-                                                        <img src={profile.logoUrl} alt="Logo" className="w-full h-full object-cover" />
-                                                    ) : (
-                                                        <span className="text-2xl opacity-20">🖼️</span>
-                                                    )}
-                                                </div>
-                                                <div className="flex-1">
-                                                    <input
-                                                        type="file"
-                                                        accept="image/*"
-                                                        onChange={(e) => handleImageUpload(e.target.files[0], 'logoUrl')}
-                                                        className="w-full text-xs text-text-secondary file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-accent-jp/10 file:text-accent-jp hover:file:bg-accent-jp/20"
-                                                    />
-                                                    {uploading === 'logoUrl' && <span className="text-xs text-accent-jp animate-pulse ml-2">Uploading...</span>}
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Cover Upload */}
-                                        <div className="space-y-2">
-                                            <label className="text-xs font-mono text-text-secondary uppercase">Cover Image</label>
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-24 h-16 rounded border border-glass-border overflow-hidden bg-bg-primary/50 flex items-center justify-center">
-                                                    {profile.coverUrl ? (
-                                                        <img src={profile.coverUrl} alt="Cover" className="w-full h-full object-cover" />
-                                                    ) : (
-                                                        <span className="text-2xl opacity-20">🌄</span>
-                                                    )}
-                                                </div>
-                                                <div className="flex-1">
-                                                    <input
-                                                        type="file"
-                                                        accept="image/*"
-                                                        onChange={(e) => handleImageUpload(e.target.files[0], 'coverUrl')}
-                                                        className="w-full text-xs text-text-secondary file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-accent-jp/10 file:text-accent-jp hover:file:bg-accent-jp/20"
-                                                    />
-                                                    {uploading === 'coverUrl' && <span className="text-xs text-accent-jp animate-pulse ml-2">Uploading...</span>}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                </section>
-
-                                {/* Danger Zone */}
-                                <section className="glass-panel p-8 border border-red-500/20 bg-red-500/5">
-                                    <h3 className="text-lg font-bold text-red-500 mb-2 flex items-center gap-2">
-                                        <span>⚠️</span> Danger Zone
-                                    </h3>
-                                    <div className="flex justify-between items-center">
-                                        <div className="text-sm text-text-secondary">
-                                            <p className="font-bold text-text-primary">Delete Restaurant Account</p>
-                                            <p>Once you delete your account, there is no going back. Please be certain.</p>
-                                        </div>
-                                        <button
-                                            onClick={handleDeleteAccount}
-                                            className="px-4 py-2 border border-red-500 text-red-500 rounded-lg text-sm font-bold hover:bg-red-500 hover:text-white transition-all"
-                                        >
-                                            Delete Account
-                                        </button>
-                                    </div>
-                                </section>
-                            </div>
-                        </div >
-                    )
-                }
-
-                {/* --- INSIGHTS VIEW --- */}
-                {/* --- INSIGHTS VIEW --- */}
-                {
-                    activeTab === 'insights' && (
-                        <div className="animate-[fadeIn_0.3s] relative min-h-[400px]">
-
-                            {/* PENDING APPROVAL OVERLAY */}
-                            {approvalStatus === 'pending' && (
-                                <div className="absolute inset-0 z-50 bg-bg-primary/80 backdrop-blur-sm flex flex-col items-center justify-center text-center p-8 rounded-xl border border-glass-border">
-                                    <div className="w-16 h-16 bg-yellow-500/10 text-yellow-500 rounded-full flex items-center justify-center mb-4 animate-pulse">
-                                        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-                                    </div>
-                                    <h3 className="text-2xl font-bold text-text-primary mb-2">Account Verification Pending</h3>
-                                    <p className="text-text-secondary max-w-md mb-8">
-                                        Your restaurant profile is currently under review by our curation team.
-                                        Insights and live data access will be enabled once approved.
-                                    </p>
-
-                                    {/* SIMULATION BUTTON (For Demo) */}
                                     <button
-                                        onClick={() => {
-                                            setApprovalStatus('approved');
-                                            localStorage.setItem(`restaurant_approval_${user.id}`, 'approved');
-                                        }}
-                                        className="text-xs font-mono text-text-secondary border border-dashed border-text-secondary/30 px-3 py-1 rounded hover:bg-text-secondary/10 transition-colors"
+                                        onClick={() => setInventoryView('pantry')}
+                                        className={`px-4 py-2 rounded-md text-sm font-bold transition-all ${inventoryView === 'pantry' ? 'bg-bg-primary shadow text-text-primary' : 'text-text-secondary hover:text-text-primary'}`}
                                     >
-                                        [DEV: Simulate Approval]
+                                        Pantry Stock
+                                    </button>
+                                </div>
+
+                                <div className="flex gap-2 items-center relative">
+                                    {/* Clear Data Options */}
+                                    <div className="relative">
+                                        <button
+                                            onClick={() => setShowClearMenu(!showClearMenu)}
+                                            className="px-4 py-2 border border-red-200 text-red-400 rounded-lg text-sm font-bold hover:bg-red-50 hover:text-red-500 transition-colors flex items-center gap-1"
+                                        >
+                                            <span>🗑️</span> Clear
+                                        </button>
+
+                                        {showClearMenu && (
+                                            <div className="absolute right-0 top-full mt-2 w-40 glass-panel border border-glass-border shadow-2xl overflow-hidden z-50 flex flex-col p-1 animate-[fadeIn_0.1s]">
+                                                <button
+                                                    onClick={() => { clearData('Menu'); setShowClearMenu(false); }}
+                                                    className="text-left px-3 py-2 text-xs text-text-secondary hover:bg-glass-border/50 hover:text-text-primary rounded transition-colors"
+                                                >
+                                                    Clear Menu
+                                                </button>
+                                                <button
+                                                    onClick={() => { clearData('Pantry'); setShowClearMenu(false); }}
+                                                    className="text-left px-3 py-2 text-xs text-text-secondary hover:bg-glass-border/50 hover:text-text-primary rounded transition-colors"
+                                                >
+                                                    Clear Pantry
+                                                </button>
+                                                <div className="h-px bg-glass-border my-1"></div>
+                                                <button
+                                                    onClick={() => { clearData('All Data'); setShowClearMenu(false); }}
+                                                    className="text-left px-3 py-2 text-xs text-red-500 hover:bg-red-50 hover:text-red-600 rounded font-bold transition-colors"
+                                                >
+                                                    Clear All Data
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="w-px h-8 bg-glass-border mx-2"></div>
+
+                                    <button
+                                        onClick={() => document.getElementById('menu-upload').click()}
+                                        className="px-4 py-2 border border-accent-jp/50 text-accent-jp rounded-lg text-sm font-bold hover:bg-accent-jp/10 transition-colors flex items-center gap-2"
+                                    >
+                                        <span>📄</span> {analyzingMenu ? 'Analyzing...' : 'Auto-Scan Menu'}
+                                    </button>
+                                    <input
+                                        type="file"
+                                        id="menu-upload"
+                                        className="hidden"
+                                        accept="image/*,.pdf"
+                                        onChange={(e) => handleMenuUpload(e)}
+                                    />
+                                    <button
+                                        onClick={openAddModal}
+                                        className="px-4 py-2 bg-text-primary text-bg-primary rounded-lg text-sm font-bold hover:opacity-90 transition-opacity"
+                                    >
+                                        + Add Item
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Analysis Loading State */}
+                            {analyzingMenu && (
+                                <div className="absolute inset-0 bg-bg-primary/80 backdrop-blur-sm z-50 flex items-center justify-center p-8">
+                                    <div className="glass-panel p-8 max-w-sm w-full text-center space-y-4 shadow-2xl border-accent-jp/30">
+                                        <div className="w-16 h-16 bg-accent-jp/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <span className="text-2xl animate-pulse">🧠</span>
+                                        </div>
+                                        <h3 className="text-xl font-bold text-text-primary">Gemini AI is Thinking...</h3>
+
+                                        <div className="w-full bg-glass-border rounded-full h-2 overflow-hidden relative">
+                                            <div
+                                                className="bg-accent-jp h-full transition-all duration-300 rounded-full"
+                                                style={{ width: `${analysisProgress}%` }}
+                                            ></div>
+                                        </div>
+
+                                        <div className="flex justify-between text-xs text-text-secondary font-mono">
+                                            <span>Processing...</span>
+                                            <span>{analysisProgress}%</span>
+                                        </div>
+
+                                        <p className="text-sm text-text-secondary">
+                                            {analysisProgress < 40 ? 'Extracting text from image...' : analysisProgress < 80 ? 'Identifying ingredients & prices...' : 'Structuring data for you...'}
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
+                            {/* Empty State Hero - Only if BOTH empty */}
+                            {!analyzingMenu && inventory.length === 0 && menuItems.length === 0 && (
+                                <div className="glass-panel p-12 text-center border border-dashed border-glass-border mb-8">
+                                    <div className="text-6xl mb-4">🍽️</div>
+                                    <h3 className="2xl font-bold text-text-primary mb-2">Start Your Kitchen</h3>
+                                    <p className="text-text-secondary max-w-md mx-auto mb-8">
+                                        The Generative Engine needs to know what you serve. Upload your existing menu to instantly populate your Meals and Pantry.
+                                    </p>
+                                    <button
+                                        onClick={() => document.getElementById('menu-upload').click()}
+                                        className="px-8 py-4 bg-accent-jp text-white rounded-full font-bold text-lg shadow-lg hover:shadow-xl hover:scale-105 transition-all animate-[pulse_3s_infinite]"
+                                    >
+                                        Upload Menu PDF / Image
                                     </button>
                                 </div>
                             )}
 
-                            <div className={`grid grid-cols-1 md:grid-cols-2 gap-8 ${approvalStatus === 'pending' ? 'blur-sm select-none opacity-50' : ''}`}>
-                                {/* Stat Card 1 */}
-                                <div className="glass-panel p-8">
-                                    <span className="text-sm text-text-secondary uppercase tracking-wider block mb-4">Total Generations</span>
-                                    <div className="flex justify-between items-end mb-4">
-                                        <span className="text-5xl font-mono text-text-primary">{insights.totalGenerations}</span>
-                                        <span className="text-accent-jp text-sm font-bold bg-accent-jp/10 px-2 py-1 rounded">Live</span>
-                                    </div>
-                                    <div className="w-full bg-glass-border h-2 rounded-full overflow-hidden">
-                                        <div className="bg-accent-jp h-full w-full animate-[pulse_3s_infinite]"></div>
-                                    </div>
-                                </div>
 
-                                {/* Stat Card 2 */}
-                                <div className="glass-panel p-8">
-                                    <span className="text-sm text-text-secondary uppercase tracking-wider block mb-4">Total Value Generated</span>
-                                    <div className="flex justify-between items-end mb-4">
-                                        <span className="text-3xl font-display font-bold text-text-primary">
-                                            {profile.currency}{insights.totalRevenue.toLocaleString()}
-                                        </span>
-                                        <span className="text-text-secondary text-sm">Est. Revenue</span>
-                                    </div>
-                                    <p className="text-xs text-text-secondary">Cumulative value of all generated menus.</p>
-                                </div>
-
-                                {/* Inventory Usage (Top Ingredients) */}
-                                <div className="glass-panel p-8 md:col-span-2">
-                                    <h3 className="text-lg font-bold text-text-primary mb-6">Trending Ingredients</h3>
-                                    {insights.topIngredients.length > 0 ? (
-                                        <div className="space-y-4">
-                                            {insights.topIngredients.map((ing, i) => (
-                                                <div key={i}>
-                                                    <div className="flex justify-between items-center text-sm mb-1">
-                                                        <span>{ing.name}</span>
-                                                        <span className="font-mono text-xs opacity-70">{ing.count} orders</span>
-                                                    </div>
-                                                    <div className="w-full bg-glass-border h-2 rounded-full overflow-hidden">
-                                                        <div
-                                                            className="bg-accent-jp h-full transition-all duration-1000"
-                                                            style={{ width: `${(ing.count / insights.maxIngredientCount) * 100}%` }}
-                                                        ></div>
-                                                    </div>
-                                                </div>
+                            {/* MEALS TABLE */}
+                            {inventoryView === 'meals' && menuItems.length > 0 && (
+                                <div className="glass-panel overflow-x-auto animate-[fadeIn_0.3s]">
+                                    <table className="w-full text-left">
+                                        <thead className="bg-glass-border/20 text-xs uppercase text-text-secondary font-mono">
+                                            <tr>
+                                                <th className="p-4">Dish Name</th>
+                                                <th className="p-4">Price</th>
+                                                <th className="p-4">Status</th>
+                                                <th className="p-4">Key Ingredients</th>
+                                                <th className="p-4 text-right">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-glass-border">
+                                            {menuItems.map((meal) => (
+                                                <tr key={meal.id} className="hover:bg-glass-border/10 transition-colors">
+                                                    <td className="p-4 font-bold text-text-primary">{meal.name}</td>
+                                                    <td className="p-4 font-mono text-text-secondary">
+                                                        {profile.currency || '£'}{meal.price.toString().replace(/[^0-9.]/g, '')}
+                                                    </td>
+                                                    <td className="p-4">
+                                                        <span className={`px-2 py-1 rounded-full text-xs font-bold ${meal.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
+                                                            }`}>
+                                                            {meal.status}
+                                                        </span>
+                                                    </td>
+                                                    <td className="p-4 text-xs text-text-secondary">
+                                                        {meal.ingredients.join(', ')}
+                                                    </td>
+                                                    <td className="p-4 text-right">
+                                                        <button onClick={() => openEditModal(meal)} className="text-accent-jp hover:underline text-sm font-mono">Edit</button>
+                                                    </td>
+                                                </tr>
                                             ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+
+                            {/* PANTRY TABLE */}
+                            {inventoryView === 'pantry' && inventory.length > 0 && (
+                                <div className="glass-panel overflow-x-auto animate-[fadeIn_0.3s]">
+                                    <table className="w-full text-left">
+                                        <thead className="bg-glass-border/20 text-xs uppercase text-text-secondary font-mono">
+                                            <tr>
+                                                <th className="p-4">Ingredient</th>
+                                                <th className="p-4">Category</th>
+                                                <th className="p-4">Stock Level</th>
+                                                <th className="p-4">Status</th>
+                                                <th className="p-4 text-right">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-glass-border">
+                                            {inventory.map((item) => (
+                                                <tr key={item.id} className="hover:bg-glass-border/10 transition-colors">
+                                                    <td className="p-4 font-bold text-text-primary">{item.item}</td>
+                                                    <td className="p-4 text-text-secondary text-sm">{item.category}</td>
+                                                    <td className="p-4">
+                                                        <span className={`px-2 py-1 rounded-full text-xs font-bold ${item.stock === 'High' ? 'bg-green-100 text-green-700' :
+                                                            item.stock === 'Medium' ? 'bg-yellow-100 text-yellow-700' :
+                                                                'bg-red-100 text-red-700'
+                                                            }`}>
+                                                            {item.stock}
+                                                        </span>
+                                                    </td>
+                                                    <td className="p-4 text-sm text-text-secondary">{item.status}</td>
+                                                    <td className="p-4 text-right">
+                                                        <button onClick={() => openEditModal(item)} className="text-accent-jp hover:underline text-sm font-mono">Edit</button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+                        </div>
+                    )
+                    }
+
+                    {/* Add Item Modal */}
+                    {
+                        showAddItem && (
+                            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-[fadeIn_0.2s]">
+                                <div className="bg-bg-primary border border-glass-border p-8 rounded-2xl w-full max-w-md shadow-2xl relative">
+                                    <button
+                                        onClick={() => { setShowAddItem(false); setEditingItem(null); }}
+                                        className="absolute top-4 right-4 text-text-secondary hover:text-text-primary"
+                                    >✕</button>
+
+                                    <h3 className="text-xl font-bold text-text-primary mb-6">
+                                        {editingItem ? 'Edit Item' : 'Add New Item'} <span className="text-xs font-mono text-text-secondary opacity-50 ml-2">({inventoryView === 'meals' ? 'Meal' : 'Pantry'})</span>
+                                    </h3>
+
+                                    <form onSubmit={handleSaveItem} className="space-y-4">
+                                        <div className="space-y-1">
+                                            <label className="text-xs font-mono text-text-secondary uppercase">
+                                                {inventoryView === 'meals' ? 'Dish Name' : 'Ingredient Name'}
+                                            </label>
+                                            <input
+                                                name="item"
+                                                defaultValue={editingItem ? (editingItem.item || editingItem.name) : ''}
+                                                required
+                                                className="w-full bg-bg-secondary border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp outline-none"
+                                                placeholder={inventoryView === 'meals' ? "e.g. Jollof Rice" : "e.g. Black Truffle"}
+                                            />
                                         </div>
-                                    ) : (
-                                        <p className="text-text-secondary italic text-sm">No analysis data available yet.</p>
-                                    )}
+
+                                        {inventoryView === 'meals' && (
+                                            <div className="space-y-1">
+                                                <label className="text-xs font-mono text-text-secondary uppercase">Price</label>
+                                                <input
+                                                    name="price"
+                                                    defaultValue={editingItem ? editingItem.price : ''}
+                                                    className="w-full bg-bg-secondary border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp outline-none"
+                                                    placeholder="e.g. £24"
+                                                />
+                                            </div>
+                                        )}
+
+                                        {inventoryView === 'pantry' && (
+                                            <>
+                                                <div className="space-y-1">
+                                                    <label className="text-xs font-mono text-text-secondary uppercase">Category</label>
+                                                    <select
+                                                        name="category"
+                                                        defaultValue={editingItem ? editingItem.category : 'Produce'}
+                                                        className="w-full bg-bg-secondary border border-glass-border rounded p-3 text-text-primary outline-none"
+                                                    >
+                                                        <option>Produce</option>
+                                                        <option>Protein</option>
+                                                        <option>Spices</option>
+                                                        <option>Pantry</option>
+                                                        <option>Dry Goods</option>
+                                                    </select>
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <label className="text-xs font-mono text-text-secondary uppercase">Stock Level</label>
+                                                    <select
+                                                        name="stock"
+                                                        defaultValue={editingItem ? editingItem.stock : 'Medium'}
+                                                        className="w-full bg-bg-secondary border border-glass-border rounded p-3 text-text-primary outline-none"
+                                                    >
+                                                        <option>High</option>
+                                                        <option>Medium</option>
+                                                        <option>Low</option>
+                                                    </select>
+                                                </div>
+                                            </>
+                                        )}
+
+                                        <div className="flex gap-2 pt-4">
+                                            {editingItem && (
+                                                <button
+                                                    type="button"
+                                                    onClick={handleDeleteItem}
+                                                    className="px-4 py-3 border border-red-500/30 text-red-500 rounded-lg font-bold hover:bg-red-500/10 transition-colors"
+                                                >
+                                                    Delete
+                                                </button>
+                                            )}
+                                            <button type="submit" className="flex-1 py-3 bg-text-primary text-bg-primary rounded-lg font-bold hover:opacity-90">
+                                                {editingItem ? 'Save Changes' : 'Add to Inventory'}
+                                            </button>
+                                        </div>
+                                    </form>
                                 </div>
                             </div>
-                        </div >
-                    )
-                }
-            </main >
-        </div >
-    );
-};
+                        )
+                    }
 
-export default RestaurantDashboard;
+
+                    {/* --- PROFILE VIEW --- */}
+                    {
+                        activeTab === 'profile' && (
+                            <div className="animate-[fadeIn_0.3s] max-w-3xl">
+                                <div className="flex justify-between items-center mb-8">
+                                    <h2 className="text-xl font-bold text-text-primary">Restaurant Profile</h2>
+                                    <button
+                                        onClick={() => {
+                                            localStorage.setItem(`restaurant_preferences_${user.id}`, JSON.stringify(profile));
+                                            alert('Profile saved!');
+                                        }}
+                                        className="px-6 py-2 bg-text-primary text-bg-primary rounded-lg text-sm font-bold hover:opacity-90 transition-opacity"
+                                    >
+                                        Save Changes
+                                    </button>
+                                </div>
+
+                                <div className="space-y-8">
+                                    {/* Basic Info */}
+                                    <section className="glass-panel p-8">
+                                        <h3 className="text-lg font-bold text-text-primary mb-6 flex items-center gap-2">
+                                            <span>📍</span> General Information
+                                        </h3>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div className="space-y-2">
+                                                <label className="text-xs font-mono text-text-secondary uppercase">Restaurant Name</label>
+                                                <input
+                                                    type="text"
+                                                    value={profile.name}
+                                                    onChange={(e) => setProfile({ ...profile, name: e.target.value })}
+                                                    className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none"
+                                                />
+                                            </div>
+                                            <div className="space-y-2 relative">
+                                                <label className="text-xs font-mono text-text-secondary uppercase">Location City</label>
+                                                <input
+                                                    type="text"
+                                                    value={profile.location}
+                                                    onChange={(e) => {
+                                                        setProfile({ ...profile, location: e.target.value });
+                                                        setShowCitySuggestions(true);
+                                                    }}
+                                                    onFocus={() => setShowCitySuggestions(true)}
+                                                    className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none"
+                                                    placeholder="Start typing..."
+                                                />
+                                                {/* City Suggestions Dropdown */}
+                                                {showCitySuggestions && profile.location.length > 0 && (
+                                                    <div className="absolute top-full left-0 w-full bg-bg-primary border border-glass-border rounded-lg shadow-xl z-50 max-h-48 overflow-y-auto mt-1">
+                                                        {filteredCities.length > 0 ? (
+                                                            filteredCities.map((city, index) => (
+                                                                <div
+                                                                    key={index}
+                                                                    onClick={() => handleCitySelect(city)}
+                                                                    className="px-4 py-2 hover:bg-glass-border/30 cursor-pointer text-sm text-text-primary flex justify-between"
+                                                                >
+                                                                    <span>{city.city}, {city.country}</span>
+                                                                    <span className="text-text-secondary font-mono">{city.currency} ({city.symbol})</span>
+                                                                </div>
+                                                            ))
+                                                        ) : (
+                                                            <div className="px-4 py-2 text-xs text-text-secondary">No matching cities found</div>
+                                                        )}
+                                                    </div>
+                                                )}
+                                                {/* Click outside listener could be added here, currently relies on selection */}
+                                            </div>
+
+                                            {/* Currency Selector */}
+                                            <div className="space-y-2">
+                                                <label className="text-xs font-mono text-text-secondary uppercase">Currency</label>
+                                                <select
+                                                    value={profile.currency}
+                                                    onChange={(e) => setProfile({ ...profile, currency: e.target.value })}
+                                                    className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none font-mono"
+                                                >
+                                                    {/* Unique Currencies from list */}
+                                                    {[...new Set(cities.map(c => c.symbol))].map(symbol => (
+                                                        <option key={symbol} value={symbol}>{symbol} - {cities.find(c => c.symbol === symbol)?.currency}</option>
+                                                    ))}
+                                                    <option value="£">£ - GBP</option>
+                                                    <option value="$">$ - USD</option>
+                                                    <option value="€">€ - EUR</option>
+                                                    <option value="₦">₦ - NGN</option>
+                                                </select>
+                                            </div>
+                                            <div className="md:col-span-2 space-y-2">
+                                                <label className="text-xs font-mono text-text-secondary uppercase">Description</label>
+                                                <textarea
+                                                    value={profile.description}
+                                                    onChange={(e) => setProfile({ ...profile, description: e.target.value })}
+                                                    rows={3}
+                                                    className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none resize-none"
+                                                />
+                                            </div>
+                                        </div>
+                                    </section>
+
+                                    {/* Culinary Identity */}
+                                    <section className="glass-panel p-8 relative overflow-hidden">
+                                        <div className="absolute top-0 right-0 w-32 h-32 bg-accent-jp/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+                                        <h3 className="text-lg font-bold text-text-primary mb-6 flex items-center gap-2 relative z-10">
+                                            <span>🍳</span> Culinary Identity
+                                        </h3>
+                                        <p className="text-sm text-text-secondary mb-6 relative z-10">These settings guide the Generative Engine's creativity.</p>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
+                                            <div className="space-y-2">
+                                                <label className="text-xs font-mono text-text-secondary uppercase">Cuisine Type</label>
+                                                <input
+                                                    type="text"
+                                                    placeholder="e.g. Modern West African"
+                                                    value={profile.cuisine}
+                                                    onChange={(e) => setProfile({ ...profile, cuisine: e.target.value })}
+                                                    className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-xs font-mono text-text-secondary uppercase">Philosophy</label>
+                                                <input
+                                                    type="text"
+                                                    placeholder="e.g. Hyper-seasonal, Fermentation"
+                                                    value={profile.philosophy}
+                                                    onChange={(e) => setProfile({ ...profile, philosophy: e.target.value })}
+                                                    className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none"
+                                                />
+                                            </div>
+                                        </div>
+                                    </section>
+
+                                    {/* Operations & Context */}
+                                    <section className="glass-panel p-8">
+                                        <h3 className="text-lg font-bold text-text-primary mb-6 flex items-center gap-2">
+                                            <span>⚙️</span> Operations & Context
+                                        </h3>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div className="space-y-2">
+                                                <label className="text-xs font-mono text-text-secondary uppercase">Operating Hours</label>
+                                                <input
+                                                    type="text"
+                                                    placeholder="e.g. Tue-Sun, 18:00 - 23:00"
+                                                    value={profile.hours}
+                                                    onChange={(e) => setProfile({ ...profile, hours: e.target.value })}
+                                                    className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-xs font-mono text-text-secondary uppercase">Price Tier</label>
+                                                <select
+                                                    value={profile.priceTier}
+                                                    onChange={(e) => setProfile({ ...profile, priceTier: e.target.value })}
+                                                    className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none"
+                                                >
+                                                    <option value="$">Low ($)</option>
+                                                    <option value="$$">Medium ($$)</option>
+                                                    <option value="$$$">High ($$$)</option>
+                                                    <option value="$$$$">Ultra-Premium ($$$$)</option>
+                                                </select>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-xs font-mono text-text-secondary uppercase">Contact Email</label>
+                                                <input
+                                                    type="email"
+                                                    placeholder="chef@example.com"
+                                                    value={profile.contactEmail}
+                                                    onChange={(e) => setProfile({ ...profile, contactEmail: e.target.value })}
+                                                    className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-xs font-mono text-text-secondary uppercase">Dietary Accommodations (comma sep.)</label>
+                                                <input
+                                                    type="text"
+                                                    placeholder="e.g. Vegan, Halal, Gluten-Free"
+                                                    value={profile.dietaryTags}
+                                                    onChange={(e) => setProfile({ ...profile, dietaryTags: e.target.value })}
+                                                    className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none"
+                                                />
+                                            </div>
+                                        </div>
+                                    </section>
+
+                                    {/* Visuals */}
+                                    <section className="glass-panel p-8">
+                                        <h3 className="text-lg font-bold text-text-primary mb-6 flex items-center gap-2">
+                                            <span>📸</span> Brand Visuals
+                                        </h3>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            {/* Logo Upload */}
+                                            <div className="space-y-2">
+                                                <label className="text-xs font-mono text-text-secondary uppercase">Logo</label>
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-16 h-16 rounded-full border border-glass-border overflow-hidden bg-bg-primary/50 flex items-center justify-center">
+                                                        {profile.logoUrl ? (
+                                                            <img src={profile.logoUrl} alt="Logo" className="w-full h-full object-cover" />
+                                                        ) : (
+                                                            <span className="text-2xl opacity-20">🖼️</span>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <input
+                                                            type="file"
+                                                            accept="image/*"
+                                                            onChange={(e) => handleImageUpload(e.target.files[0], 'logoUrl')}
+                                                            className="w-full text-xs text-text-secondary file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-accent-jp/10 file:text-accent-jp hover:file:bg-accent-jp/20"
+                                                        />
+                                                        {uploading === 'logoUrl' && <span className="text-xs text-accent-jp animate-pulse ml-2">Uploading...</span>}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Cover Upload */}
+                                            <div className="space-y-2">
+                                                <label className="text-xs font-mono text-text-secondary uppercase">Cover Image</label>
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-24 h-16 rounded border border-glass-border overflow-hidden bg-bg-primary/50 flex items-center justify-center">
+                                                        {profile.coverUrl ? (
+                                                            <img src={profile.coverUrl} alt="Cover" className="w-full h-full object-cover" />
+                                                        ) : (
+                                                            <span className="text-2xl opacity-20">🌄</span>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <input
+                                                            type="file"
+                                                            accept="image/*"
+                                                            onChange={(e) => handleImageUpload(e.target.files[0], 'coverUrl')}
+                                                            className="w-full text-xs text-text-secondary file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-accent-jp/10 file:text-accent-jp hover:file:bg-accent-jp/20"
+                                                        />
+                                                        {uploading === 'coverUrl' && <span className="text-xs text-accent-jp animate-pulse ml-2">Uploading...</span>}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </section>
+
+                                    {/* Danger Zone */}
+                                    <section className="glass-panel p-8 border border-red-500/20 bg-red-500/5">
+                                        <h3 className="text-lg font-bold text-red-500 mb-2 flex items-center gap-2">
+                                            <span>⚠️</span> Danger Zone
+                                        </h3>
+                                        <div className="flex justify-between items-center">
+                                            <div className="text-sm text-text-secondary">
+                                                <p className="font-bold text-text-primary">Delete Restaurant Account</p>
+                                                <p>Once you delete your account, there is no going back. Please be certain.</p>
+                                            </div>
+                                            <button
+                                                onClick={handleDeleteAccount}
+                                                className="px-4 py-2 border border-red-500 text-red-500 rounded-lg text-sm font-bold hover:bg-red-500 hover:text-white transition-all"
+                                            >
+                                                Delete Account
+                                            </button>
+                                        </div>
+                                    </section>
+                                </div>
+                            </div >
+                        )
+                    }
+
+                    {/* --- INSIGHTS VIEW --- */}
+                    {
+                        activeTab === 'insights' && (
+                            <div className="animate-[fadeIn_0.3s] relative min-h-[500px] w-full isolate">
+
+                                {/* PENDING APPROVAL OVERLAY */}
+                                {approvalStatus === 'pending' && (
+                                    <div className="absolute inset-0 z-[100] bg-white/90 backdrop-blur-md flex flex-col items-center justify-center text-center p-8 rounded-xl border border-glass-border shadow-2xl">
+                                        <div className="w-16 h-16 bg-yellow-500/10 text-yellow-500 rounded-full flex items-center justify-center mb-4 animate-pulse">
+                                            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                                        </div>
+                                        <h3 className="text-2xl font-bold text-text-primary mb-2">Account Verification Pending</h3>
+                                        <p className="text-text-secondary max-w-md mb-8">
+                                            Your restaurant profile is currently under review by our curation team.
+                                            Insights and live data access will be enabled once approved.
+                                        </p>
+
+                                        {/* SIMULATION BUTTON (For Demo) */}
+                                        <button
+                                            onClick={() => {
+                                                setApprovalStatus('approved');
+                                                localStorage.setItem(`restaurant_approval_${user.id}`, 'approved');
+                                            }}
+                                            className="text-xs font-mono text-text-secondary border border-dashed border-text-secondary/30 px-3 py-1 rounded hover:bg-text-secondary/10 transition-colors"
+                                        >
+                                            [DEV: Simulate Approval]
+                                        </button>
+                                    </div>
+                                )}
+
+                                <div className={`grid grid-cols-1 md:grid-cols-2 gap-8 ${approvalStatus === 'pending' ? 'blur-sm select-none opacity-50' : ''}`}>
+                                    {/* Stat Card 1 */}
+                                    <div className="glass-panel p-8">
+                                        <span className="text-sm text-text-secondary uppercase tracking-wider block mb-4">Total Generations</span>
+                                        <div className="flex justify-between items-end mb-4">
+                                            <span className="text-5xl font-mono text-text-primary">{insights.totalGenerations}</span>
+                                            <span className="text-accent-jp text-sm font-bold bg-accent-jp/10 px-2 py-1 rounded">Live</span>
+                                        </div>
+                                        <div className="w-full bg-glass-border h-2 rounded-full overflow-hidden">
+                                            <div className="bg-accent-jp h-full w-full animate-[pulse_3s_infinite]"></div>
+                                        </div>
+                                    </div>
+
+                                    {/* Stat Card 2 */}
+                                    <div className="glass-panel p-8">
+                                        <span className="text-sm text-text-secondary uppercase tracking-wider block mb-4">Total Value Generated</span>
+                                        <div className="flex justify-between items-end mb-4">
+                                            <span className="text-3xl font-display font-bold text-text-primary">
+                                                {profile?.currency || '£'}{insights.totalRevenue.toLocaleString()}
+                                            </span>
+                                            <span className="text-text-secondary text-sm">Est. Revenue</span>
+                                        </div>
+                                        <p className="text-xs text-text-secondary">Cumulative value of all generated menus.</p>
+                                    </div>
+
+                                    {/* Inventory Usage (Top Ingredients) */}
+                                    <div className="glass-panel p-8 md:col-span-2">
+                                        <h3 className="text-lg font-bold text-text-primary mb-6">Trending Ingredients</h3>
+                                        {insights.topIngredients.length > 0 ? (
+                                            <div className="space-y-4">
+                                                {insights.topIngredients.map((ing, i) => (
+                                                    <div key={i}>
+                                                        <div className="flex justify-between items-center text-sm mb-1">
+                                                            <span>{ing.name}</span>
+                                                            <span className="font-mono text-xs opacity-70">{ing.count} orders</span>
+                                                        </div>
+                                                        <div className="w-full bg-glass-border h-2 rounded-full overflow-hidden">
+                                                            <div
+                                                                className="bg-accent-jp h-full transition-all duration-1000"
+                                                                style={{ width: `${(ing.count / insights.maxIngredientCount) * 100}%` }}
+                                                            ></div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <p className="text-text-secondary italic text-sm">No analysis data available yet.</p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div >
+                        )
+                    }
+                </main >
+            </div >
+        );
+    };
+
+    export default RestaurantDashboard;
