@@ -415,15 +415,64 @@ const RestaurantDashboard = ({ user }) => {
     const [showClearMenu, setShowClearMenu] = useState(false);
 
     const [showCitySuggestions, setShowCitySuggestions] = useState(false);
-    const filteredCities = cities.filter(c => c.city.toLowerCase().includes(profile.location.toLowerCase()));
+
+    // New State for AI Features
+    const [importing, setImporting] = useState(false);
+    const [websiteUrl, setWebsiteUrl] = useState('');
+
+    const filteredCities = cities.filter(c =>
+        c.city.toLowerCase().includes((profile.location || '').toLowerCase()) ||
+        c.country.toLowerCase().includes((profile.location || '').toLowerCase())
+    ).slice(0, 5);
 
     const handleCitySelect = (cityData) => {
+        setProfile({ ...profile, location: `${cityData.city}, ${cityData.country}`, currency: cityData.symbol });
+        setShowCitySuggestions(false);
+    };
+
+
+
+    // Simulate AI Website Analysis
+    const handleAIImport = async () => {
+        if (!websiteUrl) return;
+        setImporting(true);
+
+        // Simulate network delay for "Analysis"
+        await new Promise(r => setTimeout(r, 2000));
+
+        // Mock heuristics for demo purposes
+        const isSushi = websiteUrl.toLowerCase().includes('sushi') || websiteUrl.toLowerCase().includes('japan');
+        const isBurger = websiteUrl.toLowerCase().includes('burger') || websiteUrl.toLowerCase().includes('grill');
+        const isFine = websiteUrl.toLowerCase().includes('fine') || websiteUrl.toLowerCase().includes('michelin');
+
+        let newAccent = profile.accentColor;
+        let newFont = profile.font;
+        let newStyle = profile.uiStyle;
+
+        if (isSushi) {
+            newAccent = '#ef4444'; // Red
+            newFont = 'Tech Mono';
+            newStyle = 'sharp';
+        } else if (isBurger) {
+            newAccent = '#f59e0b'; // Amber
+            newFont = 'Modern Sans';
+            newStyle = 'soft';
+        } else if (isFine) {
+            newAccent = '#8b5cf6'; // Violet
+            newFont = 'Elegant Serif';
+            newStyle = 'soft';
+        }
+
         setProfile(prev => ({
             ...prev,
-            location: cityData.city,
-            currency: cityData.symbol // Auto-set currency symbol (e.g. £, ₦)
+            accentColor: newAccent,
+            font: newFont,
+            uiStyle: newStyle,
+            // In a real app, successful scraping would return image URLs here
         }));
-        setShowCitySuggestions(false);
+
+        setImporting(false);
+        // User feedback via UI state change (loading spinner stops)
     };
 
     const renderInsights = () => {
@@ -559,7 +608,7 @@ const RestaurantDashboard = ({ user }) => {
                     <div className="flex gap-4">
                         <div className="glass-panel px-4 py-2 flex items-center gap-2">
                             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                            <span className="text-xs font-mono font-bold text-text-primary">System Online v4.6.0 (Global)</span>
+                            <span className="text-xs font-mono font-bold text-text-primary">System Online v4.7.0 (Global)</span>
                         </div>
                     </div>
                 </header>
@@ -1074,46 +1123,91 @@ const RestaurantDashboard = ({ user }) => {
                                     </div>
                                 </section>
 
-                                {/* 4. Brand Visuals & App Control (Moved Up) */}
+                                {/* 4. Brand Visuals & App Control */}
                                 <section className="glass-panel p-8">
-                                    <h3 className="text-lg font-bold text-text-primary mb-6 flex items-center gap-2">
-                                        <span>🎨</span> Brand Visuals & App Control
-                                    </h3>
+                                    <div className="flex justify-between items-center mb-6">
+                                        <h3 className="text-lg font-bold text-text-primary flex items-center gap-2">
+                                            <span>🎨</span> Brand Visuals & App Control
+                                        </h3>
+                                        <div className="flex items-center gap-2">
+                                            <input
+                                                type="text"
+                                                placeholder="Resaurant Website (e.g. sushi-zen.com)"
+                                                value={websiteUrl}
+                                                onChange={(e) => setWebsiteUrl(e.target.value)}
+                                                className="bg-bg-primary/50 border border-glass-border rounded-full px-4 py-1.5 text-xs w-64 focus:border-accent-jp focus:outline-none"
+                                            />
+                                            <button
+                                                onClick={handleAIImport}
+                                                disabled={importing || !websiteUrl}
+                                                className="bg-accent-wa/10 hover:bg-accent-wa/20 text-accent-wa border border-accent-wa/30 rounded-full px-4 py-1.5 text-xs font-bold transition-all disabled:opacity-50 flex items-center gap-2"
+                                            >
+                                                {importing ? (
+                                                    <>
+                                                        <span className="animate-spin">🌀</span> Analyzing...
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <span>✨</span> AI Import
+                                                    </>
+                                                )}
+                                            </button>
+                                        </div>
+                                    </div>
+
                                     <div className="space-y-8">
                                         {/* Visual Assets */}
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                             <div className="space-y-2">
-                                                <label className="text-xs font-mono text-text-secondary uppercase">Logo URL</label>
-                                                <div className="flex gap-2">
-                                                    <input
-                                                        type="text"
-                                                        placeholder="https://..."
-                                                        value={profile.logoUrl || ''}
-                                                        onChange={(e) => setProfile({ ...profile, logoUrl: e.target.value })}
-                                                        className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none text-sm"
-                                                    />
-                                                    {profile.logoUrl && (
-                                                        <div className="w-12 h-12 rounded bg-bg-primary border border-glass-border flex items-center justify-center overflow-hidden flex-shrink-0">
+                                                <label className="text-xs font-mono text-text-secondary uppercase">Logo</label>
+                                                <div className="flex gap-4 items-start">
+                                                    <div className="w-16 h-16 rounded bg-bg-primary border border-glass-border flex items-center justify-center overflow-hidden flex-shrink-0 relative group">
+                                                        {profile.logoUrl ? (
                                                             <img src={profile.logoUrl} alt="Logo" className="w-full h-full object-cover" onError={(e) => e.target.style.display = 'none'} />
-                                                        </div>
-                                                    )}
+                                                        ) : (
+                                                            <span className="text-2xl opacity-20">🖼️</span>
+                                                        )}
+                                                        <label className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center cursor-pointer transition-opacity text-xs text-white font-bold">
+                                                            Upload
+                                                            <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e.target.files[0], 'logoUrl')} />
+                                                        </label>
+                                                    </div>
+                                                    <div className="flex-1 space-y-2">
+                                                        <input
+                                                            type="text"
+                                                            placeholder="Or paste Image URL..."
+                                                            value={profile.logoUrl || ''}
+                                                            onChange={(e) => setProfile({ ...profile, logoUrl: e.target.value })}
+                                                            className="w-full bg-bg-primary/50 border border-glass-border rounded p-2 text-text-primary focus:border-accent-jp focus:outline-none text-xs"
+                                                        />
+                                                        <p className="text-[10px] text-text-secondary">Supported: JPG, PNG, WebP (Max 1MB)</p>
+                                                    </div>
                                                 </div>
                                             </div>
+
                                             <div className="space-y-2">
-                                                <label className="text-xs font-mono text-text-secondary uppercase">Cover Image URL</label>
-                                                <div className="flex gap-2">
-                                                    <input
-                                                        type="text"
-                                                        placeholder="https://..."
-                                                        value={profile.coverUrl || ''}
-                                                        onChange={(e) => setProfile({ ...profile, coverUrl: e.target.value })}
-                                                        className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none text-sm"
-                                                    />
-                                                    {profile.coverUrl && (
-                                                        <div className="w-20 h-12 rounded bg-bg-primary border border-glass-border flex items-center justify-center overflow-hidden flex-shrink-0">
+                                                <label className="text-xs font-mono text-text-secondary uppercase">Cover Image</label>
+                                                <div className="flex gap-4 items-start">
+                                                    <div className="w-24 h-16 rounded bg-bg-primary border border-glass-border flex items-center justify-center overflow-hidden flex-shrink-0 relative group">
+                                                        {profile.coverUrl ? (
                                                             <img src={profile.coverUrl} alt="Cover" className="w-full h-full object-cover" onError={(e) => e.target.style.display = 'none'} />
-                                                        </div>
-                                                    )}
+                                                        ) : (
+                                                            <span className="text-2xl opacity-20">🌄</span>
+                                                        )}
+                                                        <label className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center cursor-pointer transition-opacity text-xs text-white font-bold">
+                                                            Upload
+                                                            <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e.target.files[0], 'coverUrl')} />
+                                                        </label>
+                                                    </div>
+                                                    <div className="flex-1 space-y-2">
+                                                        <input
+                                                            type="text"
+                                                            placeholder="Or paste Image URL..."
+                                                            value={profile.coverUrl || ''}
+                                                            onChange={(e) => setProfile({ ...profile, coverUrl: e.target.value })}
+                                                            className="w-full bg-bg-primary/50 border border-glass-border rounded p-2 text-text-primary focus:border-accent-jp focus:outline-none text-xs"
+                                                        />
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -1134,15 +1228,16 @@ const RestaurantDashboard = ({ user }) => {
                                                             style={{ backgroundColor: color }}
                                                         />
                                                     ))}
-                                                    <input
-                                                        type="color"
-                                                        value={profile.accentColor || '#10b981'}
-                                                        onChange={(e) => setProfile({ ...profile, accentColor: e.target.value })}
-                                                        className="w-8 h-8 rounded-full cursor-pointer opacity-0 absolute"
-                                                        style={{ marginLeft: '160px' }} // Quick hack to place it
-                                                    />
-                                                    <div className="w-8 h-8 rounded-full border border-glass-border flex items-center justify-center text-xs text-text-secondary hover:bg-glass-border/20 cursor-pointer" title="Custom">
-                                                        +
+                                                    <div className="relative w-8 h-8">
+                                                        <input
+                                                            type="color"
+                                                            value={profile.accentColor || '#10b981'}
+                                                            onChange={(e) => setProfile({ ...profile, accentColor: e.target.value })}
+                                                            className="w-full h-full rounded-full cursor-pointer opacity-0 absolute z-10"
+                                                        />
+                                                        <div className="w-full h-full rounded-full border border-glass-border flex items-center justify-center text-xs text-text-secondary hover:bg-glass-border/20" title="Custom">
+                                                            +
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>

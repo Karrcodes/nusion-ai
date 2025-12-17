@@ -21,7 +21,7 @@ function IkoyiInterface({ user }) {
         }
     }, [location.state]);
 
-    // Load user photo for profile display
+    // Load User Photo (Diner Profile)
     const [userPhoto, setUserPhoto] = useState(null);
     useEffect(() => {
         if (user?.id) {
@@ -33,6 +33,54 @@ function IkoyiInterface({ user }) {
             } catch (e) { }
         }
     }, [user]);
+
+    // --- DYNAMIC BRANDING LOGIC ---
+    const [brand, setBrand] = useState({
+        name: 'Nusion AI',
+        logoUrl: null, // If null, use default Nusion branding
+        coverUrl: null,
+        accentColor: '#10b981', // Default Emerald
+        font: 'Modern Sans',
+        uiStyle: 'soft'
+    });
+
+    useEffect(() => {
+        // "Connect" to the Restaurant Dashboard by reading the shared profile state
+        // In a real app, this would fetch from Supabase based on the URL slug (e.g. /ikoyi)
+        try {
+            const savedProfile = localStorage.getItem('restaurant_profile');
+            if (savedProfile) {
+                const parsed = JSON.parse(savedProfile);
+                setBrand(prev => ({
+                    ...prev,
+                    name: parsed.name || 'Nusion AI',
+                    logoUrl: parsed.logoUrl,
+                    coverUrl: parsed.coverUrl,
+                    accentColor: parsed.accentColor || '#10b981',
+                    font: parsed.font || 'Modern Sans',
+                    uiStyle: parsed.uiStyle || 'soft'
+                }));
+            }
+        } catch (e) {
+            console.error("Failed to sync brand settings", e);
+        }
+    }, []);
+
+    // Derived Styles
+    const fontClass = {
+        'Modern Sans': 'font-sans',
+        'Elegant Serif': 'font-serif',
+        'Tech Mono': 'font-mono'
+    }[brand.font] || 'font-sans';
+
+    const roundedClass = brand.uiStyle === 'sharp' ? 'rounded-none' : 'rounded-3xl';
+    const btnRoundedClass = brand.uiStyle === 'sharp' ? 'rounded-none' : 'rounded-full';
+
+    // Inject CSS Custom Properties for children to use
+    const dynamicStyle = {
+        '--brand-accent': brand.accentColor,
+        fontFamily: brand.font === 'Tech Mono' ? 'monospace' : brand.font === 'Elegant Serif' ? 'serif' : 'sans-serif' // Fallback
+    };
 
     const handleCalculate = async (userData) => {
         setLoading(true);
@@ -113,13 +161,24 @@ function IkoyiInterface({ user }) {
     };
 
     return (
-        <div className="w-full h-full flex flex-col items-center relative">
+        <div
+            className={`w-full h-full flex flex-col items-center relative transition-all duration-500 ${fontClass}`}
+            style={dynamicStyle}
+        >
+            {/* Background Cover (if exists) */}
+            {brand.coverUrl && (
+                <div className="absolute inset-0 z-0 opacity-10 pointer-events-none">
+                    <img src={brand.coverUrl} alt="Background" className="w-full h-full object-cover grayscale" />
+                    <div className="absolute inset-0 bg-gradient-to-b from-white/80 to-white"></div>
+                </div>
+            )}
+
             {/* Navigation Header */}
             <div className="absolute top-0 left-0 w-full px-8 py-6 flex justify-between items-start z-50 pointer-events-none">
                 {/* Back Button */}
                 <Link
                     to="/dashboard"
-                    className="pointer-events-auto text-text-secondary hover:text-text-primary uppercase text-xs tracking-widest font-bold flex items-center gap-2 bg-white/50 backdrop-blur-sm px-4 py-2 rounded-full border border-glass-border hover:bg-white transition-all"
+                    className={`pointer-events-auto text-text-secondary hover:text-text-primary uppercase text-xs tracking-widest font-bold flex items-center gap-2 bg-white/50 backdrop-blur-sm px-4 py-2 border border-glass-border hover:bg-white transition-all ${btnRoundedClass}`}
                 >
                     ← Back to Brands
                 </Link>
@@ -128,7 +187,7 @@ function IkoyiInterface({ user }) {
                 {user && (
                     <Link
                         to="/dashboard/diner?view=profile"
-                        className="pointer-events-auto group flex items-center gap-3 bg-white/50 backdrop-blur-sm pl-4 pr-1 py-1 rounded-full border border-glass-border hover:bg-white transition-all shadow-sm hover:shadow"
+                        className={`pointer-events-auto group flex items-center gap-3 bg-white/50 backdrop-blur-sm pl-4 pr-1 py-1 border border-glass-border hover:bg-white transition-all shadow-sm hover:shadow ${btnRoundedClass}`}
                         title="Go to Profile"
                     >
                         <span className="text-xs font-mono uppercase text-text-secondary group-hover:text-text-primary transition-colors pr-2">
@@ -145,23 +204,34 @@ function IkoyiInterface({ user }) {
                 )}
             </div>
 
-            <div className="container mx-auto px-6 flex flex-col items-center gap-12 max-w-6xl flex-grow pt-[120px]">
+            <div className="container mx-auto px-6 flex flex-col items-center gap-12 max-w-6xl flex-grow pt-[120px] relative z-10">
 
                 {/* Header Section */}
                 <header className="text-center max-w-2xl flex flex-col items-center animate-[fadeIn_0.5s]">
-                    <div className="logo-gradient mx-auto"></div>
+                    {brand.logoUrl ? (
+                        <div className="mb-6 w-24 h-24 relative">
+                            <img src={brand.logoUrl} alt="Brand Logo" className="w-full h-full object-contain drop-shadow-lg" />
+                        </div>
+                    ) : (
+                        <div className="logo-gradient mx-auto mb-6"></div>
+                    )}
+
+                    <h1 className="text-3xl font-bold text-text-primary mb-2" style={{ color: brand.accentColor }}>{brand.name}</h1>
                     <p className="text-text-secondary text-2xl font-light leading-relaxed mb-6">
                         AI-Curated Dining Experience
                     </p>
                     <p className="text-base font-bold opacity-90 mb-4 px-4">
-                        Nusion AI analyzes your preferences to design the perfect multi-course meal, tailored to your budget and palate.
+                        We analyze your preferences to design the perfect multi-course meal, tailored to your budget and palate.
                     </p>
                 </header>
 
                 {/* Main Interface Section */}
-                <main className="glass-panel p-6 md:p-12 w-full max-w-6xl relative overflow-hidden min-h-[500px] flex flex-col justify-center items-center transition-all duration-500 shadow-2xl">
+                <main className={`glass-panel p-6 md:p-12 w-full max-w-6xl relative overflow-hidden min-h-[500px] flex flex-col justify-center items-center transition-all duration-500 shadow-2xl ${roundedClass}`}>
                     {/* Decorative Top Border */}
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-accent-wa to-accent-jp"></div>
+                    <div
+                        className="absolute top-0 left-0 w-full h-1"
+                        style={{ background: `linear-gradient(to right, ${brand.accentColor}, ${brand.accentColor}88)` }}
+                    ></div>
 
                     {loading ? (
                         <div className="flex flex-col items-center w-full max-w-md">
@@ -179,8 +249,8 @@ function IkoyiInterface({ user }) {
 
                             <div className="w-full h-1 bg-black/5 rounded-full mt-4 overflow-hidden">
                                 <div
-                                    className="h-full bg-accent-jp transition-all duration-500 ease-out"
-                                    style={{ width: `${progress}%` }}
+                                    className="h-full transition-all duration-500 ease-out"
+                                    style={{ width: `${progress}%`, backgroundColor: brand.accentColor }}
                                 ></div>
                             </div>
                             <p className="text-xs text-text-secondary mt-2 font-bold opacity-60 uppercase tracking-widest">
@@ -193,7 +263,7 @@ function IkoyiInterface({ user }) {
                         <div className="w-full max-w-3xl animate-[fadeIn_0.8s]">
                             <h2 className="text-3xl mb-2 text-center text-text-primary text-4xl">Design Your Menu</h2>
                             <p className="text-center text-text-secondary mb-8 text-lg">Tell us your constraints, and we'll craft the experience.</p>
-                            <InputForm onCalculate={handleCalculate} />
+                            <InputForm onCalculate={handleCalculate} accentColor={brand.accentColor} uiStyle={brand.uiStyle} />
                         </div>
                     )}
                 </main>
