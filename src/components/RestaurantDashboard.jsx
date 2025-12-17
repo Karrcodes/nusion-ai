@@ -556,7 +556,7 @@ const RestaurantDashboard = ({ user }) => {
                     <div className="flex gap-4">
                         <div className="glass-panel px-4 py-2 flex items-center gap-2">
                             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                            <span className="text-xs font-mono font-bold text-text-primary">System Online v4.5.2 (Global)</span>
+                            <span className="text-xs font-mono font-bold text-text-primary">System Online v4.5.3 (Global)</span>
                         </div>
                     </div>
                 </header>
@@ -883,13 +883,23 @@ const RestaurantDashboard = ({ user }) => {
                                 <section className="glass-panel p-0 overflow-hidden group">
                                     <div className="p-6 md:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                                         <div className="flex items-start gap-6">
-                                            {/* Thumbnail / Icon (Live Screengrab) */}
-                                            <div className="w-24 h-16 md:w-32 md:h-20 bg-bg-secondary rounded border border-glass-border flex-shrink-0 relative overflow-hidden group-hover:border-accent-jp/50 transition-colors">
-                                                {profile.coverUrl || profile.logoUrl ? (
-                                                    <img src={profile.coverUrl || profile.logoUrl} alt="Live Preview" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
-                                                ) : (
-                                                    <img src="/ikoyi-interior.png" alt="Live Preview" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
-                                                )}
+                                            {/* Thumbnail / Icon (Live Screengrab Simulation) */}
+                                            <div className="w-32 h-24 md:w-40 md:h-28 bg-bg-secondary rounded-lg border border-glass-border flex-shrink-0 relative overflow-hidden group-hover:border-accent-jp/50 transition-colors shadow-lg">
+                                                {/* Browser Chrome */}
+                                                <div className="h-6 bg-glass-bg border-b border-glass-border flex items-center px-2 gap-1.5">
+                                                    <div className="w-2 h-2 rounded-full bg-red-500/50"></div>
+                                                    <div className="w-2 h-2 rounded-full bg-yellow-500/50"></div>
+                                                    <div className="w-2 h-2 rounded-full bg-green-500/50"></div>
+                                                </div>
+                                                {/* Image */}
+                                                <div className="absolute inset-0 top-6">
+                                                    {profile.coverUrl || profile.logoUrl ? (
+                                                        <img src={profile.coverUrl || profile.logoUrl} alt="Live Preview" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                                                    ) : (
+                                                        <img src="/ikoyi-interior.png" alt="Live Preview" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                                                    )}
+                                                </div>
+
                                                 {/* Live Pulse */}
                                                 <div className="absolute bottom-1 right-1 flex items-center justify-center">
                                                     <div className="w-2 h-2 bg-green-500 rounded-full shadow-[0_0_8px_rgba(34,197,94,0.8)] z-10"></div>
