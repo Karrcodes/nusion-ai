@@ -472,7 +472,7 @@ const RestaurantDashboard = ({ user }) => {
                         <div className="flex gap-4">
                             <div className="glass-panel px-4 py-2 flex items-center gap-2">
                                 <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                                <span className="text-xs font-mono font-bold text-text-primary">System Online v4.3.6 (Global)</span>
+                                <span className="text-xs font-mono font-bold text-text-primary">System Online v4.4.1 (Global)</span>
                             </div>
                         </div>
                     </header>
@@ -1038,8 +1038,9 @@ const RestaurantDashboard = ({ user }) => {
                     }
 
                     {/* --- INSIGHTS VIEW --- */}
+                    {/* --- INSIGHTS VIEW --- */}
                     {
-                        activeTab === 'insights' && (
+                        activeTab === 'insights' && console.log('Rendering Insights Tab. Status:', approvalStatus, 'Insights Data:', insights) && (false) || activeTab === 'insights' && (
                             <div className="animate-[fadeIn_0.3s] relative min-h-[500px] w-full isolate">
 
                                 {/* PENDING APPROVAL OVERLAY */}
