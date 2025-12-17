@@ -556,7 +556,7 @@ const RestaurantDashboard = ({ user }) => {
                     <div className="flex gap-4">
                         <div className="glass-panel px-4 py-2 flex items-center gap-2">
                             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                            <span className="text-xs font-mono font-bold text-text-primary">System Online v4.5.1 (Global)</span>
+                            <span className="text-xs font-mono font-bold text-text-primary">System Online v4.5.2 (Global)</span>
                         </div>
                     </div>
                 </header>
@@ -905,8 +905,8 @@ const RestaurantDashboard = ({ user }) => {
                                                     </span>
                                                 </h3>
                                                 <div className="flex flex-col gap-1 text-sm text-text-secondary font-mono">
-                                                    <a href="https://nusion.vercel.app/ikoyi" target="_blank" rel="noreferrer" className="hover:text-text-primary hover:underline transition-colors flex items-center gap-1">
-                                                        nusion.vercel.app/ikoyi
+                                                    <a href="https://nusion.tech/ikoyi" target="_blank" rel="noreferrer" className="hover:text-text-primary hover:underline transition-colors flex items-center gap-1">
+                                                        nusion.tech/ikoyi
                                                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
                                                     </a>
                                                     <span className="opacity-60 flex items-center gap-2">
