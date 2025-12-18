@@ -91,7 +91,7 @@ function IkoyiInterface({ user }) {
                 setProgress(p => Math.min(p + 5, 40));
             }, 200);
 
-            await new Promise(r => setTimeout(r, 1500));
+            await new Promise(r => setTimeout(r, 600)); // Consulting Reduced
 
             const recommendation = getRecommendation(userData);
             clearInterval(textProgress);
@@ -102,7 +102,7 @@ function IkoyiInterface({ user }) {
             const coursesWithImages = await Promise.all(
                 recommendation.courses.map(async (course, index) => {
                     try {
-                        await new Promise(r => setTimeout(r, index * 200));
+                        await new Promise(r => setTimeout(r, index * 50)); // Stagger Reduced
                         const imageUrl = await generateDishImage(course.description);
                         setProgress(prev => Math.min(prev + 20, 95));
                         return { ...course, image: imageUrl };
@@ -115,7 +115,7 @@ function IkoyiInterface({ user }) {
 
             setLoadingPhase('plating');
             setProgress(100);
-            await new Promise(r => setTimeout(r, 800));
+            await new Promise(r => setTimeout(r, 400)); // Plating Reduced
 
             const finalResult = { ...recommendation, courses: coursesWithImages, date: new Date().toISOString() };
             setResult(finalResult);
