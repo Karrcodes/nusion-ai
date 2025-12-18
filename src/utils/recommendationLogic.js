@@ -40,8 +40,8 @@ export function getRecommendation(preferences, customMenu = null) {
         return !hasAllergy && (item.spiceLevel <= spiceTolerance);
     });
 
-    if (edibleItems.length < 2) {
-        return { error: "Menu too limited. Please upload more items or check allergy settings." };
+    if (edibleItems.length === 0) {
+        return { error: "No menu items available that match your dietary settings." };
     }
 
     // 2. STRATEGY A: Strict 3-Course (Starter -> Main -> Dessert)
@@ -106,6 +106,17 @@ export function getRecommendation(preferences, customMenu = null) {
                     }
                 }
                 if (bestMenu) break;
+            }
+        }
+    }
+
+    // 5. STRATEGY D: The Soloist (Single Item Fallback)
+    if (!bestMenu) {
+        const pool = shuffle([...edibleItems]);
+        for (const item of pool) {
+            if ((item.cost || 0) <= budget) {
+                bestMenu = [item];
+                break;
             }
         }
     }
