@@ -432,35 +432,63 @@ const RestaurantDashboard = ({ user }) => {
 
 
 
-    // Simulate AI Website Analysis
+    // Helper: Deterministic Color from String (Hash)
+    const stringToColor = (str) => {
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) {
+            hash = str.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        let color = '#';
+        for (let i = 0; i < 3; i++) {
+            const value = (hash >> (i * 8)) & 0xFF;
+            color += ('00' + value.toString(16)).substr(-2);
+        }
+        return color;
+    };
+
+    // Simulate AI Website Analysis (Robust)
     const handleAIImport = async () => {
         if (!websiteUrl) return;
         setImporting(true);
 
         // Simulate network delay for "Analysis"
-        await new Promise(r => setTimeout(r, 2000));
+        await new Promise(r => setTimeout(r, 1500));
 
-        // Mock heuristics for demo purposes
-        const isSushi = websiteUrl.toLowerCase().includes('sushi') || websiteUrl.toLowerCase().includes('japan');
-        const isBurger = websiteUrl.toLowerCase().includes('burger') || websiteUrl.toLowerCase().includes('grill');
-        const isFine = websiteUrl.toLowerCase().includes('fine') || websiteUrl.toLowerCase().includes('michelin');
-
-        let newAccent = profile.accentColor;
+        // 1. Keyword Heuristics (for better demos)
+        const urlLower = websiteUrl.toLowerCase();
+        let newAccent = null;
         let newFont = profile.font;
         let newStyle = profile.uiStyle;
 
-        if (isSushi) {
+        if (urlLower.includes('sushi') || urlLower.includes('japan')) {
             newAccent = '#ef4444'; // Red
             newFont = 'Tech Mono';
             newStyle = 'sharp';
-        } else if (isBurger) {
+        } else if (urlLower.includes('burger') || urlLower.includes('grill') || urlLower.includes('bbq')) {
             newAccent = '#f59e0b'; // Amber
             newFont = 'Modern Sans';
             newStyle = 'soft';
-        } else if (isFine) {
+        } else if (urlLower.includes('fine') || urlLower.includes('michelin') || urlLower.includes('french')) {
             newAccent = '#8b5cf6'; // Violet
             newFont = 'Elegant Serif';
             newStyle = 'soft';
+        } else if (urlLower.includes('green') || urlLower.includes('vegan') || urlLower.includes('salad')) {
+            newAccent = '#10b981'; // Emerald
+            newFont = 'Modern Sans';
+            newStyle = 'soft';
+        } else if (urlLower.includes('ocean') || urlLower.includes('sea') || urlLower.includes('fish')) {
+            newAccent = '#3b82f6'; // Blue
+            newFont = 'Modern Sans';
+            newStyle = 'soft';
+        }
+
+        // 2. Fallback: Deterministic Hash (ensures *every* URL gets a color)
+        if (!newAccent) {
+            newAccent = stringToColor(urlLower);
+            // Quick contrast check? Nah, let's keep it simple for now.
+            // Maybe randomize font/style for variety if not matched
+            newFont = urlLower.length % 2 === 0 ? 'Modern Sans' : 'Elegant Serif';
+            newStyle = urlLower.length % 3 === 0 ? 'sharp' : 'soft';
         }
 
         setProfile(prev => ({
@@ -468,11 +496,9 @@ const RestaurantDashboard = ({ user }) => {
             accentColor: newAccent,
             font: newFont,
             uiStyle: newStyle,
-            // In a real app, successful scraping would return image URLs here
         }));
 
         setImporting(false);
-        // User feedback via UI state change (loading spinner stops)
     };
 
     const renderInsights = () => {
@@ -1235,7 +1261,17 @@ const RestaurantDashboard = ({ user }) => {
                                                             onChange={(e) => setProfile({ ...profile, accentColor: e.target.value })}
                                                             className="w-full h-full rounded-full cursor-pointer opacity-0 absolute z-10"
                                                         />
-                                                        <div className="w-full h-full rounded-full border border-glass-border flex items-center justify-center text-xs text-text-secondary hover:bg-glass-border/20" title="Custom">
+                                                        <div
+                                                            className={`w-full h-full rounded-full border border-glass-border flex items-center justify-center text-xs text-text-secondary hover:bg-glass-border/20 transition-all ${!['#10b981', '#f59e0b', '#ef4444', '#3b82f6', '#8b5cf6'].includes(profile.accentColor)
+                                                                    ? 'bg-current border-text-primary scale-110'
+                                                                    : ''
+                                                                }`}
+                                                            style={{
+                                                                backgroundColor: !['#10b981', '#f59e0b', '#ef4444', '#3b82f6', '#8b5cf6'].includes(profile.accentColor) ? profile.accentColor : 'transparent',
+                                                                color: !['#10b981', '#f59e0b', '#ef4444', '#3b82f6', '#8b5cf6'].includes(profile.accentColor) ? 'transparent' : 'inherit'
+                                                            }}
+                                                            title="Custom"
+                                                        >
                                                             +
                                                         </div>
                                                     </div>
