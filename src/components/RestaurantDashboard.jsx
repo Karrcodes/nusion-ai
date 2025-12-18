@@ -453,7 +453,6 @@ const RestaurantDashboard = ({ user }) => {
 
         let newAccent = null;
         let newLogo = null;
-        let newCover = null;
         let newFont = profile.font;
         let newStyle = profile.uiStyle;
 
@@ -511,8 +510,7 @@ const RestaurantDashboard = ({ user }) => {
             accentColor: newAccent,
             font: newFont,
             uiStyle: newStyle,
-            logoUrl: newLogo || prev.logoUrl,
-            coverUrl: newCover || prev.coverUrl
+            logoUrl: newLogo || prev.logoUrl
         }));
 
         setImporting(false);
@@ -1228,31 +1226,7 @@ const RestaurantDashboard = ({ user }) => {
                                                 </div>
                                             </div>
 
-                                            <div className="space-y-2">
-                                                <label className="text-xs font-mono text-text-secondary uppercase">Cover Image</label>
-                                                <div className="flex gap-4 items-start">
-                                                    <div className="w-24 h-16 rounded bg-bg-primary border border-glass-border flex items-center justify-center overflow-hidden flex-shrink-0 relative group">
-                                                        {profile.coverUrl ? (
-                                                            <img src={profile.coverUrl} alt="Cover" className="w-full h-full object-cover" onError={(e) => e.target.style.display = 'none'} />
-                                                        ) : (
-                                                            <span className="text-2xl opacity-20">🌄</span>
-                                                        )}
-                                                        <label className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center cursor-pointer transition-opacity text-xs text-white font-bold">
-                                                            Upload
-                                                            <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e.target.files[0], 'coverUrl')} />
-                                                        </label>
-                                                    </div>
-                                                    <div className="flex-1 space-y-2">
-                                                        <input
-                                                            type="text"
-                                                            placeholder="Or paste Image URL..."
-                                                            value={profile.coverUrl || ''}
-                                                            onChange={(e) => setProfile({ ...profile, coverUrl: e.target.value })}
-                                                            className="w-full bg-bg-primary/50 border border-glass-border rounded p-2 text-text-primary focus:border-accent-jp focus:outline-none text-xs"
-                                                        />
-                                                    </div>
-                                                </div>
-                                            </div>
+
                                         </div>
 
                                         <div className="w-full h-px bg-glass-border"></div>

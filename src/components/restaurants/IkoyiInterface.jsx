@@ -38,7 +38,6 @@ function IkoyiInterface({ user }) {
     const [brand, setBrand] = useState({
         name: 'Nusion AI',
         logoUrl: null, // If null, use default Nusion branding
-        coverUrl: null,
         accentColor: '#10b981', // Default Emerald
         font: 'Modern Sans',
         uiStyle: 'soft'
@@ -55,7 +54,6 @@ function IkoyiInterface({ user }) {
                     ...prev,
                     name: parsed.name || 'Nusion AI',
                     logoUrl: parsed.logoUrl,
-                    coverUrl: parsed.coverUrl,
                     accentColor: parsed.accentColor || '#10b981',
                     font: parsed.font || 'Modern Sans',
                     uiStyle: parsed.uiStyle || 'soft'
@@ -165,13 +163,7 @@ function IkoyiInterface({ user }) {
             className={`w-full h-full flex flex-col items-center relative transition-all duration-500 ${fontClass}`}
             style={dynamicStyle}
         >
-            {/* Background Cover (if exists) */}
-            {brand.coverUrl && (
-                <div className="absolute inset-0 z-0 opacity-10 pointer-events-none">
-                    <img src={brand.coverUrl} alt="Background" className="w-full h-full object-cover grayscale" />
-                    <div className="absolute inset-0 bg-gradient-to-b from-white/80 to-white"></div>
-                </div>
-            )}
+
 
             {/* Navigation Header */}
             <div className="absolute top-0 left-0 w-full px-8 py-6 flex justify-between items-start z-50 pointer-events-none">
@@ -209,9 +201,15 @@ function IkoyiInterface({ user }) {
                 {/* Header Section */}
                 <header className="text-center max-w-2xl flex flex-col items-center animate-[fadeIn_0.5s]">
                     {brand.logoUrl ? (
-                        <div className="mb-6 w-24 h-24 relative">
-                            <img src={brand.logoUrl} alt="Brand Logo" className="w-full h-full object-contain drop-shadow-lg" />
-                        </div>
+                        <div
+                            className="mb-6 w-24 h-24 logo-gradient"
+                            style={{
+                                maskImage: `url(${brand.logoUrl})`,
+                                WebkitMaskImage: `url(${brand.logoUrl})`,
+                                width: '6rem',
+                                height: '6rem'
+                            }}
+                        ></div>
                     ) : (
                         <div className="logo-gradient mx-auto mb-6"></div>
                     )}
