@@ -12,78 +12,115 @@ const shuffle = (array) => [...array].sort(() => 0.5 - Math.random());
 export function getRecommendation(preferences, customMenu = null) {
     const { spiceTolerance, allergies, budget } = preferences;
 
-    // Use custom menu if provided, otherwise fallback to default (Ikoyi Mock)
-    const sourceMenu = customMenu && customMenu.length > 0 ? customMenu : menuItems;
+    // Use custom menu if provided, otherwise fallback to default
+    let sourceMenu = customMenu && customMenu.length > 0 ? customMenu : menuItems;
 
-    // 1. FILTER: Safety first (Allergies)
-    // Exclude any item that has ANY of the user's allergies
-    const safeItems = sourceMenu.filter(item => {
-        const hasAllergy = (item.allergens || []).some(allergen => allergies.includes(allergen));
-        return !hasAllergy;
+    // 0. NORMALIZE: Ensure items have a 'type'
+    // If 'type' is missing, infer it based on context
+    const avgPrice = sourceMenu.reduce((sum, i) => sum + (i.cost || 0), 0) / (sourceMenu.length || 1);
+
+    sourceMenu = sourceMenu.map(item => {
+        if (item.type) return item;
+
+        let inferredType = 'Main';
+        const nameLower = (item.name || '').toLowerCase();
+
+        if (nameLower.includes('soup') || nameLower.includes('salad') || nameLower.includes('starter') || (item.cost < avgPrice * 0.6)) {
+            inferredType = 'Starter';
+        } else if (nameLower.includes('cake') || nameLower.includes('ice cream') || nameLower.includes('sweet') || nameLower.includes('dessert') || nameLower.includes('chocolate')) {
+            inferredType = 'Dessert';
+        }
+
+        return { ...item, type: inferredType };
     });
 
-    // 2. FILTER: Spice Tolerance
-    // Exclude items strictly hotter than tolerance.
-    const edibleItems = safeItems.filter(item => item.spiceLevel <= spiceTolerance);
+    // 1. FILTER: Safety & Spice
+    const edibleItems = sourceMenu.filter(item => {
+        const hasAllergy = (item.allergens || []).some(allergen => allergies.includes(allergen));
+        return !hasAllergy && (item.spiceLevel <= spiceTolerance);
+    });
 
-    // Group by Type
+    if (edibleItems.length < 2) {
+        return { error: "Menu too limited. Please upload more items or check allergy settings." };
+    }
+
+    // 2. STRATEGY A: Strict 3-Course (Starter -> Main -> Dessert)
     const starters = shuffle(edibleItems.filter(i => i.type === 'Starter'));
     const mains = shuffle(edibleItems.filter(i => i.type === 'Main'));
     const desserts = shuffle(edibleItems.filter(i => i.type === 'Dessert'));
 
-    if (!starters.length || !mains.length || !desserts.length) {
-        return { error: "Constraints too strict. Unable to find a complete 3-course meal." };
-    }
-
-    // 3. SELECT: Combinatorial Search for "Best" Menu
-    // "Best" = 
-    // - Total Cost <= Budget
-    // - Maximizes flavor variety (unique profiles)
-    // - Maximizes cost (closest to budget without going over -> premium feel)
-
     let bestMenu = null;
     let bestScore = -1;
 
-    // Simple brute force since N is very small (5x5x5 = 125 combinations max)
-    for (const starter of starters) {
-        for (const main of mains) {
-            for (const dessert of desserts) {
-
-                const total = starter.cost + main.cost + dessert.cost;
-
-                if (total <= budget) {
-                    // Calculate Score
-
-                    // Flavor Variety Score: Count unique profiles (max 3)
-                    const profiles = new Set([starter.flavorProfile, main.flavorProfile, dessert.flavorProfile]);
-                    const varietyScore = profiles.size; // 1, 2, or 3
-
-                    // Budget Utilization Score: Percentage of budget used (0-1)
-                    const budgetScore = total / budget;
-
-                    // Weighted Score (Variety is king, strict budget enforced)
-                    const finalScore = (varietyScore * 10) + budgetScore;
-
-                    if (finalScore > bestScore) {
-                        bestScore = finalScore;
-                        bestMenu = [starter, main, dessert];
+    // Try Standard 3-Course
+    if (starters.length && mains.length && desserts.length) {
+        for (const starter of starters) {
+            for (const main of mains) {
+                for (const dessert of desserts) {
+                    const total = (starter.cost || 0) + (main.cost || 0) + (dessert.cost || 0);
+                    if (total <= budget) {
+                        const score = (new Set([starter.flavorProfile, main.flavorProfile, dessert.flavorProfile]).size * 10) + (total / budget);
+                        if (score > bestScore) {
+                            bestScore = score;
+                            bestMenu = [starter, main, dessert];
+                        }
                     }
                 }
             }
         }
     }
 
+    // 3. STRATEGY B: Flexible "Chef's Tasting" (Any 3 distinct items)
     if (!bestMenu) {
-        return { error: `Budget too low. Minimum cost for a meal is approx £${Math.min(...starters.map(s => s.cost)) + Math.min(...mains.map(m => m.cost)) + Math.min(...desserts.map(d => d.cost))}.` };
+        // Pool all items, try to find any 3 unique items that fit budget
+        const pool = shuffle([...edibleItems]);
+        if (pool.length >= 3) {
+            for (let i = 0; i < pool.length; i++) {
+                for (let j = i + 1; j < pool.length; j++) {
+                    for (let k = j + 1; k < pool.length; k++) {
+                        const menu = [pool[i], pool[j], pool[k]];
+                        const total = menu.reduce((sum, it) => sum + (it.cost || 0), 0);
+                        if (total <= budget) {
+                            bestMenu = menu; // Just take the first valid combo for speed in fallback
+                            break;
+                        }
+                    }
+                    if (bestMenu) break;
+                }
+                if (bestMenu) break;
+            }
+        }
+    }
+
+    // 4. STRATEGY C: Power Duo (Any 2 items)
+    if (!bestMenu) {
+        const pool = shuffle([...edibleItems]);
+        if (pool.length >= 2) {
+            for (let i = 0; i < pool.length; i++) {
+                for (let j = i + 1; j < pool.length; j++) {
+                    const menu = [pool[i], pool[j]];
+                    const total = menu.reduce((sum, it) => sum + (it.cost || 0), 0);
+                    if (total <= budget) {
+                        bestMenu = menu;
+                        break;
+                    }
+                }
+                if (bestMenu) break;
+            }
+        }
+    }
+
+    if (!bestMenu) {
+        return { error: `Budget (£${budget}) is too low for the available menu items.` };
     }
 
     // 4. GENERATE NARRATIVE
-    const [s, m, d] = bestMenu;
-    const narrative = `Your journey begins with the ${s.flavorProfile} notes of the ${s.name}, setting a sophisticated tone. This transitions seamlessly into the ${m.flavorProfile} richness of the ${m.name}, providing a hearty, complex centerpiece. Finally, the palate is cleansed and delighted by the ${d.flavorProfile} finish of our signature ${d.name}. A perfectly balanced experience.`;
+    const names = bestMenu.map(i => i.name).join(', then ');
+    const narrative = `A curated selection featuring ${names}. Tailored to your palate and budget.`;
 
     return {
         courses: bestMenu,
-        totalCost: s.cost + m.cost + d.cost,
+        totalCost: bestMenu.reduce((sum, i) => sum + (i.cost || 0), 0),
         narrative
     };
 }
