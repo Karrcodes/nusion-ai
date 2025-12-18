@@ -446,56 +446,73 @@ const RestaurantDashboard = ({ user }) => {
         return color;
     };
 
-    // Simulate AI Website Analysis (Robust)
+    // Real AI Import (Microlink API)
     const handleAIImport = async () => {
         if (!websiteUrl) return;
         setImporting(true);
 
-        // Simulate network delay for "Analysis"
-        await new Promise(r => setTimeout(r, 1500));
-
-        // 1. Keyword Heuristics (for better demos)
-        const urlLower = websiteUrl.toLowerCase();
         let newAccent = null;
+        let newLogo = null;
+        let newCover = null;
         let newFont = profile.font;
         let newStyle = profile.uiStyle;
 
+        try {
+            // 1. Try Fetching Real Metadata
+            const encodedUrl = encodeURIComponent(websiteUrl.startsWith('http') ? websiteUrl : `https://${websiteUrl}`);
+            const response = await fetch(`https://api.microlink.io/?url=${encodedUrl}&palette=true&audio=false&video=false`);
+            const json = await response.json();
+
+            if (json.status === 'success' && json.data) {
+                const { data } = json;
+
+                // Extract Assets
+                if (data.logo?.url) newLogo = data.logo.url;
+                if (data.image?.url) newCover = data.image.url;
+
+                // Extract Color (Microlink 'palette' or 'color')
+                if (data.color) {
+                    newAccent = data.color; // Usually hex
+                } else if (data.logo?.color) {
+                    newAccent = data.logo.color;
+                }
+            }
+        } catch (error) {
+            console.error("AI Import Failed:", error);
+            // Non-blocking, fall through to heuristics
+        }
+
+        // 2. Keyword Heuristics (Enhancement / Fallback)
+        const urlLower = websiteUrl.toLowerCase();
+
+        // Refine Style based on keywords if we didn't get enough signal, or just to set defaults
         if (urlLower.includes('sushi') || urlLower.includes('japan')) {
-            newAccent = '#ef4444'; // Red
+            if (!newAccent) newAccent = '#ef4444';
             newFont = 'Tech Mono';
             newStyle = 'sharp';
-        } else if (urlLower.includes('burger') || urlLower.includes('grill') || urlLower.includes('bbq')) {
-            newAccent = '#f59e0b'; // Amber
+        } else if (urlLower.includes('burger') || urlLower.includes('grill')) {
+            if (!newAccent) newAccent = '#f59e0b';
             newFont = 'Modern Sans';
             newStyle = 'soft';
-        } else if (urlLower.includes('fine') || urlLower.includes('michelin') || urlLower.includes('french')) {
-            newAccent = '#8b5cf6'; // Violet
+        } else if (urlLower.includes('fine') || urlLower.includes('michelin')) {
+            if (!newAccent) newAccent = '#8b5cf6';
             newFont = 'Elegant Serif';
             newStyle = 'soft';
-        } else if (urlLower.includes('green') || urlLower.includes('vegan') || urlLower.includes('salad')) {
-            newAccent = '#10b981'; // Emerald
-            newFont = 'Modern Sans';
-            newStyle = 'soft';
-        } else if (urlLower.includes('ocean') || urlLower.includes('sea') || urlLower.includes('fish')) {
-            newAccent = '#3b82f6'; // Blue
-            newFont = 'Modern Sans';
-            newStyle = 'soft';
         }
 
-        // 2. Fallback: Deterministic Hash (ensures *every* URL gets a color)
+        // 3. Ultimate Fallback: Deterministic Hash
         if (!newAccent) {
             newAccent = stringToColor(urlLower);
-            // Quick contrast check? Nah, let's keep it simple for now.
-            // Maybe randomize font/style for variety if not matched
-            newFont = urlLower.length % 2 === 0 ? 'Modern Sans' : 'Elegant Serif';
-            newStyle = urlLower.length % 3 === 0 ? 'sharp' : 'soft';
         }
 
+        // Apply Changes
         setProfile(prev => ({
             ...prev,
             accentColor: newAccent,
             font: newFont,
             uiStyle: newStyle,
+            logoUrl: newLogo || prev.logoUrl,
+            coverUrl: newCover || prev.coverUrl
         }));
 
         setImporting(false);
@@ -1263,8 +1280,8 @@ const RestaurantDashboard = ({ user }) => {
                                                         />
                                                         <div
                                                             className={`w-full h-full rounded-full border border-glass-border flex items-center justify-center text-xs text-text-secondary hover:bg-glass-border/20 transition-all ${!['#10b981', '#f59e0b', '#ef4444', '#3b82f6', '#8b5cf6'].includes(profile.accentColor)
-                                                                    ? 'bg-current border-text-primary scale-110'
-                                                                    : ''
+                                                                ? 'bg-current border-text-primary scale-110'
+                                                                : ''
                                                                 }`}
                                                             style={{
                                                                 backgroundColor: !['#10b981', '#f59e0b', '#ef4444', '#3b82f6', '#8b5cf6'].includes(profile.accentColor) ? profile.accentColor : 'transparent',
