@@ -103,6 +103,13 @@ function IkoyiInterface({ user }) {
 
             const recommendation = getRecommendation(userData, liveMenu);
             clearInterval(textProgress);
+
+            // Handle Generation Errors (Budget too low, Menu Empty, etc.)
+            if (recommendation.error) {
+                setResult({ error: recommendation.error });
+                return;
+            }
+
             setProgress(40);
 
             setLoadingPhase('visualising');
