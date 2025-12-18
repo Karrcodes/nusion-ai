@@ -25,37 +25,39 @@ const RestaurantDashboard = ({ user }) => {
 
     // Load profile from localStorage
     const [profile, setProfile] = useState(() => {
-        try {
-            // Check for user-specific preferences first (from Onboarding)
-            const userPrefs = user?.id ? localStorage.getItem(`restaurant_preferences_${user.id}`) : null;
-            if (userPrefs) return JSON.parse(userPrefs);
-
-            // Fallback to legacy global key
-            const savedProfile = localStorage.getItem('restaurant_profile');
-            if (savedProfile) return JSON.parse(savedProfile);
-
-            // Default profile if nothing found
-            return {
-                name: user?.user_metadata?.name || '',
-                location: 'London', // Default
-                description: '',
-                cuisine: 'Modern West African',
-                philosophy: '',
-                logoUrl: '',
-                coverUrl: '',
-                accentColor: '#10b981',
-                font: 'Modern Sans',
-                uiStyle: 'soft',
-                hours: '',
-                priceTier: '$$',
-                contactEmail: '',
-                dietaryTags: '',
-                currency: 'GBP', // Default currency
-            };
-        } catch (e) {
-            return { name: '', location: '', description: '', cuisine: '', philosophy: '', logoUrl: null, coverUrl: null, hours: '', priceTier: '$$', contactEmail: '', dietaryTags: '', currency: 'GBP' };
+        if (user?.id) {
+            const saved = localStorage.getItem(`restaurant_profile_${user.id}`); // User-scoped key
+            if (saved) return JSON.parse(saved);
         }
+
+        // Default to User's Name or Empty (No more hardcoded Ikoyi)
+        return {
+            name: user?.user_metadata?.full_name || user?.name || '',
+            location: '',
+            description: '',
+            cuisine: '',
+            philosophy: '',
+            logoUrl: null,
+            coverUrl: '',
+            accentColor: '#10b981', // Default branding
+            font: 'Modern Sans',
+            uiStyle: 'soft',
+            hours: '',
+            priceTier: '$$',
+            contactEmail: user?.email || '',
+            dietaryTags: '',
+            currency: 'GBP'
+        };
     });
+
+    // Persist Profile Changes
+    useEffect(() => {
+        if (user?.id) {
+            localStorage.setItem(`restaurant_profile_${user.id}`, JSON.stringify(profile));
+            // Also update the "shared" profile for the demo connection if this is the active user
+            localStorage.setItem('restaurant_profile', JSON.stringify(profile));
+        }
+    }, [profile, user]);
 
     // Save to localStorage whenever inventory changes
     useEffect(() => {
@@ -116,6 +118,8 @@ const RestaurantDashboard = ({ user }) => {
     useEffect(() => {
         if (user?.id) {
             localStorage.setItem(`restaurant_menu_${user.id}`, JSON.stringify(menuItems));
+            // Sync to "Live" key for the Diner App to read
+            localStorage.setItem('restaurant_live_menu', JSON.stringify(menuItems));
         }
     }, [menuItems, user]);
 

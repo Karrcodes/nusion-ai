@@ -150,6 +150,17 @@ const OnboardingWizard = ({ user }) => {
                     localStorage.setItem(`restaurant_meals_${user.id}`, JSON.stringify(finalScannedData.meals));
                 }
 
+                // 3. Set Approval Status to Pending
+                localStorage.setItem(`restaurant_approval_${user.id}`, 'pending');
+
+                // 4. Send Confirmation Email (Simulation)
+                import('../../utils/adminTemplates').then(({ getAppReceivedEmail }) => {
+                    const emailHtml = getAppReceivedEmail(data.name);
+                    console.log(`[EMAIL SENT to ${user.email}]:\n`, emailHtml);
+                    // In a real app, this would be: await supabase.functions.invoke('send-email', { html: emailHtml ... })
+                });
+
+                alert("Application Received! Check your email for status updates.");
                 navigate('/dashboard/restaurant');
             } else {
                 const prefs = {
@@ -276,46 +287,43 @@ const OnboardingWizard = ({ user }) => {
                         </div>
                     </div>
                 );
-            case 3: // Magic / Menu Scan
+            case 3: // Menu Upload & Review
                 return (
                     <div className="space-y-6">
                         <div className="text-center mb-8">
-                            <span className="text-4xl mb-4 block">✨</span>
-                            <h2 className="text-2xl font-bold text-text-primary">The Magic Step</h2>
-                            <p className="text-text-secondary">Upload your menu. We'll populate your dashboard instantly.</p>
+                            <span className="text-4xl mb-4 block">📸</span>
+                            <h2 className="text-2xl font-bold text-text-primary">Menu Scan</h2>
+                            <p className="text-text-secondary">Upload your menu to digitize your inventory.</p>
                         </div>
 
-                        {analyzing ? (
-                            <div className="p-8 border border-glass-border bg-bg-secondary rounded-xl text-center space-y-4">
-                                <div className="w-full bg-glass-border rounded-full h-2 overflow-hidden relative">
-                                    <div
-                                        className="bg-accent-jp h-full transition-all duration-300 rounded-full"
-                                        style={{ width: `${analysisProgress}%` }}
-                                    ></div>
-                                </div>
-                                <div className="flex justify-between text-xs text-text-secondary font-mono">
-                                    <span>Reading Menu...</span>
-                                    <span>{analysisProgress}%</span>
-                                </div>
-                                <p className="text-sm text-text-secondary animate-pulse">
-                                    {analysisProgress < 40 ? 'Extracting text...' : analysisProgress < 70 ? 'Identifying ingredients...' : 'Structuring data...'}
-                                </p>
-                            </div>
-                        ) : scannedData ? (
-                            <div className="p-6 border border-green-500/30 bg-green-500/10 rounded-xl text-center space-y-2">
-                                <div className="text-2xl">✅</div>
-                                <h3 className="font-bold text-green-400">Scan Complete!</h3>
-                                <p className="text-xs text-text-secondary">Found {scannedData.meals.length} meals & {scannedData.inventory.length} ingredients.</p>
-                            </div>
-                        ) : (
-                            <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-glass-border rounded-xl cursor-pointer hover:bg-glass-border/10 hover:border-accent-jp transition-all group">
-                                <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                    <svg className="w-10 h-10 mb-3 text-text-secondary group-hover:text-accent-jp transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
-                                    <p className="mb-2 text-sm text-text-secondary"><span className="font-bold text-text-primary">Click to upload</span> or drag and drop</p>
-                                    <p className="text-xs text-text-secondary">IMG, PDF (MAX. 10MB)</p>
-                                </div>
+                        {!analyzing && !scannedData ? (
+                            <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-glass-border rounded-xl cursor-pointer hover:bg-glass-border/30 transition-all">
+                                <div className="text-4xl mb-2">📄</div>
+                                <span className="text-sm font-bold text-text-primary">Click to Upload Menu (PDF/IMG)</span>
+                                <span className="text-xs text-text-secondary mt-1 max-w-[200px] text-center">AI will extract ingredients & prices automatically.</span>
                                 <input type="file" className="hidden" accept="image/*,.pdf" onChange={handleMenuUpload} />
                             </label>
+                        ) : analyzing ? (
+                            <div className="flex flex-col items-center justify-center h-48">
+                                <div className="w-16 h-16 border-4 border-accent-wa border-t-transparent rounded-full animate-spin mb-4"></div>
+                                <h3 className="text-lg font-bold text-text-primary animate-pulse">Analysing Menu...</h3>
+                                <div className="w-64 h-2 bg-glass-border rounded-full mt-4 overflow-hidden">
+                                    <div className="h-full bg-accent-wa transition-all duration-300" style={{ width: `${analysisProgress}%` }}></div>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="space-y-4">
+                                <div className="bg-green-500/10 border border-green-500/20 text-green-600 p-4 rounded-lg flex items-center gap-3">
+                                    <span className="text-xl">✅</span>
+                                    <div>
+                                        <p className="font-bold text-sm">Scan Complete</p>
+                                        <p className="text-xs opacity-80">{scannedData.meals.length} items identified.</p>
+                                    </div>
+                                </div>
+                                <button onClick={handleComplete} className="w-full py-3 bg-text-primary text-bg-primary rounded-lg font-bold hover:opacity-90 transition-all">
+                                    Submit Application for Review
+                                </button>
+                            </div>
                         )}
 
                         <div className="flex gap-4">

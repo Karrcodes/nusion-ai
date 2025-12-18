@@ -43,6 +43,8 @@ function IkoyiInterface({ user }) {
         uiStyle: 'soft'
     });
 
+    const [liveMenu, setLiveMenu] = useState([]);
+
     useEffect(() => {
         // "Connect" to the Restaurant Dashboard by reading the shared profile state
         // In a real app, this would fetch from Supabase based on the URL slug (e.g. /ikoyi)
@@ -58,6 +60,12 @@ function IkoyiInterface({ user }) {
                     font: parsed.font || 'Modern Sans',
                     uiStyle: parsed.uiStyle || 'soft'
                 }));
+            }
+
+            // Load Live Menu
+            const savedMenu = localStorage.getItem('restaurant_live_menu');
+            if (savedMenu) {
+                setLiveMenu(JSON.parse(savedMenu));
             }
         } catch (e) {
             console.error("Failed to sync brand settings", e);
@@ -93,7 +101,7 @@ function IkoyiInterface({ user }) {
 
             await new Promise(r => setTimeout(r, 600)); // Consulting Reduced
 
-            const recommendation = getRecommendation(userData);
+            const recommendation = getRecommendation(userData, liveMenu);
             clearInterval(textProgress);
             setProgress(40);
 

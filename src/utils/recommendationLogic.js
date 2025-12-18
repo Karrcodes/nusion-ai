@@ -6,15 +6,19 @@ const shuffle = (array) => [...array].sort(() => 0.5 - Math.random());
 /**
  * Main Recommendation Engine
  * @param {Object} preferences - { spiceTolerance (1-5), allergies (Array<String>), budget (Number) }
+ * @param {Array} customMenu - Optional: specific restaurant menu items to generate from
  * @returns {Object} { courses: Array<Object>, totalCost: Number, narrative: String, error: String }
  */
-export function getRecommendation(preferences) {
+export function getRecommendation(preferences, customMenu = null) {
     const { spiceTolerance, allergies, budget } = preferences;
+
+    // Use custom menu if provided, otherwise fallback to default (Ikoyi Mock)
+    const sourceMenu = customMenu && customMenu.length > 0 ? customMenu : menuItems;
 
     // 1. FILTER: Safety first (Allergies)
     // Exclude any item that has ANY of the user's allergies
-    const safeItems = menuItems.filter(item => {
-        const hasAllergy = item.allergens.some(allergen => allergies.includes(allergen));
+    const safeItems = sourceMenu.filter(item => {
+        const hasAllergy = (item.allergens || []).some(allergen => allergies.includes(allergen));
         return !hasAllergy;
     });
 
