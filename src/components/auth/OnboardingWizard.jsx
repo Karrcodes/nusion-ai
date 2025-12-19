@@ -191,6 +191,7 @@ const OnboardingWizard = ({ user }) => {
                         sweet: data.sweetLevel,
                         umami: data.umamiLevel
                     },
+                    semanticProfile: data.semanticProfile, // Save the AI calibration
                     photo: null
                 };
                 localStorage.setItem(`diner_preferences_${user.id}`, JSON.stringify(prefs));
@@ -359,6 +360,157 @@ const OnboardingWizard = ({ user }) => {
         }
     };
 
+    // --- CALIBRATION STATE ---
+    const [calibration, setCalibration] = useState({
+        heatBenchmark: 1, // 0=Lemon&Herb, 1=Medium, 2=Hot, 3=Extra Hot
+        favorites: '',
+        analyzing: false,
+        result: null // { semantic_profile, bridge_ingredient, narrative }
+    });
+
+    const handleCalibrate = async () => {
+        if (!calibration.favorites) return;
+        setCalibration(prev => ({ ...prev, analyzing: true }));
+        try {
+            const response = await fetch('/api/calibrate-palate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ favorites: calibration.favorites })
+            });
+            const data = await response.json();
+            if (data.error) throw new Error(data.error);
+
+            setCalibration(prev => ({ ...prev, result: data, analyzing: false }));
+            // Save to main data for persistence
+            setData(prev => ({ ...prev, semanticProfile: data }));
+
+            // Auto-tune the sliders based on result (Smart default)
+            // If "Spicy" is in profile, bump spice, etc.
+            // For now, simpler: Just show the result and let user confirm next.
+        } catch (e) {
+            console.error(e);
+            alert("Calibration failed - Chef is busy! Please skip or try again.");
+            setCalibration(prev => ({ ...prev, analyzing: false }));
+        }
+    };
+
+    const renderCalibrationStep = () => {
+        const benchmarks = [
+            { label: 'Lemon & Herb', sub: "Nando's", intensity: 1, color: 'bg-green-400' },
+            { label: 'Medium', sub: "Nando's / Korma", intensity: 2, color: 'bg-yellow-400' },
+            { label: 'Hot', sub: "Madras / Firecracker", intensity: 3, color: 'bg-orange-500' },
+            { label: 'Extra Hot', sub: "Vindaloo / Super", intensity: 4, color: 'bg-red-600' }
+        ];
+
+        return (
+            <div className="space-y-8 animate-[fadeIn_0.5s]">
+                <div className="text-center mb-6">
+                    <span className="text-4xl mb-4 block">⚖️</span>
+                    <h2 className="text-2xl font-bold text-text-primary">Palate Calibration</h2>
+                    <p className="text-text-secondary">Let's translate your taste to the West African scale.</p>
+                </div>
+
+                {/* 1. RELATIONAL HEAT */}
+                <div className="space-y-4">
+                    <label className="block text-sm font-bold text-text-primary uppercase tracking-wide">
+                        1. Heat Benchmark
+                    </label>
+                    <div className="bg-bg-secondary p-4 rounded-xl border border-glass-border">
+                        <input
+                            type="range"
+                            min="0" max="3" step="1"
+                            value={calibration.heatBenchmark}
+                            onChange={(e) => {
+                                const val = parseInt(e.target.value);
+                                setCalibration(prev => ({ ...prev, heatBenchmark: val }));
+                                // Auto-update real data
+                                // Map 0->0(None), 1->1(Mild), 2->2(Med), 3->3(High)
+                                // Actually map: 0->0, 1->1, 2->2, 3->3 is 1:1, keeps it simple.
+                                setData(d => ({ ...d, spicyLevel: val }));
+                            }}
+                            className="w-full h-2 bg-glass-border rounded-lg appearance-none cursor-pointer mb-6"
+                        />
+                        <div className="flex justify-between items-start">
+                            {benchmarks.map((b, i) => (
+                                <div key={i}
+                                    className={`flex flex-col items-center w-1/4 transition-opacity duration-300 ${i === calibration.heatBenchmark ? 'opacity-100 scale-110' : 'opacity-40 grayscale'}`}
+                                    onClick={() => {
+                                        setCalibration(prev => ({ ...prev, heatBenchmark: i }));
+                                        setData(d => ({ ...d, spicyLevel: i }));
+                                    }}
+                                >
+                                    <div className={`w-4 h-4 rounded-full mb-2 ${b.color} shadow`}></div>
+                                    <span className="text-xs font-bold text-center leading-tight">{b.label}</span>
+                                    <span className="text-[10px] text-text-secondary mt-1">{b.sub}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                {/* 2. SEMANTIC BRIDGE */}
+                <div className="space-y-4">
+                    <label className="block text-sm font-bold text-text-primary uppercase tracking-wide">
+                        2. Flavor Bridge
+                    </label>
+                    <p className="text-xs text-text-secondary mb-2">
+                        What are your 3 absolute favorite dishes/ingredients from ANY cuisine?
+                    </p>
+                    <div className="relative">
+                        <textarea
+                            value={calibration.favorites}
+                            onChange={(e) => setCalibration(prev => ({ ...prev, favorites: e.target.value }))}
+                            placeholder="e.g. Truffle Pasta, Miso Soup, Pepperoni Pizza..."
+                            className="w-full bg-bg-secondary border border-glass-border rounded-xl p-4 text-text-primary focus:border-accent-jp outline-none resize-none h-24 text-sm"
+                        />
+                        {!calibration.result && (
+                            <button
+                                onClick={handleCalibrate}
+                                disabled={!calibration.favorites || calibration.analyzing}
+                                className="absolute bottom-3 right-3 px-3 py-1 bg-accent-jp text-white text-xs font-bold rounded-lg hover:brightness-110 disabled:opacity-50 transition-all flex items-center gap-2"
+                            >
+                                {calibration.analyzing ? (
+                                    <><span>🧠</span> Analyzing...</>
+                                ) : (
+                                    <><span>✨</span> Analyze</>
+                                )}
+                            </button>
+                        )}
+                    </div>
+                </div>
+
+                {/* 3. THE TRANSLATION (Result) */}
+                {calibration.result && (
+                    <div className="bg-gradient-to-br from-accent-wa/10 to-accent-jp/5 border border-accent-wa/20 rounded-xl p-5 animate-[slideUp_0.5s]">
+                        <div className="flex items-center gap-3 mb-3">
+                            <span className="text-2xl">🧬</span>
+                            <div>
+                                <h3 className="font-bold text-text-primary text-sm">Semantic Profile Detected</h3>
+                                <p className="text-xs text-text-secondary">
+                                    {calibration.result.semantic_profile?.primary} • {calibration.result.semantic_profile?.secondary}
+                                </p>
+                            </div>
+                        </div>
+                        <div className="text-sm text-text-primary italic border-l-2 border-accent-jp pl-3 py-1 mb-2 opacity-90">
+                            "{calibration.result.narrative}"
+                        </div>
+                        <div className="flex items-center gap-2 mt-3 bg-white/40 p-2 rounded-lg">
+                            <span className="text-xs font-bold text-accent-wa uppercase tracking-wider">Recommended Bridge:</span>
+                            <span className="text-sm font-bold">{calibration.result.bridge_ingredient}</span>
+                        </div>
+                    </div>
+                )}
+
+                <div className="flex gap-4 pt-4">
+                    <button onClick={handleBack} className="w-1/3 py-3 text-text-secondary hover:text-text-primary font-bold">Back</button>
+                    <button onClick={handleNext} className="flex-1 py-3 bg-text-primary text-bg-primary rounded-lg font-bold hover:opacity-90 transition-all">
+                        {calibration.result ? "Use This Profile" : "Continue"}
+                    </button>
+                </div>
+            </div>
+        );
+    };
+
     const renderDinerStep = () => {
         switch (step) {
             case 1: // Restrictions
@@ -393,17 +545,18 @@ const OnboardingWizard = ({ user }) => {
                         </div>
 
                         <button onClick={handleNext} className="w-full py-3 bg-text-primary text-bg-primary rounded-lg font-bold hover:opacity-90 transition-all mt-4">
-                            Next: Taste Profile
+                            Next: Calibration
                         </button>
                     </div>
                 );
-            case 2: // Taste
+            case 2: return renderCalibrationStep();
+            case 3: // Taste (Old Step 2 became 3, mostly just confirmation/tweaking now)
                 return (
                     <div className="space-y-8">
                         <div className="text-center mb-8">
-                            <span className="text-4xl mb-4 block">👅</span>
-                            <h2 className="text-2xl font-bold text-text-primary">Your Palate</h2>
-                            <p className="text-text-secondary">Help us understand what you love.</p>
+                            <span className="text-4xl mb-4 block">🔧</span>
+                            <h2 className="text-2xl font-bold text-text-primary">Fine Tuning</h2>
+                            <p className="text-text-secondary">We've pre-set this based on your calibration.</p>
                         </div>
 
                         <div className="space-y-6">
@@ -459,7 +612,7 @@ const OnboardingWizard = ({ user }) => {
 
                 {/* Progress Dots */}
                 <div className="flex justify-center gap-2 mt-8">
-                    {(user?.type === 'restaurant' ? [1, 2, 3] : [1, 2]).map(i => (
+                    {(user?.type === 'restaurant' ? [1, 2, 3] : [1, 2, 3]).map(i => (
                         <div key={i} className={`h-1.5 rounded-full transition-all duration-300 ${i === step ? 'w-6 bg-text-primary' : 'w-2 bg-glass-border'}`}></div>
                     ))}
                 </div>
