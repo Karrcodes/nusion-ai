@@ -10,28 +10,33 @@ const RestaurantDashboard = ({ user }) => {
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('inventory'); // 'dashboard', 'inventory', 'insights'
 
-    // Load initial inventory from localStorage (keyed by User ID) or default
-    const [inventory, setInventory] = useState(() => {
-        // Check for wizard-saved inventory first
-        const wizardKey = `restaurant_inventory_${user?.id}`;
-        const wizardSaved = localStorage.getItem(wizardKey);
-        if (wizardSaved) return JSON.parse(wizardSaved);
+    // Helper for safe parsing
+    const safeParse = (key, fallback) => {
+        try {
+            const item = localStorage.getItem(key);
+            return item ? JSON.parse(item) : fallback;
+        } catch (e) {
+            console.warn(`Failed to parse ${key}, resetting to default.`, e);
+            return fallback;
+        }
+    };
 
-        // Fallback to previous dashboard key (if any)
-        const storageKey = `restaurant_inventory_${user?.id}`; // Ensure no trailing space
-        const saved = localStorage.getItem(storageKey);
-        return saved ? JSON.parse(saved) : [];
+    // Load initial inventory
+    const [inventory, setInventory] = useState(() => {
+        if (!user?.id) return [];
+        // Check for wizard-saved inventory first
+        const wizardKey = `restaurant_inventory_${user.id}`;
+        const wizardSaved = safeParse(wizardKey, null);
+        if (wizardSaved) return wizardSaved;
+
+        // Fallback
+        const storageKey = `restaurant_inventory_${user.id}`;
+        return safeParse(storageKey, []);
     });
 
     // Load profile from localStorage
     const [profile, setProfile] = useState(() => {
-        if (user?.id) {
-            const saved = localStorage.getItem(`restaurant_profile_${user.id}`); // User-scoped key
-            if (saved) return JSON.parse(saved);
-        }
-
-        // Default to User's Name or Empty (No more hardcoded Ikoyi)
-        return {
+        const defaultProfile = {
             name: user?.user_metadata?.full_name || user?.name || '',
             location: '',
             description: '',
@@ -39,7 +44,7 @@ const RestaurantDashboard = ({ user }) => {
             philosophy: '',
             logoUrl: null,
             coverUrl: '',
-            accentColor: '#10b981', // Default branding
+            accentColor: '#10b981',
             font: 'Modern Sans',
             uiStyle: 'soft',
             hours: '',
@@ -48,13 +53,18 @@ const RestaurantDashboard = ({ user }) => {
             dietaryTags: '',
             currency: 'GBP'
         };
+
+        if (user?.id) {
+            const saved = safeParse(`restaurant_profile_${user.id}`, null);
+            if (saved) return { ...defaultProfile, ...saved }; // Merge to ensure new fields exist
+        }
+        return defaultProfile;
     });
 
     // Persist Profile Changes
     useEffect(() => {
         if (user?.id) {
             localStorage.setItem(`restaurant_profile_${user.id}`, JSON.stringify(profile));
-            // Also update the "shared" profile for the demo connection if this is the active user
             localStorage.setItem('restaurant_profile', JSON.stringify(profile));
         }
     }, [profile, user]);
@@ -74,7 +84,6 @@ const RestaurantDashboard = ({ user }) => {
     const handleStockChange = (id) => {
         setInventory(prev => prev.map(item => {
             if (item.id === id) {
-                // Cycle stock status: High -> Medium -> Low -> High
                 const nextStock = item.stock === 'High' ? 'Medium' : item.stock === 'Medium' ? 'Low' : 'High';
                 return { ...item, stock: nextStock };
             }
@@ -84,48 +93,44 @@ const RestaurantDashboard = ({ user }) => {
 
     // Load Menu Items (Meals)
     const [menuItems, setMenuItems] = useState(() => {
-        // Check for wizard-saved meals first
-        const wizardKey = `restaurant_meals_${user?.id}`;
-        const wizardSaved = localStorage.getItem(wizardKey);
-        if (wizardSaved) return JSON.parse(wizardSaved);
+        if (!user?.id) return [];
 
-        const storageKey = `restaurant_menu_${user?.id}`;
-        const saved = localStorage.getItem(storageKey);
-        return saved ? JSON.parse(saved) : [];
+        const wizardKey = `restaurant_meals_${user.id}`;
+        const wizardSaved = safeParse(wizardKey, null);
+        if (wizardSaved) return wizardSaved;
+
+        const storageKey = `restaurant_menu_${user.id}`;
+        return safeParse(storageKey, []);
     });
 
     // --- DATA SYNC FIX (v4.3.5) ---
-    // The initial state load might fail if 'user' is null on first render.
-    // This effect ensures we try again once we have a valid user ID.
     useEffect(() => {
         if (user?.id) {
             // Re-check Inventory if empty
             if (inventory.length === 0) {
                 const wizardKey = `restaurant_inventory_${user.id}`;
-                const saved = localStorage.getItem(wizardKey);
-                if (saved) setInventory(JSON.parse(saved));
+                const saved = safeParse(wizardKey, null);
+                if (saved) setInventory(saved);
             }
 
             // Re-check Menu if empty
             if (menuItems.length === 0) {
                 const wizardKey = `restaurant_meals_${user.id}`;
-                const saved = localStorage.getItem(wizardKey);
-                if (saved) setMenuItems(JSON.parse(saved));
+                const saved = safeParse(wizardKey, null);
+                if (saved) setMenuItems(saved);
             }
         }
-    }, [user?.id]); // Only run when user ID changes (e.g. from null to configured)
+    }, [user?.id]); // Only run when user ID changes
 
     useEffect(() => {
         if (user?.id) {
             localStorage.setItem(`restaurant_menu_${user.id}`, JSON.stringify(menuItems));
-            // Sync to "Live" key for the Diner App to read
             localStorage.setItem('restaurant_live_menu', JSON.stringify(menuItems));
         }
     }, [menuItems, user]);
 
     // --- APPROVAL & INSIGHTS (v4.4) ---
     const [approvalStatus, setApprovalStatus] = useState(() => {
-        // Simple mock persistence
         if (user?.id) {
             return localStorage.getItem(`restaurant_approval_${user.id}`) || 'pending';
         }
@@ -425,8 +430,8 @@ const RestaurantDashboard = ({ user }) => {
     const [websiteUrl, setWebsiteUrl] = useState('');
 
     const filteredCities = cities.filter(c =>
-        c.city.toLowerCase().includes((profile.location || '').toLowerCase()) ||
-        c.country.toLowerCase().includes((profile.location || '').toLowerCase())
+        c.city.toLowerCase().includes((profile?.location || '').toLowerCase()) ||
+        c.country.toLowerCase().includes((profile?.location || '').toLowerCase())
     ).slice(0, 5);
 
     const handleCitySelect = (cityData) => {
@@ -457,6 +462,7 @@ const RestaurantDashboard = ({ user }) => {
 
         let newAccent = null;
         let newLogo = null;
+        let newCover = null; // Fix: Declare variable
         let newFont = profile.font;
         let newStyle = profile.uiStyle;
 

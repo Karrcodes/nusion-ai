@@ -51,21 +51,29 @@ function IkoyiInterface({ user }) {
         try {
             const savedProfile = localStorage.getItem('restaurant_profile');
             if (savedProfile) {
-                const parsed = JSON.parse(savedProfile);
-                setBrand(prev => ({
-                    ...prev,
-                    name: parsed.name || 'Nusion AI',
-                    logoUrl: parsed.logoUrl,
-                    accentColor: parsed.accentColor || '#10b981',
-                    font: parsed.font || 'Modern Sans',
-                    uiStyle: parsed.uiStyle || 'soft'
-                }));
+                try {
+                    const parsed = JSON.parse(savedProfile);
+                    setBrand(prev => ({
+                        ...prev,
+                        name: parsed.name || 'Nusion AI',
+                        logoUrl: parsed.logoUrl,
+                        accentColor: parsed.accentColor || '#10b981',
+                        font: parsed.font || 'Modern Sans',
+                        uiStyle: parsed.uiStyle || 'soft'
+                    }));
+                } catch (e) {
+                    console.warn("Corrupt profile data", e);
+                }
             }
 
             // Load Live Menu
             const savedMenu = localStorage.getItem('restaurant_live_menu');
             if (savedMenu) {
-                setLiveMenu(JSON.parse(savedMenu));
+                try {
+                    setLiveMenu(JSON.parse(savedMenu));
+                } catch (e) {
+                    console.warn("Corrupt menu data", e);
+                }
             }
         } catch (e) {
             console.error("Failed to sync brand settings", e);

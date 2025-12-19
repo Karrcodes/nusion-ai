@@ -11,6 +11,7 @@ import RestaurantDashboard from './components/RestaurantDashboard';
 import Welcome from './components/auth/Welcome';
 import OnboardingWizard from './components/auth/OnboardingWizard';
 import ProtectedRoute from './components/ProtectedRoute';
+import ErrorBoundary from './components/ErrorBoundary';
 import './index.css';
 
 function App() {
@@ -88,102 +89,104 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-bg-primary font-main text-text-primary transition-all duration-500">
-      <Routes>
-        <Route path="/" element={
-          <Home
-            user={currentUser}
-            onStart={() => {
-              if (currentUser && currentUser.type === 'diner') {
-                navigate('/dashboard');
-              } else if (currentUser && currentUser.type === 'restaurant') {
-                navigate('/dashboard/restaurant');
-              } else {
+    <ErrorBoundary>
+      <div className="min-h-screen bg-bg-primary font-main text-text-primary transition-all duration-500">
+        <Routes>
+          <Route path="/" element={
+            <Home
+              user={currentUser}
+              onStart={() => {
+                if (currentUser && currentUser.type === 'diner') {
+                  navigate('/dashboard');
+                } else if (currentUser && currentUser.type === 'restaurant') {
+                  navigate('/dashboard/restaurant');
+                } else {
+                  setAuthMode('signup');
+                  navigate('/auth');
+                }
+              }}
+              onLogin={() => {
+                setAuthMode('login');
+                navigate('/auth');
+              }}
+              onSignup={() => {
                 setAuthMode('signup');
                 navigate('/auth');
-              }
-            }}
-            onLogin={() => {
-              setAuthMode('login');
-              navigate('/auth');
-            }}
-            onSignup={() => {
-              setAuthMode('signup');
-              navigate('/auth');
-            }}
-            onPartnerSignup={() => {
-              setAuthMode('signup');
-              setSelectedAuthType('restaurant');
-              navigate('/auth/forms');
-            }}
-          />
-        } />
-
-        <Route path="/auth" element={
-          <AuthSelection
-            mode={authMode}
-            onSwitchMode={setAuthMode}
-            onSelect={(type) => {
-              setSelectedAuthType(type);
-              navigate('/auth/forms');
-            }}
-          />
-        } />
-
-        <Route path="/auth/forms" element={
-          <AuthForms
-            type={selectedAuthType}
-            mode={authMode}
-          />
-        } />
-
-        <Route path="/welcome" element={
-          <ProtectedRoute user={currentUser}>
-            <Welcome
-              user={currentUser}
-              onContinue={() => {
-                navigate('/onboarding', { replace: true });
+              }}
+              onPartnerSignup={() => {
+                setAuthMode('signup');
+                setSelectedAuthType('restaurant');
+                navigate('/auth/forms');
               }}
             />
-          </ProtectedRoute>
-        } />
+          } />
 
-        <Route path="/onboarding" element={
-          <ProtectedRoute user={currentUser}>
-            <OnboardingWizard user={currentUser} />
-          </ProtectedRoute>
-        } />
+          <Route path="/auth" element={
+            <AuthSelection
+              mode={authMode}
+              onSwitchMode={setAuthMode}
+              onSelect={(type) => {
+                setSelectedAuthType(type);
+                navigate('/auth/forms');
+              }}
+            />
+          } />
 
-        <Route path="/dashboard/restaurant" element={
-          <ProtectedRoute user={currentUser} requiredType="restaurant">
-            <RestaurantDashboard user={currentUser} />
-          </ProtectedRoute>
-        } />
+          <Route path="/auth/forms" element={
+            <AuthForms
+              type={selectedAuthType}
+              mode={authMode}
+            />
+          } />
 
-        <Route path="/dashboard/diner" element={
-          <ProtectedRoute user={currentUser} requiredType="diner">
-            <DinerDashboard user={currentUser} />
-          </ProtectedRoute>
-        } />
+          <Route path="/welcome" element={
+            <ProtectedRoute user={currentUser}>
+              <Welcome
+                user={currentUser}
+                onContinue={() => {
+                  navigate('/onboarding', { replace: true });
+                }}
+              />
+            </ProtectedRoute>
+          } />
 
-        <Route path="/dashboard" element={
-          <ProtectedRoute user={currentUser} requiredType="diner">
-            <Dashboard user={currentUser} />
-          </ProtectedRoute>
-        } />
+          <Route path="/onboarding" element={
+            <ProtectedRoute user={currentUser}>
+              <OnboardingWizard user={currentUser} />
+            </ProtectedRoute>
+          } />
 
-        <Route path="/ikoyi" element={
-          <ProtectedRoute user={currentUser}>
-            <div className="animate-[fadeSlideIn_0.5s_ease-out] w-full min-h-screen pt-[50px] pb-[50px]">
-              <IkoyiInterface user={currentUser} />
-            </div>
-          </ProtectedRoute>
-        } />
+          <Route path="/dashboard/restaurant" element={
+            <ProtectedRoute user={currentUser} requiredType="restaurant">
+              <RestaurantDashboard user={currentUser} />
+            </ProtectedRoute>
+          } />
 
-        {/* Fallback */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </div>
+          <Route path="/dashboard/diner" element={
+            <ProtectedRoute user={currentUser} requiredType="diner">
+              <DinerDashboard user={currentUser} />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/dashboard" element={
+            <ProtectedRoute user={currentUser} requiredType="diner">
+              <Dashboard user={currentUser} />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/ikoyi" element={
+            <ProtectedRoute user={currentUser}>
+              <div className="animate-[fadeSlideIn_0.5s_ease-out] w-full min-h-screen pt-[50px] pb-[50px]">
+                <IkoyiInterface user={currentUser} />
+              </div>
+            </ProtectedRoute>
+          } />
+
+          {/* Fallback */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </div>
+    </ErrorBoundary>
   );
 }
 
