@@ -41,7 +41,7 @@ const AuthForms = ({ type, mode }) => {
                     if (userType === 'restaurant') {
                         navigate('/dashboard/restaurant');
                     } else {
-                        navigate('/dashboard/diner');
+                        navigate('/dashboard');
                     }
                 }
 

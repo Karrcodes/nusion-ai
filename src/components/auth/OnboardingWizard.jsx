@@ -197,7 +197,7 @@ const OnboardingWizard = ({ user }) => {
 
                 // If they entered a craving, we could pass it to dashboard state logic, 
                 // but for now just redirect
-                navigate('/dashboard/diner');
+                navigate('/dashboard');
             }
         } catch (e) {
             console.error(e);
