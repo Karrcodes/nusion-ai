@@ -122,7 +122,7 @@ const OnboardingWizard = ({ user }) => {
 
     const handleComplete = async (manualScannedData = null) => {
         setLoading(true);
-        try {
+        if (user?.type === 'restaurant') {
             // Save preferences to local storage (simulating DB for now)
             // Force update user type to 'restaurant' to ensure dashboard access
             const { error: updateError } = await supabase.auth.updateUser({
