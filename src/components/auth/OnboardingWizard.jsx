@@ -122,349 +122,350 @@ const OnboardingWizard = ({ user }) => {
 
     const handleComplete = async (manualScannedData = null) => {
         setLoading(true);
-        if (user?.type === 'restaurant') {
-            // Save preferences to local storage (simulating DB for now)
-            // Force update user type to 'restaurant' to ensure dashboard access
-            const { error: updateError } = await supabase.auth.updateUser({
-                data: { type: 'restaurant' }
-            });
+        try {
+            if (user?.type === 'restaurant') {
+                // Save preferences to local storage (simulating DB for now)
+                // Force update user type to 'restaurant' to ensure dashboard access
+                const { error: updateError } = await supabase.auth.updateUser({
+                    data: { type: 'restaurant' }
+                });
 
-            if (updateError) console.error("Error updating user type:", updateError);
+                if (updateError) console.error("Error updating user type:", updateError);
 
-            // Save preferences
-            const profile = {
-                name: data.name,
-                cuisine: data.cuisine,
-                philosophy: data.philosophy,
-                location: data.city,
-                currency: data.currency,
-                // defaults
-                description: '',
-                logoUrl: null,
-                coverUrl: null,
-                hours: '',
-                priceTier: '$$',
-                contactEmail: '',
-                dietaryTags: ''
-            };
-            localStorage.setItem(`restaurant_preferences_${user.id}`, JSON.stringify(profile));
+                // Save preferences
+                const profile = {
+                    name: data.name,
+                    cuisine: data.cuisine,
+                    philosophy: data.philosophy,
+                    location: data.city,
+                    currency: data.currency,
+                    // defaults
+                    description: '',
+                    logoUrl: null,
+                    coverUrl: null,
+                    hours: '',
+                    priceTier: '$$',
+                    contactEmail: '',
+                    dietaryTags: ''
+                };
+                localStorage.setItem(`restaurant_preferences_${user.id}`, JSON.stringify(profile));
 
-            // Save Inventory if scanned (use manual override if provided to bypass stale state)
-            const finalScannedData = manualScannedData || scannedData;
+                // Save Inventory if scanned (use manual override if provided to bypass stale state)
+                const finalScannedData = manualScannedData || scannedData;
 
-            if (finalScannedData) {
-                localStorage.setItem(`restaurant_inventory_${user.id}`, JSON.stringify(finalScannedData.inventory));
-                localStorage.setItem(`restaurant_meals_${user.id}`, JSON.stringify(finalScannedData.meals));
+                if (finalScannedData) {
+                    localStorage.setItem(`restaurant_inventory_${user.id}`, JSON.stringify(finalScannedData.inventory));
+                    localStorage.setItem(`restaurant_meals_${user.id}`, JSON.stringify(finalScannedData.meals));
+                }
+
+                // 3. Set Approval Status to Pending
+                localStorage.setItem(`restaurant_approval_${user.id}`, 'pending');
+
+                // 4. Send Confirmation Email (Real Integration)
+                import('../../utils/adminTemplates').then(async ({ getAppReceivedEmail }) => {
+                    const emailHtml = getAppReceivedEmail(data.name);
+
+                    try {
+                        await fetch('/api/send-email', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                to: user.email,
+                                subject: 'Application Received - Nusion AI',
+                                html: emailHtml
+                            })
+                        });
+                        console.log(`[EMAIL SENT] To: ${user.email}`);
+                    } catch (err) {
+                        console.error("Failed to send email:", err);
+                    }
+                });
+
+                alert("Application Received! Check your email for status updates.");
+                navigate('/dashboard/restaurant');
+            } else {
+                const prefs = {
+                    restrictions: data.restrictions,
+                    tasteProfile: {
+                        spicy: data.spicyLevel,
+                        sweet: data.sweetLevel,
+                        umami: data.umamiLevel
+                    },
+                    photo: null
+                };
+                localStorage.setItem(`diner_preferences_${user.id}`, JSON.stringify(prefs));
+
+                // If they entered a craving, we could pass it to dashboard state logic, 
+                // but for now just redirect
+                navigate('/dashboard/diner');
             }
-
-            // 3. Set Approval Status to Pending
-            localStorage.setItem(`restaurant_approval_${user.id}`, 'pending');
-
-            // 4. Send Confirmation Email (Real Integration)
-            import('../../utils/adminTemplates').then(async ({ getAppReceivedEmail }) => {
-                const emailHtml = getAppReceivedEmail(data.name);
-
-                try {
-                    await fetch('/api/send-email', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            to: user.email,
-                            subject: 'Application Received - Nusion AI',
-                            html: emailHtml
-                        })
-                    });
-                    console.log(`[EMAIL SENT] To: ${user.email}`);
-                } catch (err) {
-                    console.error("Failed to send email:", err);
-                }
-            });
-
-            alert("Application Received! Check your email for status updates.");
-            navigate('/dashboard/restaurant');
-        } else {
-            const prefs = {
-                restrictions: data.restrictions,
-                tasteProfile: {
-                    spicy: data.spicyLevel,
-                    sweet: data.sweetLevel,
-                    umami: data.umamiLevel
-                },
-                photo: null
-            };
-            localStorage.setItem(`diner_preferences_${user.id}`, JSON.stringify(prefs));
-
-            // If they entered a craving, we could pass it to dashboard state logic, 
-            // but for now just redirect
-            navigate('/dashboard/diner');
+        } catch (e) {
+            console.error(e);
+            alert('Error saving profile');
+        } finally {
+            setLoading(false);
         }
-    } catch (e) {
-        console.error(e);
-        alert('Error saving profile');
-    } finally {
-        setLoading(false);
-    }
-};
+    };
 
-// --- STEPS RENDERERS ---
+    // --- STEPS RENDERERS ---
 
-const renderRestaurantStep = () => {
-    switch (step) {
-        case 1: // Identity
-            return (
-                <div className="space-y-6">
-                    <div className="text-center mb-8">
-                        <span className="text-4xl mb-4 block">👋</span>
-                        <h2 className="text-2xl font-bold text-text-primary">Welcome, Chef.</h2>
-                        <p className="text-text-secondary">Let's define your culinary identity.</p>
-                    </div>
-
-                    <div className="space-y-4">
-                        <div>
-                            <label className="block text-xs font-mono text-text-secondary uppercase mb-1">Restaurant Name</label>
-                            <input
-                                value={data.name}
-                                onChange={e => setData({ ...data, name: e.target.value })}
-                                className="w-full bg-bg-secondary border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp outline-none"
-                                placeholder="e.g. Ikoyi"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-xs font-mono text-text-secondary uppercase mb-1">Cuisine Type</label>
-                            <input
-                                value={data.cuisine}
-                                onChange={e => setData({ ...data, cuisine: e.target.value })}
-                                className="w-full bg-bg-secondary border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp outline-none"
-                                placeholder="e.g. Modern West African"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-xs font-mono text-text-secondary uppercase mb-1">Philosophy (Optional)</label>
-                            <input
-                                value={data.philosophy}
-                                onChange={e => setData({ ...data, philosophy: e.target.value })}
-                                className="w-full bg-bg-secondary border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp outline-none"
-                                placeholder="e.g. Hyper-seasonal"
-                            />
-                        </div>
-                    </div>
-                    <button onClick={handleNext} disabled={!data.name} className="w-full py-3 bg-text-primary text-bg-primary rounded-lg font-bold hover:opacity-90 disabled:opacity-50 transition-all">
-                        Next: Location
-                    </button>
-                </div>
-            );
-        case 2: // Location
-            return (
-                <div className="space-y-6">
-                    <div className="text-center mb-8">
-                        <span className="text-4xl mb-4 block">🌍</span>
-                        <h2 className="text-2xl font-bold text-text-primary">Where are you based?</h2>
-                        <p className="text-text-secondary">Used for currency and local sourcing logic.</p>
-                    </div>
-
-                    <div className="space-y-4 relative">
-                        <div>
-                            <label className="block text-xs font-mono text-text-secondary uppercase mb-1">City</label>
-                            <input
-                                value={data.city}
-                                onChange={e => {
-                                    setData({ ...data, city: e.target.value });
-                                    setShowCitySuggestions(true);
-                                }}
-                                onFocus={() => setShowCitySuggestions(true)}
-                                className="w-full bg-bg-secondary border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp outline-none"
-                                placeholder="Start typing..."
-                            />
-                            {showCitySuggestions && data.city.length > 0 && (
-                                <div className="absolute top-full left-0 w-full bg-bg-secondary border border-glass-border rounded-lg shadow-xl z-50 max-h-48 overflow-y-auto mt-1">
-                                    {filteredCities.map((c, i) => (
-                                        <div key={i}
-                                            onClick={() => {
-                                                setData({ ...data, city: c.city, currency: c.symbol });
-                                                setShowCitySuggestions(false);
-                                            }}
-                                            className="px-4 py-3 hover:bg-glass-border/20 cursor-pointer text-sm flex justify-between"
-                                        >
-                                            <span>{c.city}, {c.country}</span>
-                                            <span className="text-text-secondary font-mono">{c.symbol}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-
-                        <div className="p-4 bg-accent-wa/10 rounded-lg flex items-center justify-between">
-                            <span className="text-sm text-text-secondary">Detected Currency:</span>
-                            <span className="text-xl font-mono font-bold text-accent-wa">{data.currency}</span>
-                        </div>
-                    </div>
-
-                    <div className="flex gap-4">
-                        <button onClick={handleBack} className="w-1/3 py-3 text-text-secondary hover:text-text-primary font-bold">Back</button>
-                        <button onClick={handleNext} disabled={!data.city} className="flex-1 py-3 bg-text-primary text-bg-primary rounded-lg font-bold hover:opacity-90 disabled:opacity-50 transition-all">
-                            Next: The Magic
-                        </button>
-                    </div>
-                </div>
-            );
-        case 3: // Menu Upload & Review
-            return (
-                <div className="space-y-6">
-                    <div className="text-center mb-8">
-                        <span className="text-4xl mb-4 block">📸</span>
-                        <h2 className="text-2xl font-bold text-text-primary">Menu Scan</h2>
-                        <p className="text-text-secondary">Upload your menu to digitize your inventory.</p>
-                    </div>
-
-                    {!analyzing && !scannedData ? (
-                        <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-glass-border rounded-xl cursor-pointer hover:bg-glass-border/30 transition-all">
-                            <div className="text-4xl mb-2">📄</div>
-                            <span className="text-sm font-bold text-text-primary">Click to Upload Menu (PDF/IMG)</span>
-                            <span className="text-xs text-text-secondary mt-1 max-w-[200px] text-center">AI will extract ingredients & prices automatically.</span>
-                            <input type="file" className="hidden" accept="image/*,.pdf" onChange={handleMenuUpload} />
-                        </label>
-                    ) : analyzing ? (
-                        <div className="flex flex-col items-center justify-center h-48">
-                            <div className="w-16 h-16 border-4 border-accent-wa border-t-transparent rounded-full animate-spin mb-4"></div>
-                            <h3 className="text-lg font-bold text-text-primary animate-pulse">Analysing Menu...</h3>
-                            <div className="w-64 h-2 bg-glass-border rounded-full mt-4 overflow-hidden">
-                                <div className="h-full bg-accent-wa transition-all duration-300" style={{ width: `${analysisProgress}%` }}></div>
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="space-y-4">
-                            <div className="bg-green-500/10 border border-green-500/20 text-green-600 p-4 rounded-lg flex items-center gap-3">
-                                <span className="text-xl">✅</span>
-                                <div>
-                                    <p className="font-bold text-sm">Scan Complete</p>
-                                    <p className="text-xs opacity-80">{scannedData.meals.length} items identified.</p>
-                                </div>
-                            </div>
-                            <button onClick={handleComplete} className="w-full py-3 bg-text-primary text-bg-primary rounded-lg font-bold hover:opacity-90 transition-all">
-                                Submit Application for Review
-                            </button>
-                        </div>
-                    )}
-
-                    <div className="flex gap-4">
-                        <button onClick={handleBack} className="w-1/3 py-3 text-text-secondary hover:text-text-primary font-bold">Back</button>
-                        <button onClick={handleComplete} className="flex-1 py-3 bg-text-primary text-bg-primary rounded-lg font-bold hover:opacity-90 transition-all">
-                            {scannedData ? 'Enter Dashboard' : 'Skip & Finish'}
-                        </button>
-                    </div>
-                </div>
-            );
-        default: return null;
-    }
-};
-
-const renderDinerStep = () => {
-    switch (step) {
-        case 1: // Restrictions
-            const toggle = (tag) => {
-                if (data.restrictions.includes(tag)) {
-                    setData({ ...data, restrictions: data.restrictions.filter(t => t !== tag) });
-                } else {
-                    setData({ ...data, restrictions: [...data.restrictions, tag] });
-                }
-            };
-            return (
-                <div className="space-y-6">
-                    <div className="text-center mb-8">
-                        <span className="text-4xl mb-4 block">🥗</span>
-                        <h2 className="text-2xl font-bold text-text-primary">Dietary Needs</h2>
-                        <p className="text-text-secondary">We'll filter every generated menu to be safe for you.</p>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                        {['Vegan', 'Vegetarian', 'Halal', 'Gluten-Free', 'Nut-Free', 'Dairy-Free'].map(tag => (
-                            <button
-                                key={tag}
-                                onClick={() => toggle(tag)}
-                                className={`p-3 rounded-lg border text-sm font-bold transition-all ${data.restrictions.includes(tag)
-                                    ? 'bg-accent-wa/20 border-accent-wa text-accent-wa'
-                                    : 'bg-bg-secondary border-glass-border text-text-secondary hover:border-text-secondary'
-                                    }`}
-                            >
-                                {tag}
-                            </button>
-                        ))}
-                    </div>
-
-                    <button onClick={handleNext} className="w-full py-3 bg-text-primary text-bg-primary rounded-lg font-bold hover:opacity-90 transition-all mt-4">
-                        Next: Taste Profile
-                    </button>
-                </div>
-            );
-        case 2: // Taste
-            return (
-                <div className="space-y-8">
-                    <div className="text-center mb-8">
-                        <span className="text-4xl mb-4 block">👅</span>
-                        <h2 className="text-2xl font-bold text-text-primary">Your Palate</h2>
-                        <p className="text-text-secondary">Help us understand what you love.</p>
-                    </div>
-
+    const renderRestaurantStep = () => {
+        switch (step) {
+            case 1: // Identity
+                return (
                     <div className="space-y-6">
-                        {[
-                            { label: 'Spiciness', key: 'spicyLevel', emoji: '🌶️', max: 3 },
-                            { label: 'Sweetness', key: 'sweetLevel', emoji: '🍯', max: 3 },
-                            { label: 'Umami', key: 'umamiLevel', emoji: '🍄', max: 3 }
-                        ].map(item => (
-                            <div key={item.key}>
-                                <div className="flex justify-between text-sm mb-2 text-text-secondary">
-                                    <span>{item.emoji} {item.label}</span>
-                                    <span>{data[item.key]}/3</span>
-                                </div>
-                                <input
-                                    type="range"
-                                    min="0" max="3" step="1"
-                                    value={data[item.key]}
-                                    onChange={e => setData({ ...data, [item.key]: parseInt(e.target.value) })}
-                                    className="w-full h-2 bg-glass-border rounded-lg appearance-none cursor-pointer accent-accent-jp"
-                                />
-                                <div className="flex justify-between text-xs text-text-secondary opacity-50 mt-1">
-                                    <span>None</span>
-                                    <span>Mild</span>
-                                    <span>Medium</span>
-                                    <span>High</span>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+                        <div className="text-center mb-8">
+                            <span className="text-4xl mb-4 block">👋</span>
+                            <h2 className="text-2xl font-bold text-text-primary">Welcome, Chef.</h2>
+                            <p className="text-text-secondary">Let's define your culinary identity.</p>
+                        </div>
 
-                    <div className="flex gap-4">
-                        <button onClick={handleBack} className="w-1/3 py-3 text-text-secondary hover:text-text-primary font-bold">Back</button>
-                        <button onClick={handleComplete} className="flex-1 py-3 bg-text-primary text-bg-primary rounded-lg font-bold hover:opacity-90 transition-all">
-                            Finish Setup
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-xs font-mono text-text-secondary uppercase mb-1">Restaurant Name</label>
+                                <input
+                                    value={data.name}
+                                    onChange={e => setData({ ...data, name: e.target.value })}
+                                    className="w-full bg-bg-secondary border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp outline-none"
+                                    placeholder="e.g. Ikoyi"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-mono text-text-secondary uppercase mb-1">Cuisine Type</label>
+                                <input
+                                    value={data.cuisine}
+                                    onChange={e => setData({ ...data, cuisine: e.target.value })}
+                                    className="w-full bg-bg-secondary border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp outline-none"
+                                    placeholder="e.g. Modern West African"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-mono text-text-secondary uppercase mb-1">Philosophy (Optional)</label>
+                                <input
+                                    value={data.philosophy}
+                                    onChange={e => setData({ ...data, philosophy: e.target.value })}
+                                    className="w-full bg-bg-secondary border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp outline-none"
+                                    placeholder="e.g. Hyper-seasonal"
+                                />
+                            </div>
+                        </div>
+                        <button onClick={handleNext} disabled={!data.name} className="w-full py-3 bg-text-primary text-bg-primary rounded-lg font-bold hover:opacity-90 disabled:opacity-50 transition-all">
+                            Next: Location
                         </button>
                     </div>
+                );
+            case 2: // Location
+                return (
+                    <div className="space-y-6">
+                        <div className="text-center mb-8">
+                            <span className="text-4xl mb-4 block">🌍</span>
+                            <h2 className="text-2xl font-bold text-text-primary">Where are you based?</h2>
+                            <p className="text-text-secondary">Used for currency and local sourcing logic.</p>
+                        </div>
+
+                        <div className="space-y-4 relative">
+                            <div>
+                                <label className="block text-xs font-mono text-text-secondary uppercase mb-1">City</label>
+                                <input
+                                    value={data.city}
+                                    onChange={e => {
+                                        setData({ ...data, city: e.target.value });
+                                        setShowCitySuggestions(true);
+                                    }}
+                                    onFocus={() => setShowCitySuggestions(true)}
+                                    className="w-full bg-bg-secondary border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp outline-none"
+                                    placeholder="Start typing..."
+                                />
+                                {showCitySuggestions && data.city.length > 0 && (
+                                    <div className="absolute top-full left-0 w-full bg-bg-secondary border border-glass-border rounded-lg shadow-xl z-50 max-h-48 overflow-y-auto mt-1">
+                                        {filteredCities.map((c, i) => (
+                                            <div key={i}
+                                                onClick={() => {
+                                                    setData({ ...data, city: c.city, currency: c.symbol });
+                                                    setShowCitySuggestions(false);
+                                                }}
+                                                className="px-4 py-3 hover:bg-glass-border/20 cursor-pointer text-sm flex justify-between"
+                                            >
+                                                <span>{c.city}, {c.country}</span>
+                                                <span className="text-text-secondary font-mono">{c.symbol}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="p-4 bg-accent-wa/10 rounded-lg flex items-center justify-between">
+                                <span className="text-sm text-text-secondary">Detected Currency:</span>
+                                <span className="text-xl font-mono font-bold text-accent-wa">{data.currency}</span>
+                            </div>
+                        </div>
+
+                        <div className="flex gap-4">
+                            <button onClick={handleBack} className="w-1/3 py-3 text-text-secondary hover:text-text-primary font-bold">Back</button>
+                            <button onClick={handleNext} disabled={!data.city} className="flex-1 py-3 bg-text-primary text-bg-primary rounded-lg font-bold hover:opacity-90 disabled:opacity-50 transition-all">
+                                Next: The Magic
+                            </button>
+                        </div>
+                    </div>
+                );
+            case 3: // Menu Upload & Review
+                return (
+                    <div className="space-y-6">
+                        <div className="text-center mb-8">
+                            <span className="text-4xl mb-4 block">📸</span>
+                            <h2 className="text-2xl font-bold text-text-primary">Menu Scan</h2>
+                            <p className="text-text-secondary">Upload your menu to digitize your inventory.</p>
+                        </div>
+
+                        {!analyzing && !scannedData ? (
+                            <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-glass-border rounded-xl cursor-pointer hover:bg-glass-border/30 transition-all">
+                                <div className="text-4xl mb-2">📄</div>
+                                <span className="text-sm font-bold text-text-primary">Click to Upload Menu (PDF/IMG)</span>
+                                <span className="text-xs text-text-secondary mt-1 max-w-[200px] text-center">AI will extract ingredients & prices automatically.</span>
+                                <input type="file" className="hidden" accept="image/*,.pdf" onChange={handleMenuUpload} />
+                            </label>
+                        ) : analyzing ? (
+                            <div className="flex flex-col items-center justify-center h-48">
+                                <div className="w-16 h-16 border-4 border-accent-wa border-t-transparent rounded-full animate-spin mb-4"></div>
+                                <h3 className="text-lg font-bold text-text-primary animate-pulse">Analysing Menu...</h3>
+                                <div className="w-64 h-2 bg-glass-border rounded-full mt-4 overflow-hidden">
+                                    <div className="h-full bg-accent-wa transition-all duration-300" style={{ width: `${analysisProgress}%` }}></div>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="space-y-4">
+                                <div className="bg-green-500/10 border border-green-500/20 text-green-600 p-4 rounded-lg flex items-center gap-3">
+                                    <span className="text-xl">✅</span>
+                                    <div>
+                                        <p className="font-bold text-sm">Scan Complete</p>
+                                        <p className="text-xs opacity-80">{scannedData.meals.length} items identified.</p>
+                                    </div>
+                                </div>
+                                <button onClick={handleComplete} className="w-full py-3 bg-text-primary text-bg-primary rounded-lg font-bold hover:opacity-90 transition-all">
+                                    Submit Application for Review
+                                </button>
+                            </div>
+                        )}
+
+                        <div className="flex gap-4">
+                            <button onClick={handleBack} className="w-1/3 py-3 text-text-secondary hover:text-text-primary font-bold">Back</button>
+                            <button onClick={handleComplete} className="flex-1 py-3 bg-text-primary text-bg-primary rounded-lg font-bold hover:opacity-90 transition-all">
+                                {scannedData ? 'Enter Dashboard' : 'Skip & Finish'}
+                            </button>
+                        </div>
+                    </div>
+                );
+            default: return null;
+        }
+    };
+
+    const renderDinerStep = () => {
+        switch (step) {
+            case 1: // Restrictions
+                const toggle = (tag) => {
+                    if (data.restrictions.includes(tag)) {
+                        setData({ ...data, restrictions: data.restrictions.filter(t => t !== tag) });
+                    } else {
+                        setData({ ...data, restrictions: [...data.restrictions, tag] });
+                    }
+                };
+                return (
+                    <div className="space-y-6">
+                        <div className="text-center mb-8">
+                            <span className="text-4xl mb-4 block">🥗</span>
+                            <h2 className="text-2xl font-bold text-text-primary">Dietary Needs</h2>
+                            <p className="text-text-secondary">We'll filter every generated menu to be safe for you.</p>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                            {['Vegan', 'Vegetarian', 'Halal', 'Gluten-Free', 'Nut-Free', 'Dairy-Free'].map(tag => (
+                                <button
+                                    key={tag}
+                                    onClick={() => toggle(tag)}
+                                    className={`p-3 rounded-lg border text-sm font-bold transition-all ${data.restrictions.includes(tag)
+                                        ? 'bg-accent-wa/20 border-accent-wa text-accent-wa'
+                                        : 'bg-bg-secondary border-glass-border text-text-secondary hover:border-text-secondary'
+                                        }`}
+                                >
+                                    {tag}
+                                </button>
+                            ))}
+                        </div>
+
+                        <button onClick={handleNext} className="w-full py-3 bg-text-primary text-bg-primary rounded-lg font-bold hover:opacity-90 transition-all mt-4">
+                            Next: Taste Profile
+                        </button>
+                    </div>
+                );
+            case 2: // Taste
+                return (
+                    <div className="space-y-8">
+                        <div className="text-center mb-8">
+                            <span className="text-4xl mb-4 block">👅</span>
+                            <h2 className="text-2xl font-bold text-text-primary">Your Palate</h2>
+                            <p className="text-text-secondary">Help us understand what you love.</p>
+                        </div>
+
+                        <div className="space-y-6">
+                            {[
+                                { label: 'Spiciness', key: 'spicyLevel', emoji: '🌶️', max: 3 },
+                                { label: 'Sweetness', key: 'sweetLevel', emoji: '🍯', max: 3 },
+                                { label: 'Umami', key: 'umamiLevel', emoji: '🍄', max: 3 }
+                            ].map(item => (
+                                <div key={item.key}>
+                                    <div className="flex justify-between text-sm mb-2 text-text-secondary">
+                                        <span>{item.emoji} {item.label}</span>
+                                        <span>{data[item.key]}/3</span>
+                                    </div>
+                                    <input
+                                        type="range"
+                                        min="0" max="3" step="1"
+                                        value={data[item.key]}
+                                        onChange={e => setData({ ...data, [item.key]: parseInt(e.target.value) })}
+                                        className="w-full h-2 bg-glass-border rounded-lg appearance-none cursor-pointer accent-accent-jp"
+                                    />
+                                    <div className="flex justify-between text-xs text-text-secondary opacity-50 mt-1">
+                                        <span>None</span>
+                                        <span>Mild</span>
+                                        <span>Medium</span>
+                                        <span>High</span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="flex gap-4">
+                            <button onClick={handleBack} className="w-1/3 py-3 text-text-secondary hover:text-text-primary font-bold">Back</button>
+                            <button onClick={handleComplete} className="flex-1 py-3 bg-text-primary text-bg-primary rounded-lg font-bold hover:opacity-90 transition-all">
+                                Finish Setup
+                            </button>
+                        </div>
+                    </div>
+                );
+            default: return null;
+        }
+    };
+
+    return (
+        <div className="min-h-screen w-full flex items-center justify-center bg-bg-primary p-4 animate-[fadeIn_0.5s]">
+            <div className="glass-panel p-8 w-full max-w-md relative overflow-hidden">
+                {/* Background Blobs */}
+                <div className="absolute -top-32 -right-32 w-64 h-64 bg-accent-wa/5 rounded-full blur-3xl"></div>
+                <div className="absolute -bottom-32 -left-32 w-64 h-64 bg-accent-jp/5 rounded-full blur-3xl"></div>
+
+                <div className={`transition-opacity duration-300 relative z-10 ${animating ? 'opacity-0 translate-x-4' : 'opacity-100 translate-x-0'}`}>
+                    {user?.type === 'restaurant' ? renderRestaurantStep() : renderDinerStep()}
                 </div>
-            );
-        default: return null;
-    }
-};
 
-return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-bg-primary p-4 animate-[fadeIn_0.5s]">
-        <div className="glass-panel p-8 w-full max-w-md relative overflow-hidden">
-            {/* Background Blobs */}
-            <div className="absolute -top-32 -right-32 w-64 h-64 bg-accent-wa/5 rounded-full blur-3xl"></div>
-            <div className="absolute -bottom-32 -left-32 w-64 h-64 bg-accent-jp/5 rounded-full blur-3xl"></div>
-
-            <div className={`transition-opacity duration-300 relative z-10 ${animating ? 'opacity-0 translate-x-4' : 'opacity-100 translate-x-0'}`}>
-                {user?.type === 'restaurant' ? renderRestaurantStep() : renderDinerStep()}
-            </div>
-
-            {/* Progress Dots */}
-            <div className="flex justify-center gap-2 mt-8">
-                {(user?.type === 'restaurant' ? [1, 2, 3] : [1, 2]).map(i => (
-                    <div key={i} className={`h-1.5 rounded-full transition-all duration-300 ${i === step ? 'w-6 bg-text-primary' : 'w-2 bg-glass-border'}`}></div>
-                ))}
+                {/* Progress Dots */}
+                <div className="flex justify-center gap-2 mt-8">
+                    {(user?.type === 'restaurant' ? [1, 2, 3] : [1, 2]).map(i => (
+                        <div key={i} className={`h-1.5 rounded-full transition-all duration-300 ${i === step ? 'w-6 bg-text-primary' : 'w-2 bg-glass-border'}`}></div>
+                    ))}
+                </div>
             </div>
         </div>
-    </div>
-);
+    );
 };
 
 export default OnboardingWizard;
