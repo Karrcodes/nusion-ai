@@ -96,10 +96,8 @@ function App() {
             <Home
               user={currentUser}
               onStart={() => {
-                if (currentUser && currentUser.type === 'diner') {
+                if (currentUser) {
                   navigate('/dashboard');
-                } else if (currentUser && currentUser.type === 'restaurant') {
-                  navigate('/dashboard/restaurant');
                 } else {
                   setAuthMode('signup');
                   navigate('/auth');
@@ -169,7 +167,7 @@ function App() {
           } />
 
           <Route path="/dashboard" element={
-            <ProtectedRoute user={currentUser} requiredType="diner">
+            <ProtectedRoute user={currentUser}>
               <Dashboard user={currentUser} />
             </ProtectedRoute>
           } />
