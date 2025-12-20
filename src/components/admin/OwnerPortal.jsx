@@ -1,5 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
 
 const OwnerPortal = () => {
@@ -81,9 +82,14 @@ const OwnerPortal = () => {
                         </h1>
                         <p className="text-text-secondary text-sm">God Mode • {restaurants.length} Total Entities</p>
                     </div>
-                    <button onClick={fetchRestaurants} className="px-4 py-2 bg-glass-border hover:bg-glass-border/50 rounded-lg text-sm transition">
-                        Refresh
-                    </button>
+                    <div className="flex gap-4">
+                        <Link to="/dashboard" className="px-4 py-2 border border-glass-border hover:bg-glass-border/20 rounded-lg text-sm text-text-secondary transition">
+                            Exit God Mode
+                        </Link>
+                        <button onClick={fetchRestaurants} className="px-4 py-2 bg-glass-border hover:bg-glass-border/50 rounded-lg text-sm transition">
+                            Refresh
+                        </button>
+                    </div>
                 </div>
 
                 {/* Filters */}

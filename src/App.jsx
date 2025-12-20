@@ -10,6 +10,7 @@ import DinerDashboard from './components/DinerDashboard';
 import RestaurantDashboard from './components/RestaurantDashboard';
 import Welcome from './components/auth/Welcome';
 import OnboardingWizard from './components/auth/OnboardingWizard';
+import { Link } from 'react-router-dom';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminGuard from './components/auth/AdminGuard';
 import OwnerPortal from './components/admin/OwnerPortal';
@@ -92,7 +93,17 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-bg-primary font-main text-text-primary transition-all duration-500">
+      <div className="min-h-screen bg-bg-primary font-main text-text-primary transition-all duration-500 relative">
+        {/* GLOBAL GOD MODE BUTTON (Visible everywhere except Portal, for Admin) */}
+        {currentUser && ['owner@nusion.ai', 'abduluk98@gmail.com'].includes(currentUser.email) && location.pathname !== '/portal/owner' && (
+           <Link
+             to="/portal/owner"
+             className="fixed bottom-4 right-4 z-[9999] px-4 py-2 bg-gradient-to-r from-red-600 to-purple-800 text-white font-mono text-xs font-bold uppercase tracking-widest rounded-full shadow-2xl hover:scale-110 transition-transform border border-white/20"
+           >
+             GOD MODE
+           </Link>
+        )}
+
         <Routes>
           <Route path="/" element={
             <Home
