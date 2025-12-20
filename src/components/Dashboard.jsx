@@ -1,6 +1,24 @@
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { supabase } from '../lib/supabaseClient';
 
 const Dashboard = ({ user }) => {
+    const [brands, setBrands] = useState([]);
+
+    useEffect(() => {
+        const fetchBrands = async () => {
+            const { data } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('status', 'approved')
+                .order('created_at', { ascending: false });
+
+            if (data && data.length > 0) {
+                setBrands(data);
+            }
+        };
+        fetchBrands();
+    }, []);
     return (
         <div className="min-h-screen w-full flex flex-col items-center p-4 md:p-8 animate-[fadeIn_0.5s] relative">
 
@@ -58,33 +76,71 @@ const Dashboard = ({ user }) => {
             </header>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl">
-                {/* Ikoyi Card (Active) */}
-                <Link
-                    to="/ikoyi"
-                    className="group cursor-pointer relative h-64 md:h-[400px] rounded-3xl overflow-hidden shadow-xl transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl block"
-                >
-                    <div className="absolute inset-0 bg-black/60 z-10 group-hover:bg-black/40 transition-colors duration-500"></div>
-                    <img
-                        src="/ikoyi-interior.png"
-                        alt="Ikoyi Background"
-                        className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:scale-110 transition-transform duration-700"
-                    />
+                {/* Dynamic Brand Cards or Default Ikoyi */}
+                {brands.length > 0 ? (
+                    brands.map(brand => (
+                        <Link
+                            key={brand.id}
+                            to="/ikoyi"
+                            /* Future: to={`/brand/${brand.id}`} */
+                            className="group cursor-pointer relative h-64 md:h-[400px] rounded-3xl overflow-hidden shadow-xl transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl block"
+                        >
+                            <div className="absolute inset-0 bg-black/60 z-10 group-hover:bg-black/40 transition-colors duration-500"></div>
+                            <img
+                                src={brand.cover_url || "/ikoyi-interior.png"}
+                                alt={brand.name}
+                                className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:scale-110 transition-transform duration-700"
+                            />
 
-                    <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-10">
-                        <div className="absolute top-10 left-10 right-10 h-1 bg-gradient-to-r from-accent-wa to-accent-jp opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                            <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-10">
+                                <div className="absolute top-10 left-10 right-10 h-1 bg-gradient-to-r from-accent-wa to-accent-jp opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
-                        <div className="text-center transform transition-transform duration-500 group-hover:-translate-y-4 flex flex-col items-center mt-10">
-                            <img src="/logo.png" alt="IKOYI" className="h-12 md:h-16 w-auto brightness-0 invert mb-4" />
-                            <p className="text-white/70 uppercase tracking-widest text-xs">London • Hyper-Seasonal Spice</p>
+                                <div className="text-center transform transition-transform duration-500 group-hover:-translate-y-4 flex flex-col items-center mt-10">
+                                    {brand.logo_url ? (
+                                        <img src={brand.logo_url} alt="Logo" className="h-12 md:h-16 w-auto mb-4 object-contain brightness-0 invert" />
+                                    ) : (
+                                        <h3 className="text-2xl font-display font-bold text-white mb-2">{brand.name}</h3>
+                                    )}
+                                    <p className="text-white/70 uppercase tracking-widest text-xs">{brand.city || 'Global'} • {brand.name}</p>
+                                </div>
+
+                                <div className="absolute bottom-10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100 text-center">
+                                    <span className="inline-block px-6 py-2 border border-white/30 rounded-full text-white text-sm uppercase tracking-wider backdrop-blur-md">
+                                        Enter Studio
+                                    </span>
+                                </div>
+                            </div>
+                        </Link>
+                    ))
+                ) : (
+                    /* Fallback Ikoyi Card */
+                    <Link
+                        to="/ikoyi"
+                        className="group cursor-pointer relative h-64 md:h-[400px] rounded-3xl overflow-hidden shadow-xl transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl block"
+                    >
+                        <div className="absolute inset-0 bg-black/60 z-10 group-hover:bg-black/40 transition-colors duration-500"></div>
+                        <img
+                            src="/ikoyi-interior.png"
+                            alt="Ikoyi Background"
+                            className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:scale-110 transition-transform duration-700"
+                        />
+
+                        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-10">
+                            <div className="absolute top-10 left-10 right-10 h-1 bg-gradient-to-r from-accent-wa to-accent-jp opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+                            <div className="text-center transform transition-transform duration-500 group-hover:-translate-y-4 flex flex-col items-center mt-10">
+                                <img src="/logo.png" alt="IKOYI" className="h-12 md:h-16 w-auto brightness-0 invert mb-4" />
+                                <p className="text-white/70 uppercase tracking-widest text-xs">London • Hyper-Seasonal Spice</p>
+                            </div>
+
+                            <div className="absolute bottom-10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100 text-center">
+                                <span className="inline-block px-6 py-2 border border-white/30 rounded-full text-white text-sm uppercase tracking-wider backdrop-blur-md">
+                                    Enter Studio
+                                </span>
+                            </div>
                         </div>
-
-                        <div className="absolute bottom-10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100 text-center">
-                            <span className="inline-block px-6 py-2 border border-white/30 rounded-full text-white text-sm uppercase tracking-wider backdrop-blur-md">
-                                Enter Studio
-                            </span>
-                        </div>
-                    </div>
-                </Link>
+                    </Link>
+                )}
 
                 {/* Coming Soon Card */}
                 <div className="relative h-64 md:h-[400px] rounded-3xl overflow-hidden border-2 border-dashed border-text-secondary/20 flex flex-col items-center justify-center bg-bg-secondary/30">
