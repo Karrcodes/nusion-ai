@@ -11,6 +11,8 @@ import RestaurantDashboard from './components/RestaurantDashboard';
 import Welcome from './components/auth/Welcome';
 import OnboardingWizard from './components/auth/OnboardingWizard';
 import ProtectedRoute from './components/ProtectedRoute';
+import AdminGuard from './components/auth/AdminGuard';
+import OwnerPortal from './components/admin/OwnerPortal';
 import ErrorBoundary from './components/ErrorBoundary';
 import './index.css';
 
@@ -181,6 +183,11 @@ function App() {
           } />
 
           {/* Fallback */}
+          <Route path="/portal/owner" element={
+            <AdminGuard>
+              <OwnerPortal />
+            </AdminGuard>
+          } />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
