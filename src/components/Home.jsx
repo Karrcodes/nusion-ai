@@ -118,7 +118,7 @@ const Home = ({ user, onStart, onLogin, onSignup, onPartnerSignup }) => {
 
                     {/* CTA Button */}
                     <button
-                        onClick={onStart}
+                        onClick={() => document.getElementById('brands').scrollIntoView({ behavior: 'smooth' })}
                         className="group relative px-6 py-3 md:px-8 md:py-4 bg-text-primary text-bg-primary rounded-full overflow-hidden transition-all hover:scale-105 hover:shadow-xl animate-[slideUp_1.2s_ease-out_0.4s]"
                     >
                         <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-accent-wa to-accent-jp opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -177,7 +177,7 @@ const Home = ({ user, onStart, onLogin, onSignup, onPartnerSignup }) => {
                 </div>
 
                 {/* --- FEATURED BRANDS (New Section) --- */}
-                <div className="w-full max-w-6xl mt-16 md:mt-24 mb-16 animate-[fadeIn_1.5s_ease-out_0.6s]">
+                <div id="brands" className="w-full max-w-6xl mt-16 md:mt-24 mb-16 animate-[fadeIn_1.5s_ease-out_0.6s]">
                     <div className="flex flex-col items-center mb-12">
                         <span className="text-accent-wa font-mono text-sm uppercase tracking-widest mb-2">Our Partners</span>
                         <h2 className="text-3xl md:text-4xl font-display font-bold text-text-primary">Featured Kitchens</h2>
