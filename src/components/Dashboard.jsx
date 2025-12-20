@@ -149,7 +149,7 @@ const Dashboard = ({ user }) => {
                 </div>
             </div>
 
-            <footer className="absolute bottom-4 md:bottom-8 text-xs text-text-secondary/40 font-mono">
+            <footer className="mt-auto pt-12 pb-4 text-xs text-text-secondary/40 font-mono">
                 Studio AikinKarr 2026 copyright
             </footer>
         </div>
