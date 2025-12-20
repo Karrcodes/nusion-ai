@@ -21,31 +21,41 @@ const Dashboard = ({ user }) => {
 
                 <div className="flex items-center gap-4">
                     {user && (
-                        <Link
-                            to={user.type === 'restaurant' ? '/dashboard/restaurant' : '/dashboard/diner?view=profile'}
-                            className={`w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition-all shadow-md ${(() => {
-                                try {
-                                    const stored = localStorage.getItem(`diner_preferences_${user.id}`);
-                                    return stored && JSON.parse(stored).photo ? 'border-2 border-accent-wa/50 p-0 overflow-hidden' : 'bg-accent-wa/20 text-accent-wa font-bold hover:bg-accent-wa hover:text-white border border-accent-wa/50';
-                                } catch (e) { return 'bg-accent-wa/20 text-accent-wa font-bold hover:bg-accent-wa hover:text-white border border-accent-wa/50'; }
-                            })()
-                                }`}
-                            title="Go to My Palate"
-                        >
-                            {(() => {
-                                try {
-                                    const stored = localStorage.getItem(`diner_preferences_${user.id}`);
-                                    const photo = stored ? JSON.parse(stored).photo : null;
-                                    return photo ? (
-                                        <img src={photo} alt="Profile" className="w-full h-full object-cover" />
-                                    ) : (
-                                        user.name ? user.name.charAt(0).toUpperCase() : 'U'
-                                    );
-                                } catch (e) {
-                                    return user.name ? user.name.charAt(0).toUpperCase() : 'U';
-                                }
-                            })()}
-                        </Link>
+                        <>
+                            {['owner@nusion.ai', 'abduluk98@gmail.com'].includes(user.email) && (
+                                <Link
+                                    to="/portal/owner"
+                                    className="px-3 py-1 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-mono uppercase tracking-widest border border-red-500/30 rounded-full transition-colors mr-2"
+                                >
+                                    GOD MODE
+                                </Link>
+                            )}
+                            <Link
+                                to={user.type === 'restaurant' ? '/dashboard/restaurant' : '/dashboard/diner?view=profile'}
+                                className={`w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition-all shadow-md ${(() => {
+                                    try {
+                                        const stored = localStorage.getItem(`diner_preferences_${user.id}`);
+                                        return stored && JSON.parse(stored).photo ? 'border-2 border-accent-wa/50 p-0 overflow-hidden' : 'bg-accent-wa/20 text-accent-wa font-bold hover:bg-accent-wa hover:text-white border border-accent-wa/50';
+                                    } catch (e) { return 'bg-accent-wa/20 text-accent-wa font-bold hover:bg-accent-wa hover:text-white border border-accent-wa/50'; }
+                                })()
+                                    }`}
+                                title="Go to My Palate"
+                            >
+                                {(() => {
+                                    try {
+                                        const stored = localStorage.getItem(`diner_preferences_${user.id}`);
+                                        const photo = stored ? JSON.parse(stored).photo : null;
+                                        return photo ? (
+                                            <img src={photo} alt="Profile" className="w-full h-full object-cover" />
+                                        ) : (
+                                            user.name ? user.name.charAt(0).toUpperCase() : 'U'
+                                        );
+                                    } catch (e) {
+                                        return user.name ? user.name.charAt(0).toUpperCase() : 'U';
+                                    }
+                                })()}
+                            </Link>
+                        </>
                     )}
                 </div>
             </nav>
