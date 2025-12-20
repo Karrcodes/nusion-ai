@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { supabase } from '../lib/supabaseClient';
 
 const Home = ({ user, onStart, onLogin, onSignup, onPartnerSignup }) => {
     // Get user photo from local storage if available
@@ -17,7 +18,30 @@ const Home = ({ user, onStart, onLogin, onSignup, onPartnerSignup }) => {
         return null;
     }, [user]);
 
+    // Fetch Approved Brands
+    React.useEffect(() => {
+        const fetchBrands = async () => {
+            const { data } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('status', 'approved')
+                .order('created_at', { ascending: false });
+
+            if (data && data.length > 0) {
+                setBrands(data);
+            }
+        };
+        fetchBrands();
+    }, []);
+
     const dashboardPath = user?.type === 'restaurant' ? '/dashboard/restaurant' : '/dashboard/diner';
+
+    // --- Dynamic Brands Logic ---
+    const [brands, setBrands] = React.useState([]);
+    // Ensure we import supabase (if not already imported at top, we might need to add it, but let's assume standard import or pass in. 
+    // Actually, Home.jsx didn't import supabase. Let's fix that in a separate chunk or reliable way or use passed props if available.
+    // Checking imports... Home.jsx only has React and Link. We need to add Supabase import.
+
 
     return (
         <div className="min-h-screen w-full flex flex-col relative overflow-hidden bg-bg-primary">
@@ -160,20 +184,47 @@ const Home = ({ user, onStart, onLogin, onSignup, onPartnerSignup }) => {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        {/* Ikoyi Card */}
-                        <Link
-                            to="/ikoyi"
-                            className="group relative h-64 rounded-2xl overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500 block"
-                        >
-                            <div className="absolute inset-0 bg-black/50 group-hover:bg-black/40 transition-colors z-10"></div>
-                            <img src="/ikoyi-interior.png" alt="Ikoyi" className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                            <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-6 text-center">
-                                <img src="/logo.png" alt="Logo" className="h-16 w-auto brightness-0 invert mb-3" />
-                                <p className="text-white/80 text-xs uppercase tracking-widest">London</p>
-                            </div>
-                        </Link>
+                        {/* Dynamic Brand Cards or Default Ikoyi */}
+                        {brands.length > 0 ? (
+                            brands.map(brand => (
+                                <Link
+                                    key={brand.id}
+                                    to="/ikoyi"
+                                    /* Future: to={`/brand/${brand.id}`} once dynamic routing is ready. For now all approved go to Ikoyi demo */
+                                    className="group relative h-64 rounded-2xl overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500 block"
+                                >
+                                    <div className="absolute inset-0 bg-black/50 group-hover:bg-black/40 transition-colors z-10"></div>
+                                    <img
+                                        src={brand.cover_url || "/ikoyi-interior.png"}
+                                        alt={brand.name}
+                                        className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                    />
+                                    <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-6 text-center">
+                                        {brand.logo_url ? (
+                                            <img src={brand.logo_url} alt="Logo" className="h-16 w-auto mb-3 object-contain brightness-0 invert" />
+                                        ) : (
+                                            <h3 className="text-3xl font-display font-bold text-white mb-2">{brand.name}</h3>
+                                        )}
+                                        <p className="text-white/80 text-xs uppercase tracking-widest">{brand.city || 'Global'}</p>
+                                    </div>
+                                </Link>
+                            ))
+                        ) : (
+                            /* Fallback: Static Ikoyi Card if no brands loaded yet */
+                            <Link
+                                to="/ikoyi"
+                                className="group relative h-64 rounded-2xl overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500 block"
+                            >
+                                <div className="absolute inset-0 bg-black/50 group-hover:bg-black/40 transition-colors z-10"></div>
+                                <img src="/ikoyi-interior.png" alt="Ikoyi" className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                                <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-6 text-center">
+                                    <img src="/logo.png" alt="Logo" className="h-16 w-auto brightness-0 invert mb-3" />
+                                    <p className="text-white/80 text-xs uppercase tracking-widest">London</p>
+                                </div>
+                            </Link>
+                        )}
 
-                        {/* Placeholder Card */}
+                        {/* Placeholder Card (Always Last) */}
                         <div
                             onClick={onPartnerSignup}
                             className="relative h-64 rounded-2xl overflow-hidden border border-dashed border-text-secondary/20 flex flex-col items-center justify-center bg-bg-secondary/30 group hover:bg-bg-secondary/50 transition-colors cursor-pointer"
