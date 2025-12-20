@@ -77,7 +77,7 @@ const Home = ({ user, onStart, onLogin, onSignup, onPartnerSignup }) => {
                     {/* Badge */}
                     <div className="mb-6 md:mb-8 inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-accent-wa/20 bg-glass-bg backdrop-blur-sm animate-[fadeIn_0.5s_ease-out]">
                         <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                        <span className="text-xs font-mono text-text-secondary uppercase tracking-wider">Engine v4.7.0 Online</span>
+                        <span className="text-xs font-mono text-text-secondary uppercase tracking-wider">Engine v4.8.0 Online</span>
                     </div>
 
                     {/* Main Title */}
@@ -257,7 +257,7 @@ const Home = ({ user, onStart, onLogin, onSignup, onPartnerSignup }) => {
             </main>
 
             <footer className="w-full p-8 text-center text-xs text-text-secondary/40 font-mono border-t border-glass-border">
-                Studio AikinKarr 2026 • NusionAI Generative Gastronomy • v4.3.6
+                Studio AikinKarr 2026 • NusionAI Generative Gastronomy • v4.8.0
             </footer>
         </div>
     );
