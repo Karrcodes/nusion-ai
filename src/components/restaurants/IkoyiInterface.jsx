@@ -183,7 +183,7 @@ function IkoyiInterface({ user }) {
 
     return (
         <div
-            className={`w-full h-full flex flex-col items-center relative transition-all duration-500 overflow-hidden bg-[var(--color-midnight)]`}
+            className={`w-full min-h-screen flex flex-col items-center relative transition-all duration-500 overflow-hidden bg-[var(--color-midnight)]`}
         >
             {/* Minimal Background Gradient */}
             <div className="absolute inset-0 z-0 pointer-events-none bg-[radial-gradient(circle_at_center,_transparent_0%,_#0f0f13_90%)]"></div>

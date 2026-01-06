@@ -185,7 +185,7 @@ function App() {
 
           <Route path="/ikoyi" element={
             <ProtectedRoute user={currentUser}>
-              <div className="animate-[fadeSlideIn_0.5s_ease-out] w-full min-h-screen pt-[50px] pb-[50px]">
+              <div className="animate-[fadeSlideIn_0.5s_ease-out] w-full min-h-screen bg-[var(--color-midnight)]">
                 <IkoyiInterface user={currentUser} />
               </div>
             </ProtectedRoute>
