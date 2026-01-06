@@ -117,16 +117,16 @@ const Home = ({ user, onStart, onLogin, onSignup, onPartnerSignup }) => {
                     </p>
 
                     {/* CTA Button */}
-                    <button
-                        onClick={() => document.getElementById('brands').scrollIntoView({ behavior: 'smooth' })}
-                        className="group relative px-6 py-3 md:px-8 md:py-4 bg-text-primary text-bg-primary rounded-full overflow-hidden transition-all hover:scale-105 hover:shadow-xl animate-[slideUp_1.2s_ease-out_0.4s]"
+                    <Link
+                        to="/dashboard"
+                        className="group relative px-6 py-3 md:px-8 md:py-4 bg-text-primary text-bg-primary rounded-full overflow-hidden transition-all hover:scale-105 hover:shadow-xl animate-[slideUp_1.2s_ease-out_0.4s] inline-block"
                     >
                         <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-accent-wa to-accent-jp opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                         <span className="relative z-10 font-bold text-base md:text-lg tracking-wide flex items-center gap-2">
                             BROWSE RESTAURANTS
                             <svg className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
                         </span>
-                    </button>
+                    </Link>
                 </div>
 
                 {/* --- HOW IT WORKS (New Section) --- */}
