@@ -183,15 +183,10 @@ function IkoyiInterface({ user }) {
 
     return (
         <div
-            className={`w-full h-full flex flex-col items-center relative transition-all duration-500 overflow-hidden ${fontClass}`}
-            style={dynamicStyle}
+            className={`w-full h-full flex flex-col items-center relative transition-all duration-500 overflow-hidden bg-[var(--color-midnight)]`}
         >
-            {/* Ambient Background */}
-            <div className="absolute inset-0 z-0 pointer-events-none">
-                <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-accent-jp/5 rounded-full blur-[100px] animate-[pulse_8s_infinite]"></div>
-                <div className="absolute top-[20%] right-[-10%] w-[500px] h-[500px] bg-accent-wa/5 rounded-full blur-[120px] animate-[pulse_12s_infinite_1s]"></div>
-                <div className="absolute bottom-[-10%] left-[20%] w-[400px] h-[400px] bg-accent-fusion/5 rounded-full blur-[80px] animate-[pulse_10s_infinite_2s]"></div>
-            </div>
+            {/* Minimal Background Gradient */}
+            <div className="absolute inset-0 z-0 pointer-events-none bg-[radial-gradient(circle_at_center,_transparent_0%,_#0f0f13_90%)]"></div>
 
 
             {/* Navigation Header */}
@@ -199,26 +194,26 @@ function IkoyiInterface({ user }) {
                 {/* Back Button */}
                 <Link
                     to="/dashboard"
-                    className={`pointer-events-auto text-text-secondary hover:text-text-primary uppercase text-xs tracking-widest font-bold flex items-center gap-2 bg-white/40 backdrop-blur-md px-6 py-3 border border-white/50 hover:bg-white hover:scale-105 transition-all shadow-sm ${btnRoundedClass}`}
+                    className={`pointer-events-auto text-white/50 hover:text-white uppercase text-[10px] tracking-[0.2em] font-cinzel transition-all flex items-center gap-2`}
                 >
-                    <span className="text-accent-jp mr-1">←</span> Back to Studio
+                    <span className="text-[var(--color-gold)]">←</span> Studio
                 </Link>
 
                 {/* Profile Button */}
                 {user && (
                     <Link
                         to="/dashboard/diner?view=profile"
-                        className={`pointer-events-auto group flex items-center gap-3 bg-white/50 backdrop-blur-sm pl-4 pr-1 py-1 border border-glass-border hover:bg-white transition-all shadow-sm hover:shadow ${btnRoundedClass}`}
+                        className={`pointer-events-auto group flex items-center gap-3 transition-all opacity-70 hover:opacity-100`}
                         title="Go to Profile"
                     >
-                        <span className="text-xs font-mono uppercase text-text-secondary group-hover:text-text-primary transition-colors pr-2">
-                            {user.name || 'Profile'}
+                        <span className="text-[10px] font-cinzel uppercase text-white tracking-widest group-hover:text-[var(--color-gold)] transition-colors pr-2">
+                            {user.name || 'LIST'}
                         </span>
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${userPhoto ? 'border border-accent-wa/30 p-0 overflow-hidden' : 'bg-accent-wa/20 text-accent-wa font-bold'}`}>
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all bg-[var(--color-charcoal)] border border-[var(--color-gold-dim)]`}>
                             {userPhoto ? (
-                                <img src={userPhoto} alt="Profile" className="w-full h-full object-cover" />
+                                <img src={userPhoto} alt="Profile" className="w-full h-full object-cover rounded-full grayscale hover:grayscale-0 transition-all" />
                             ) : (
-                                user.name ? user.name.charAt(0).toUpperCase() : 'U'
+                                <span className="font-cinzel text-[var(--color-gold)]">{user.name ? user.name.charAt(0).toUpperCase() : 'U'}</span>
                             )}
                         </div>
                     </Link>
@@ -228,32 +223,18 @@ function IkoyiInterface({ user }) {
             <div className="container mx-auto px-6 flex flex-col items-center gap-12 max-w-6xl flex-grow pt-[120px] relative z-10">
 
                 {/* Header Section */}
-                <header className="text-center max-w-2xl flex flex-col items-center animate-[slideUp_0.5s_ease-out] relative">
-                    <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-48 h-48 bg-accent-jp/10 rounded-full blur-3xl pointer-events-none"></div>
-
-                    {brand.logoUrl ? (
-                        <div
-                            className="mb-6 z-10 hover:scale-105 transition-transform duration-500 drop-shadow-lg"
-                            style={{
-                                maskImage: `url(${brand.logoUrl})`,
-                                WebkitMaskImage: `url(${brand.logoUrl})`,
-                                backgroundColor: brand.accentColor,
-                                width: '5rem',
-                                height: '5rem'
-                            }}
-                        ></div>
-                    ) : (
-                        <div className="w-20 h-20 bg-accent-jp rounded-full mb-6 z-10 flex items-center justify-center text-4xl shadow-lg border-4 border-white">🍽️</div>
-                    )}
-
-                    <h1 className="text-4xl md:text-5xl font-display font-bold text-text-primary mb-3 drop-shadow-sm tracking-tight" style={{ color: brand.accentColor }}>{brand.name}</h1>
-                    <p className="text-text-secondary text-base md:text-lg uppercase tracking-widest font-medium mb-6 animate-[fadeIn_0.5s_0.2s]">
-                        Speculative Gastronomy Engine
+                <header className="text-center max-w-2xl flex flex-col items-center animate-[fadeIn_0.8s] mt-12 mb-16">
+                    <h1 className="text-5xl md:text-7xl font-cinzel text-[var(--color-cream)] mb-4 tracking-[0.1em] drop-shadow-lg">
+                        {brand.name === 'Nusion AI' ? 'THE STUDIO' : brand.name}
+                    </h1>
+                    <div className="w-16 h-[1px] bg-[var(--color-gold)] mb-6 opacity-60"></div>
+                    <p className="text-[var(--color-cream)]/60 text-lg font-serif italic tracking-wide">
+                        Speculative Gastronomy
                     </p>
                 </header>
 
                 {/* Main Interface Section */}
-                <main className={`glass-panel border-white/60 p-8 md:p-14 w-full max-w-5xl relative overflow-hidden min-h-[500px] flex flex-col justify-center items-center transition-all duration-500 shadow-2xl ${roundedClass}`}>
+                <main className={`w-full max-w-5xl relative min-h-[500px] flex flex-col justify-center items-center transition-all duration-500`}>
                     {/* Decorative Top Border */}
                     <div
                         className="absolute top-0 left-0 w-full h-1"
@@ -274,42 +255,29 @@ function IkoyiInterface({ user }) {
                                 {loadingPhase === 'plating' && 'Plating Dishes...'}
                             </h3>
 
-                            <div className="w-full h-1 bg-black/5 rounded-full mt-4 overflow-hidden">
+                            <div className="w-full h-[1px] bg-white/10 mt-8 mb-4">
                                 <div
-                                    className="h-full transition-all duration-500 ease-out"
-                                    style={{ width: `${progress}%`, backgroundColor: brand.accentColor }}
+                                    className="h-full transition-all duration-[2000ms] ease-linear bg-[var(--color-gold)]"
+                                    style={{ width: `${progress}%` }}
                                 ></div>
                             </div>
-                            <p className="text-xs text-text-secondary mt-2 font-bold opacity-60 uppercase tracking-widest">
-                                {progress}% Complete
+                            <p className="text-[10px] text-[var(--color-gold)] font-cinzel tracking-[0.3em] animate-pulse">
+                                {loadingPhase === 'consulting' && 'CONSULTING CHEF'}
+                                {loadingPhase === 'visualising' && 'DESIGNING PLATING'}
+                                {loadingPhase === 'plating' && 'FINALIZING SERVICE'}
                             </p>
                         </div>
                     ) : result ? (
                         <RecommendationResult result={result} onReset={reset} />
                     ) : (
-                        <div className="w-full max-w-3xl animate-[fadeIn_0.8s]">
-                            <h2 className="text-3xl mb-2 text-center text-text-primary text-4xl">Design Your Menu</h2>
-                            <p className="text-center text-text-secondary mb-8 text-lg">Tell us your constraints, and we'll craft the experience.</p>
-                            <InputForm onCalculate={handleCalculate} accentColor={brand.accentColor} uiStyle={brand.uiStyle} />
+                        <div className="w-full max-w-4xl animate-[fadeIn_1.2s]">
+                            <InputForm onCalculate={handleCalculate} />
                         </div>
                     )}
                 </main>
                 {/* Footer */}
-                <footer className="w-full py-8 text-text-secondary opacity-50 flex justify-center text-sm items-center mt-12 gap-2">
-                    <span className="tracking-widest uppercase text-xs">Powered by</span>
-                    <Link
-                        to="/"
-                        className="flex items-center gap-1 cursor-pointer hover:opacity-100 transition-opacity"
-                        title="Return to Home"
-                    >
-                        <img
-                            src="/nusion-logo.png"
-                            alt="Nusion"
-                            className="h-4 w-auto opacity-70"
-                            style={{ filter: 'brightness(0) saturate(100%) invert(23%) sepia(13%) saturate(928%) hue-rotate(338deg) brightness(96%) contrast(90%)' }}
-                        />
-                        <span className="font-bold text-xs tracking-tighter">AI</span>
-                    </Link>
+                <footer className="w-full py-8 text-white/20 flex justify-center text-[10px] uppercase tracking-[0.3em] font-cinzel mt-20">
+                    <span>Nusion AI &copy; 2024</span>
                 </footer>
             </div>
         </div>

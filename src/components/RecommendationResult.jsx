@@ -81,196 +81,94 @@ const RecommendationResult = ({ result, onReset }) => {
     const { totalCost, narrative } = result;
 
     return (
-        <div className="w-full text-left animate-[fadeIn_0.5s_ease-out]">
-            {/* Downloadable Area (Visible) */}
-            <div ref={cardRef} className="p-6 md:p-10 bg-[#fdfbf7] shadow-2xl relative overflow-hidden">
-                {/* Watermark */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-accent-jp/5 rounded-full blur-[100px] pointer-events-none"></div>
-
-                <div className="relative z-10 flex flex-col md:flex-row justify-between items-baseline mb-8 md:mb-12 border-b border-black/10 pb-6 gap-4">
-                    <div>
-                        <span className="text-xs font-mono uppercase tracking-widest text-text-secondary mb-1 block">The Studio Speculation</span>
-                        <h2 className="text-3xl md:text-5xl font-display font-bold text-text-primary tracking-tight">
-                            Curated Journey
-                        </h2>
-                    </div>
-                    <div className="text-left md:text-right">
-                        <span className="text-xs text-text-secondary block uppercase tracking-wider mb-1">Total Expectation</span>
-                        <span className="text-3xl md:text-4xl font-bold text-accent-jp">
-                            {currentConfig.currency}{totalCost}
-                        </span>
-                    </div>
-                </div>
-
-                <div className="grid md:grid-cols-3 gap-6 md:gap-8 mb-12 relative z-10">
-                    {processedCourses.map((course, index) => (
-                        <div key={course.id} className="relative group">
-                            <div className="bg-white/50 p-0 h-full flex flex-col rounded-2xl border border-glass-border hover:shadow-xl transition-all overflow-hidden relative">
-                                {/* Image Section (Static, No Cloche) */}
-                                <div className="h-48 w-full overflow-hidden relative bg-black/5">
-                                    {course.image ? (
-                                        <img
-                                            src={course.image}
-                                            alt={course.name}
-                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                                        />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-4xl opacity-20">🍽️</div>
-                                    )}
-
-                                    {/* Heritage Button */}
-                                    <button
-                                        data-html2canvas-ignore="true"
-                                        onClick={(e) => { e.stopPropagation(); setActiveHeritage(course.id === activeHeritage ? null : course.id); }}
-                                        className="absolute top-3 right-3 z-30 w-8 h-8 rounded-full bg-white/80 backdrop-blur text-accent-jp flex items-center justify-center font-bold shadow-md hover:bg-accent-jp hover:text-white transition-colors"
-                                        title="View Origin Story"
-                                    >
-                                        i
-                                    </button>
-                                </div>
-
-                                {/* Heritage Overlay */}
-                                <div className={`absolute inset-0 z-20 bg-[#fdfbf7]/95 p-6 flex flex-col justify-center items-center text-center transition-all duration-500 ease-in-out transform ${activeHeritage === course.id ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0 pointer-events-none'}`}>
-                                    <h4 className="font-bold text-lg mb-2 text-accent-jp">Culinary Heritage</h4>
-                                    <p className="text-sm text-text-primary leading-relaxed opacity-90 italic">
-                                        "{course.originStory || "A modern interpretation of West African flavors."}"
-                                    </p>
-                                    <button
-                                        onClick={() => setActiveHeritage(null)}
-                                        className="mt-4 text-xs uppercase tracking-widest text-text-secondary hover:text-text-primary"
-                                    >
-                                        Close
-                                    </button>
-                                </div>
-
-                                <div className="p-6 flex flex-col flex-grow relative z-10 bg-white/50">
-                                    <span className="text-xs font-bold tracking-widest text-accent-fusion mb-2 uppercase">
-                                        {index === 0 ? 'First Course' : index === 1 ? 'Main Course' : 'Dessert'}
-                                    </span>
-                                    <h3 className="text-xl font-bold mb-2 leading-tight text-text-primary">{course.name}</h3>
-                                    <p className="text-sm text-text-secondary mb-4 opacity-90 line-clamp-3 flex-grow leading-relaxed">
-                                        {course.description}
-                                    </p>
-
-                                    {/* Sommelier Pairing */}
-                                    {course.pairing && (
-                                        <div className="mb-4 flex items-center gap-2 text-xs text-accent-jp italic border-l-2 border-accent-jp pl-3">
-                                            <span className="text-sm">🍷</span>
-                                            <span>{course.pairing}</span>
-                                        </div>
-                                    )}
-
-                                    <div className="flex justify-between items-center text-xs text-text-secondary mt-auto pt-3 border-t border-black/5">
-                                        <span className="px-2 py-1 rounded-md bg-accent-wa/10 text-accent-jp font-semibold inline-flex items-center">
-                                            {course.flavorProfile}
-                                        </span>
-                                        <span className="font-mono font-bold opacity-70">{currentConfig.currency}{course.cost}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-
-                <div className="bg-white/40 p-8 md:p-12 rounded-xl border border-black/5 relative overflow-hidden">
-                    <div className="absolute top-0 left-0 w-1 h-full bg-accent-jp"></div>
-                    <h4 className="text-xs font-bold uppercase text-accent-jp mb-4 tracking-widest flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-accent-jp"></span>
-                        Chef's Narrative
-                    </h4>
-                    <p className="text-text-primary font-serif italic leading-loose text-xl md:text-2xl opacity-85 relative z-10">
-                        "{narrative}"
-                    </p>
-                    <div className="absolute bottom-[-20px] right-[-20px] text-[150px] opacity-5 text-accent-jp font-serif leading-none">”</div>
-                </div>
-            </div>
-
-            {/* Hidden Download Card (Fixed width 1000px for consistency) */}
-            <div ref={downloadRef} className="fixed left-[-10000px] top-0 w-[1000px] p-12 bg-[#fdfbf7]">
-                <div className="flex justify-between items-baseline mb-12 border-b border-glass-border pb-6">
-                    <h2 className="text-4xl font-bold text-text-primary">
-                        Your Curated Journey
+        <div className="w-full text-center animate-[fadeIn_1s] pb-20">
+            {/* Physical Menu Card */}
+            <div ref={cardRef} className="menu-card flex flex-col items-center">
+                {/* Header */}
+                <div className="mb-12 border-b border-[var(--color-gold)]/30 pb-8 w-full max-w-lg mx-auto">
+                    <span className="text-[10px] tracking-[0.4em] uppercase text-[var(--color-gold)] font-cinzel block mb-2">
+                        Immersive Dining
+                    </span>
+                    <h2 className="text-4xl md:text-5xl font-cinzel text-[var(--color-charcoal)] mb-4">
+                        The Tasting Menu
                     </h2>
-                    <div className="text-right">
-                        <span className="text-xs text-text-secondary block uppercase tracking-wider mb-1">Total Expectation</span>
-                        <span className="text-3xl font-bold text-accent-jp">
-                            {currentConfig.currency}{totalCost}
-                        </span>
-                    </div>
+                    <p className="font-serif italic text-[var(--color-charcoal)]/60 text-lg">
+                        Curated for You
+                    </p>
                 </div>
 
-                <div className="grid grid-cols-3 gap-8 mb-12">
+                {/* Narrative "Letter" */}
+                <div className="mb-16 max-w-2xl text-center px-8 relative">
+                    <span className="text-4xl text-[var(--color-gold)] font-serif absolute -top-4 -left-4 opacity-20">“</span>
+                    <p className="font-serif text-[var(--color-charcoal)]/80 text-xl leading-relaxed italic">
+                        {narrative}
+                    </p>
+                    <span className="text-4xl text-[var(--color-gold)] font-serif absolute -bottom-8 -right-4 opacity-20">”</span>
+                </div>
+
+                {/* Courses List */}
+                <div className="w-full max-w-2xl flex flex-col gap-12 mb-12">
                     {processedCourses.map((course, index) => (
-                        <div key={course.id} className="relative h-full">
-                            <div className="bg-white/50 p-0 h-full flex flex-col rounded-2xl border border-glass-border overflow-hidden relative">
-                                <div className="h-64 w-full overflow-hidden relative bg-black/5">
-                                    {course.image ? (
-                                        <img
-                                            src={course.image}
-                                            alt={course.name}
-                                            className="w-full h-full object-cover"
-                                        />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-4xl opacity-20">🍽️</div>
-                                    )}
-                                </div>
+                        <div key={course.id} className="group relative flex flex-col items-center">
+                            <span className="text-[9px] uppercase tracking-[0.3em] text-[var(--color-gold)] mb-2 font-cinzel">
+                                {index === 0 ? 'First Course' : index === 1 ? 'Main Course' : 'Dessert'}
+                            </span>
+                            <h3 className="text-2xl md:text-3xl font-serif font-bold text-[var(--color-charcoal)] mb-2">
+                                {course.name}
+                            </h3>
+                            <p className="text-[var(--color-charcoal)]/70 font-serif mb-3 max-w-md leading-relaxed">
+                                {course.description}
+                            </p>
 
-                                <div className="p-8 flex flex-col flex-grow relative z-10 bg-white/50">
-                                    <span className="text-xs font-bold tracking-widest text-accent-fusion mb-3 uppercase">
-                                        {index === 0 ? 'First Course' : index === 1 ? 'Main Course' : 'Dessert'}
-                                    </span>
-                                    <h3 className="text-2xl font-bold mb-3 leading-tight text-text-primary">{course.name}</h3>
-                                    <p className="text-base text-text-secondary mb-6 opacity-90 leading-relaxed">
-                                        {course.description}
-                                    </p>
-
-
-
-                                    <div className="flex justify-end items-center text-sm text-text-secondary mt-auto pt-4 border-t border-black/5">
-                                        <span className="font-mono font-bold opacity-70 text-lg">{currentConfig.currency}{course.cost}</span>
-                                    </div>
-                                </div>
+                            {/* Metadata Line */}
+                            <div className="flex items-center gap-4 text-[10px] uppercase tracking-widest text-[var(--color-charcoal)]/40 font-cinzel">
+                                <span>{course.flavorProfile}</span>
+                                <span className="w-1 h-1 bg-[var(--color-gold)] rounded-full"></span>
+                                <span>{currentConfig.currency}{course.cost}</span>
                             </div>
+
+                            {/* Optional: Hover Image Reveal? Keeping it simple for now, maybe add a subtle reveal later */}
                         </div>
                     ))}
                 </div>
 
-                <div className="bg-white/30 p-10 rounded-2xl border border-glass-border">
-                    <h4 className="text-sm font-bold uppercase text-accent-jp mb-4 tracking-wider">
-                        Chef's Narrative
-                    </h4>
-                    <p className="text-text-primary italic leading-relaxed text-xl opacity-85">
-                        "{narrative}"
-                    </p>
+                {/* Footer Sum */}
+                <div className="mt-8 pt-8 border-t border-[var(--color-charcoal)]/10 w-full max-w-xs">
+                    <div className="flex justify-between items-end font-cinzel text-[var(--color-charcoal)]">
+                        <span className="text-xs tracking-widest opacity-60">Total</span>
+                        <span className="text-xl border-b border-[var(--color-gold)] pb-1">
+                            {currentConfig.currency}{totalCost}
+                        </span>
+                    </div>
                 </div>
             </div>
 
-
-            <div className="flex flex-col md:flex-row gap-4 justify-center items-center mt-4">
+            {/* Actions */}
+            <div className="flex flex-col md:flex-row gap-6 justify-center items-center mt-16 animate-[fadeIn_1.4s]">
                 <button
                     onClick={onReset}
-                    className="px-6 py-3 rounded-full border border-text-secondary/30 text-text-secondary font-medium hover:bg-white/40 hover:text-text-primary transition-all text-sm uppercase tracking-wider"
+                    className="text-[10px] uppercase tracking-[0.2em] text-white/50 hover:text-[var(--color-gold)] transition-colors font-cinzel"
                 >
-                    Start New Recommendation
+                    Discard & Start Over
                 </button>
-                <button
-                    onClick={handleDownload}
-                    className="px-6 py-3 rounded-full bg-accent-fusion/10 text-accent-fusion hover:bg-accent-fusion/20 transition-all font-bold text-sm uppercase tracking-wider flex items-center gap-2"
-                >
-                    <span>Download Menu</span>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                </button>
-                <a
-                    href="https://ikoyilondon.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn-primary px-6 py-3 text-sm uppercase tracking-wider flex items-center gap-2 no-underline text-white hover:text-white font-bold"
-                >
-                    Book a Table
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                </a>
+                <div className="flex gap-4">
+                    <button
+                        onClick={handleDownload}
+                        className="btn-gold"
+                    >
+                        Save Menu
+                    </button>
+                    <a
+                        href="https://ikoyilondon.com"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn-gold bg-[var(--color-gold)] !text-[var(--color-midnight)] hover:!bg-white"
+                    >
+                        Reserve Table
+                    </a>
+                </div>
             </div>
-        </div >
+        </div>
     );
 };
 
