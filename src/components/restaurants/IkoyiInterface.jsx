@@ -183,9 +183,15 @@ function IkoyiInterface({ user }) {
 
     return (
         <div
-            className={`w-full h-full flex flex-col items-center relative transition-all duration-500 ${fontClass}`}
+            className={`w-full h-full flex flex-col items-center relative transition-all duration-500 overflow-hidden ${fontClass}`}
             style={dynamicStyle}
         >
+            {/* Ambient Background */}
+            <div className="absolute inset-0 z-0 pointer-events-none">
+                <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-accent-jp/5 rounded-full blur-[100px] animate-[pulse_8s_infinite]"></div>
+                <div className="absolute top-[20%] right-[-10%] w-[500px] h-[500px] bg-accent-wa/5 rounded-full blur-[120px] animate-[pulse_12s_infinite_1s]"></div>
+                <div className="absolute bottom-[-10%] left-[20%] w-[400px] h-[400px] bg-accent-fusion/5 rounded-full blur-[80px] animate-[pulse_10s_infinite_2s]"></div>
+            </div>
 
 
             {/* Navigation Header */}
@@ -193,9 +199,9 @@ function IkoyiInterface({ user }) {
                 {/* Back Button */}
                 <Link
                     to="/dashboard"
-                    className={`pointer-events-auto text-text-secondary hover:text-text-primary uppercase text-xs tracking-widest font-bold flex items-center gap-2 bg-white/50 backdrop-blur-sm px-4 py-2 border border-glass-border hover:bg-white transition-all ${btnRoundedClass}`}
+                    className={`pointer-events-auto text-text-secondary hover:text-text-primary uppercase text-xs tracking-widest font-bold flex items-center gap-2 bg-white/40 backdrop-blur-md px-6 py-3 border border-white/50 hover:bg-white hover:scale-105 transition-all shadow-sm ${btnRoundedClass}`}
                 >
-                    ← Back to Brands
+                    <span className="text-accent-jp mr-1">←</span> Back to Studio
                 </Link>
 
                 {/* Profile Button */}
@@ -222,32 +228,32 @@ function IkoyiInterface({ user }) {
             <div className="container mx-auto px-6 flex flex-col items-center gap-12 max-w-6xl flex-grow pt-[120px] relative z-10">
 
                 {/* Header Section */}
-                <header className="text-center max-w-2xl flex flex-col items-center animate-[fadeIn_0.5s]">
+                <header className="text-center max-w-2xl flex flex-col items-center animate-[slideUp_0.5s_ease-out] relative">
+                    <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-48 h-48 bg-accent-jp/10 rounded-full blur-3xl pointer-events-none"></div>
+
                     {brand.logoUrl ? (
                         <div
-                            className="mb-6 w-24 h-24 logo-gradient"
+                            className="mb-6 z-10 hover:scale-105 transition-transform duration-500 drop-shadow-lg"
                             style={{
                                 maskImage: `url(${brand.logoUrl})`,
                                 WebkitMaskImage: `url(${brand.logoUrl})`,
-                                width: '6rem',
-                                height: '6rem'
+                                backgroundColor: brand.accentColor,
+                                width: '5rem',
+                                height: '5rem'
                             }}
                         ></div>
                     ) : (
-                        <div className="logo-gradient mx-auto mb-6"></div>
+                        <div className="w-20 h-20 bg-accent-jp rounded-full mb-6 z-10 flex items-center justify-center text-4xl shadow-lg border-4 border-white">🍽️</div>
                     )}
 
-                    <h1 className="text-3xl font-bold text-text-primary mb-2" style={{ color: brand.accentColor }}>{brand.name}</h1>
-                    <p className="text-text-secondary text-2xl font-light leading-relaxed mb-6">
-                        AI-Curated Dining Experience
-                    </p>
-                    <p className="text-base font-bold opacity-90 mb-4 px-4">
-                        We analyze your preferences to design the perfect multi-course meal, tailored to your budget and palate.
+                    <h1 className="text-4xl md:text-5xl font-display font-bold text-text-primary mb-3 drop-shadow-sm tracking-tight" style={{ color: brand.accentColor }}>{brand.name}</h1>
+                    <p className="text-text-secondary text-base md:text-lg uppercase tracking-widest font-medium mb-6 animate-[fadeIn_0.5s_0.2s]">
+                        Speculative Gastronomy Engine
                     </p>
                 </header>
 
                 {/* Main Interface Section */}
-                <main className={`glass-panel p-6 md:p-12 w-full max-w-6xl relative overflow-hidden min-h-[500px] flex flex-col justify-center items-center transition-all duration-500 shadow-2xl ${roundedClass}`}>
+                <main className={`glass-panel border-white/60 p-8 md:p-14 w-full max-w-5xl relative overflow-hidden min-h-[500px] flex flex-col justify-center items-center transition-all duration-500 shadow-2xl ${roundedClass}`}>
                     {/* Decorative Top Border */}
                     <div
                         className="absolute top-0 left-0 w-full h-1"

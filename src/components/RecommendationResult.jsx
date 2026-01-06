@@ -83,20 +83,26 @@ const RecommendationResult = ({ result, onReset }) => {
     return (
         <div className="w-full text-left animate-[fadeIn_0.5s_ease-out]">
             {/* Downloadable Area (Visible) */}
-            <div ref={cardRef} className="p-4 md:p-8 bg-[#fdfbf7]">
-                <div className="flex flex-col md:flex-row justify-between items-baseline mb-6 md:mb-8 border-b border-glass-border pb-4 gap-2">
-                    <h2 className="text-2xl md:text-3xl font-bold text-text-primary">
-                        Your Curated Journey
-                    </h2>
+            <div ref={cardRef} className="p-6 md:p-10 bg-[#fdfbf7] shadow-2xl relative overflow-hidden">
+                {/* Watermark */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-accent-jp/5 rounded-full blur-[100px] pointer-events-none"></div>
+
+                <div className="relative z-10 flex flex-col md:flex-row justify-between items-baseline mb-8 md:mb-12 border-b border-black/10 pb-6 gap-4">
+                    <div>
+                        <span className="text-xs font-mono uppercase tracking-widest text-text-secondary mb-1 block">The Studio Speculation</span>
+                        <h2 className="text-3xl md:text-5xl font-display font-bold text-text-primary tracking-tight">
+                            Curated Journey
+                        </h2>
+                    </div>
                     <div className="text-left md:text-right">
-                        <span className="text-xs text-text-secondary block uppercase tracking-wider">Total Expectation</span>
-                        <span className="text-xl md:text-2xl font-bold text-accent-jp">
+                        <span className="text-xs text-text-secondary block uppercase tracking-wider mb-1">Total Expectation</span>
+                        <span className="text-3xl md:text-4xl font-bold text-accent-jp">
                             {currentConfig.currency}{totalCost}
                         </span>
                     </div>
                 </div>
 
-                <div className="grid md:grid-cols-3 gap-6 mb-10">
+                <div className="grid md:grid-cols-3 gap-6 md:gap-8 mb-12 relative z-10">
                     {processedCourses.map((course, index) => (
                         <div key={course.id} className="relative group">
                             <div className="bg-white/50 p-0 h-full flex flex-col rounded-2xl border border-glass-border hover:shadow-xl transition-all overflow-hidden relative">
@@ -166,13 +172,16 @@ const RecommendationResult = ({ result, onReset }) => {
                     ))}
                 </div>
 
-                <div className="bg-white/30 p-8 rounded-2xl border border-glass-border mb-8">
-                    <h4 className="text-xs font-bold uppercase text-accent-jp mb-3 tracking-wider">
+                <div className="bg-white/40 p-8 md:p-12 rounded-xl border border-black/5 relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-1 h-full bg-accent-jp"></div>
+                    <h4 className="text-xs font-bold uppercase text-accent-jp mb-4 tracking-widest flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-accent-jp"></span>
                         Chef's Narrative
                     </h4>
-                    <p className="text-text-primary italic leading-relaxed text-lg opacity-85">
+                    <p className="text-text-primary font-serif italic leading-loose text-xl md:text-2xl opacity-85 relative z-10">
                         "{narrative}"
                     </p>
+                    <div className="absolute bottom-[-20px] right-[-20px] text-[150px] opacity-5 text-accent-jp font-serif leading-none">”</div>
                 </div>
             </div>
 
@@ -261,7 +270,7 @@ const RecommendationResult = ({ result, onReset }) => {
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
                 </a>
             </div>
-        </div>
+        </div >
     );
 };
 
