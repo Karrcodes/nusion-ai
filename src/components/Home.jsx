@@ -190,6 +190,12 @@ const Home = ({ user, onStart, onLogin, onSignup, onPartnerSignup }) => {
                                 <Link
                                     key={brand.id}
                                     to="/ikoyi"
+                                    onClick={(e) => {
+                                        if (!user) {
+                                            e.preventDefault();
+                                            onLogin();
+                                        }
+                                    }}
                                     /* Future: to={`/brand/${brand.id}`} once dynamic routing is ready. For now all approved go to Ikoyi demo */
                                     className="group relative h-64 rounded-2xl overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500 block"
                                 >
@@ -213,6 +219,12 @@ const Home = ({ user, onStart, onLogin, onSignup, onPartnerSignup }) => {
                             /* Fallback: Static Ikoyi Card if no brands loaded yet */
                             <Link
                                 to="/ikoyi"
+                                onClick={(e) => {
+                                    if (!user) {
+                                        e.preventDefault();
+                                        onLogin();
+                                    }
+                                }}
                                 className="group relative h-64 rounded-2xl overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500 block"
                             >
                                 <div className="absolute inset-0 bg-black/50 group-hover:bg-black/40 transition-colors z-10"></div>

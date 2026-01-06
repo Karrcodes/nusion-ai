@@ -6,7 +6,7 @@ const ProtectedRoute = ({ user, children, requiredType = null }) => {
     if (!user) {
         // Redirect to auth if not logged in, but save the location they were trying to go to
         // For now, simple redirect to home or auth
-        return <Navigate to="/" replace />;
+        return <Navigate to="/auth" replace />;
     }
 
     if (requiredType && user.type !== requiredType) {
