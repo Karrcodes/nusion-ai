@@ -127,7 +127,7 @@ function App() {
               onPartnerSignup={() => {
                 setAuthMode('signup');
                 setSelectedAuthType('restaurant');
-                navigate('/auth/forms');
+                navigate('/auth/forms', { state: { from: '/' } });
               }}
             />
           } />

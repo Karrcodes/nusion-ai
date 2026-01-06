@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
 
 const AuthForms = ({ type, mode }) => {
     const navigate = useNavigate();
+    const location = useLocation();
+    const backLink = location.state?.from || '/auth';
     // mode: 'login' or 'signup'
     // type: 'diner' or 'restaurant' (only relevant for signup usually, but we keep context)
 
@@ -115,7 +117,7 @@ const AuthForms = ({ type, mode }) => {
     return (
         <div className="min-h-screen w-full flex items-center justify-center bg-bg-primary p-4 animate-[fadeIn_0.5s]">
             <Link
-                to="/auth"
+                to={backLink}
                 className="absolute top-8 left-8 text-text-secondary hover:text-text-primary transition-colors flex items-center gap-2 font-mono text-sm"
             >
                 ← Back
