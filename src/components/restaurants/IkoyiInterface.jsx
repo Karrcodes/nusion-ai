@@ -38,7 +38,7 @@ function IkoyiInterface({ user }) {
     const [brand, setBrand] = useState({
         name: 'Nusion AI',
         logoUrl: null, // If null, use default Nusion branding
-        accentColor: '#10b981', // Default Emerald
+        accentColor: '#d4af37', // Default Gold
         font: 'Modern Sans',
         uiStyle: 'soft'
     });
@@ -57,7 +57,7 @@ function IkoyiInterface({ user }) {
                         ...prev,
                         name: parsed.name || 'Nusion AI',
                         logoUrl: parsed.logoUrl,
-                        accentColor: parsed.accentColor || '#10b981',
+                        accentColor: parsed.accentColor || '#d4af37',
                         font: parsed.font || 'Modern Sans',
                         uiStyle: parsed.uiStyle || 'soft'
                     }));
@@ -235,11 +235,6 @@ function IkoyiInterface({ user }) {
 
                 {/* Main Interface Section */}
                 <main className={`w-full max-w-5xl relative min-h-[500px] flex flex-col justify-center items-center transition-all duration-500`}>
-                    {/* Decorative Top Border */}
-                    <div
-                        className="absolute top-0 left-0 w-full h-1"
-                        style={{ background: `linear-gradient(to right, ${brand.accentColor}, ${brand.accentColor}88)` }}
-                    ></div>
 
                     {loading ? (
                         <div className="flex flex-col items-center w-full max-w-md">
