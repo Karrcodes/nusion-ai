@@ -42,6 +42,7 @@ const Dashboard = ({ user }) => {
                         <Link
                             to={user.type === 'restaurant' ? '/dashboard/restaurant' : '/dashboard/diner?view=profile'}
                             className={`w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition-all shadow-md ${(() => {
+                                if (!user) return 'bg-accent-wa/20 text-accent-wa font-bold hover:bg-accent-wa hover:text-white border border-accent-wa/50';
                                 try {
                                     const stored = localStorage.getItem(`diner_preferences_${user.id}`);
                                     return stored && JSON.parse(stored).photo ? 'border-2 border-accent-wa/50 p-0 overflow-hidden' : 'bg-accent-wa/20 text-accent-wa font-bold hover:bg-accent-wa hover:text-white border border-accent-wa/50';
@@ -51,6 +52,7 @@ const Dashboard = ({ user }) => {
                             title="Go to My Palate"
                         >
                             {(() => {
+                                if (!user) return 'key';
                                 try {
                                     const stored = localStorage.getItem(`diner_preferences_${user.id}`);
                                     const photo = stored ? JSON.parse(stored).photo : null;
