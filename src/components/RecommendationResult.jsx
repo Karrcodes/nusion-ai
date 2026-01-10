@@ -154,8 +154,8 @@ const RecommendationResult = ({ result, onReset }) => {
                     </div>
                 </div>
 
-                {/* Hidden Ref for High-Res Download (Simplified Layout for simple PDF/Image) */}
-                <div ref={downloadRef} className="absolute top-0 left-0 -z-50 w-[1200px] p-20 bg-[#0f0f13] text-white">
+                {/* Hidden Ref for High-Res Download (Off-screen but renderable) */}
+                <div ref={downloadRef} className="fixed top-0 left-[-9999px] w-[1200px] p-20 bg-[#0f0f13] text-white z-[-50]">
                     <div className="text-center mb-16">
                         <h1 className="text-6xl font-cinzel text-[var(--color-gold)] mb-6">NUSION x IKOYI</h1>
                         <p className="font-serif italic text-2xl text-white/60">{narrative}</p>
