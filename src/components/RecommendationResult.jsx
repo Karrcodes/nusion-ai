@@ -75,9 +75,23 @@ const RecommendationResult = ({ result, onReset }) => {
                             <h3 className="text-2xl md:text-3xl font-serif font-bold text-[var(--color-charcoal)] mb-2">
                                 {course.name}
                             </h3>
-                            <p className="text-[var(--color-charcoal)]/70 font-serif mb-3 max-w-md leading-relaxed">
+                            <p className="text-[var(--color-charcoal)]/70 font-serif mb-6 max-w-md leading-relaxed">
                                 {course.description}
                             </p>
+
+                            {/* Course Image */}
+                            {course.image && (
+                                <div className="w-full max-w-md mb-6 rounded-2xl overflow-hidden shadow-lg">
+                                    <img
+                                        src={course.image}
+                                        alt={course.name}
+                                        className="w-full h-64 object-cover"
+                                        onError={(e) => {
+                                            e.target.style.display = 'none';
+                                        }}
+                                    />
+                                </div>
+                            )}
 
                             {/* Metadata Line */}
                             <div className="flex items-center gap-4 text-[10px] uppercase tracking-widest text-[var(--color-charcoal)]/40 font-cinzel">
