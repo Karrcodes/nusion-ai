@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
 import { currentConfig } from '../config/restaurantConfig';
+import { calculateMatchScore, categorizeRestaurants, getMatchBadgeColor } from '../utils/restaurantMatcher';
 
 const DinerDashboard = ({ user }) => {
     const navigate = useNavigate();
@@ -66,6 +67,42 @@ const DinerDashboard = ({ user }) => {
             fetchHistory();
         }
     }, [user]);
+
+    // Load and match restaurants
+    const [restaurants, setRestaurants] = useState([]);
+    const [categorizedRestaurants, setCategorizedRestaurants] = useState({
+        perfectMatches: [],
+        exploreNewFlavors: []
+    });
+    const [loadingRestaurants, setLoadingRestaurants] = useState(true);
+
+    useEffect(() => {
+        const fetchRestaurants = async () => {
+            setLoadingRestaurants(true);
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('status', 'approved')
+                .order('created_at', { ascending: false });
+
+            if (data && data.length > 0) {
+                // Calculate match scores
+                const restaurantsWithScores = data.map(restaurant => ({
+                    ...restaurant,
+                    matchScore: calculateMatchScore(preferences, restaurant)
+                }));
+
+                setRestaurants(restaurantsWithScores);
+
+                // Categorize restaurants
+                const categorized = categorizeRestaurants(restaurantsWithScores);
+                setCategorizedRestaurants(categorized);
+            }
+            setLoadingRestaurants(false);
+        };
+
+        fetchRestaurants();
+    }, [preferences]);
 
     // Persist preferences on change
     useEffect(() => {
@@ -172,6 +209,125 @@ const DinerDashboard = ({ user }) => {
                                 ))}
                             </div>
                         </section>
+
+                        {/* --- RESTAURANT SUGGESTIONS --- */}
+                        {!loadingRestaurants && categorizedRestaurants.perfectMatches.length > 0 && (
+                            <section className="mb-16">
+                                <h2 className="text-lg font-bold text-text-primary mb-6 flex items-center gap-2">
+                                    <span className="text-xl">✨</span> Perfect Matches
+                                </h2>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {categorizedRestaurants.perfectMatches.slice(0, 6).map((restaurant) => {
+                                        const badgeColors = getMatchBadgeColor(restaurant.matchScore);
+                                        return (
+                                            <Link
+                                                key={restaurant.id}
+                                                to="/ikoyi"
+                                                className="group relative h-72 rounded-2xl overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500 block"
+                                            >
+                                                {/* Cover Image */}
+                                                <div className="absolute inset-0 bg-black/50 group-hover:bg-black/40 transition-colors z-10"></div>
+                                                <img
+                                                    src={restaurant.cover_url || "/ikoyi-interior.png"}
+                                                    alt={restaurant.name}
+                                                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                                />
+
+                                                {/* Match Score Badge */}
+                                                <div className="absolute top-4 right-4 z-20">
+                                                    <div className={`${badgeColors.bg} px-3 py-1.5 rounded-full shadow-lg ring-4 ${badgeColors.ring}`}>
+                                                        <span className={`text-xs font-bold ${badgeColors.text} tracking-wide`}>
+                                                            {restaurant.matchScore}% Match
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                {/* Restaurant Info */}
+                                                <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-6 text-center">
+                                                    {restaurant.logo_url ? (
+                                                        <img src={restaurant.logo_url} alt="Logo" className="h-16 w-auto mb-3 object-contain brightness-0 invert" />
+                                                    ) : (
+                                                        <h3 className="text-2xl font-display font-bold text-white mb-2">{restaurant.name}</h3>
+                                                    )}
+                                                    <p className="text-white/80 text-xs uppercase tracking-widest mb-2">{restaurant.city || 'Global'}</p>
+                                                    <div className="flex items-center gap-2 text-white/70 text-xs">
+                                                        <span>{restaurant.cuisine_type || 'Fine Dining'}</span>
+                                                        <span>•</span>
+                                                        <span>{restaurant.price_range || '$$$$'}</span>
+                                                    </div>
+                                                </div>
+
+                                                {/* Hover Indicator */}
+                                                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <div className="bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full">
+                                                        <span className="text-xs font-bold text-text-primary uppercase tracking-wider">Generate Menu →</span>
+                                                    </div>
+                                                </div>
+                                            </Link>
+                                        );
+                                    })}
+                                </div>
+                            </section>
+                        )}
+
+                        {!loadingRestaurants && categorizedRestaurants.exploreNewFlavors.length > 0 && (
+                            <section className="mb-16">
+                                <h2 className="text-lg font-bold text-text-primary mb-6 flex items-center gap-2">
+                                    <span className="text-xl">🌍</span> Explore New Flavors
+                                </h2>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {categorizedRestaurants.exploreNewFlavors.slice(0, 6).map((restaurant) => {
+                                        const badgeColors = getMatchBadgeColor(restaurant.matchScore);
+                                        return (
+                                            <Link
+                                                key={restaurant.id}
+                                                to="/ikoyi"
+                                                className="group relative h-72 rounded-2xl overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500 block"
+                                            >
+                                                {/* Cover Image */}
+                                                <div className="absolute inset-0 bg-black/50 group-hover:bg-black/40 transition-colors z-10"></div>
+                                                <img
+                                                    src={restaurant.cover_url || "/ikoyi-interior.png"}
+                                                    alt={restaurant.name}
+                                                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                                />
+
+                                                {/* Match Score Badge */}
+                                                <div className="absolute top-4 right-4 z-20">
+                                                    <div className={`${badgeColors.bg} px-3 py-1.5 rounded-full shadow-lg ring-4 ${badgeColors.ring}`}>
+                                                        <span className={`text-xs font-bold ${badgeColors.text} tracking-wide`}>
+                                                            {restaurant.matchScore}% Match
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                {/* Restaurant Info */}
+                                                <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-6 text-center">
+                                                    {restaurant.logo_url ? (
+                                                        <img src={restaurant.logo_url} alt="Logo" className="h-16 w-auto mb-3 object-contain brightness-0 invert" />
+                                                    ) : (
+                                                        <h3 className="text-2xl font-display font-bold text-white mb-2">{restaurant.name}</h3>
+                                                    )}
+                                                    <p className="text-white/80 text-xs uppercase tracking-widest mb-2">{restaurant.city || 'Global'}</p>
+                                                    <div className="flex items-center gap-2 text-white/70 text-xs">
+                                                        <span>{restaurant.cuisine_type || 'Fine Dining'}</span>
+                                                        <span>•</span>
+                                                        <span>{restaurant.price_range || '$$$$'}</span>
+                                                    </div>
+                                                </div>
+
+                                                {/* Hover Indicator */}
+                                                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <div className="bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full">
+                                                        <span className="text-xs font-bold text-text-primary uppercase tracking-wider">Generate Menu →</span>
+                                                    </div>
+                                                </div>
+                                            </Link>
+                                        );
+                                    })}
+                                </div>
+                            </section>
+                        )}
 
                         {/* --- SAVED GENERATIONS --- */}
                         <section>
