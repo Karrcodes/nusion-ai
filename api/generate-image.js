@@ -1,7 +1,6 @@
-/**
- * Vercel Serverless Function - Hugging Face Image Generation
- * Uses Hugging Face Router API for AI-generated food images
- */
+import { HfInference } from '@huggingface/inference';
+
+const hf = new HfInference(process.env.HUGGINGFACE_API_KEY);
 
 export default async function handler(req, res) {
     // Enable CORS
@@ -22,33 +21,19 @@ export default async function handler(req, res) {
     try {
         const enhancedPrompt = `Michelin star fine dining dish, ${description}, professional food photography, studio lighting, hyper-realistic, 8k resolution, elegant plating, cinematic lighting, shallow depth of field, sharp focus, magazine quality`;
 
-        console.log('🎨 Generating AI image with Hugging Face Router API...');
+        console.log('🎨 Generating AI image with Hugging Face SDK...');
 
-        // Use Hugging Face ROUTER endpoint with SD v1.5 (most reliable free model)
-        const response = await fetch(
-            'https://router.huggingface.co/models/runwayml/stable-diffusion-v1-5',
-            {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    inputs: enhancedPrompt,
-                    options: {
-                        wait_for_model: true
-                    }
-                }),
+        // Use the SDK to generate the image
+        const blob = await hf.textToImage({
+            model: 'runwayml/stable-diffusion-v1-5',
+            inputs: enhancedPrompt,
+            parameters: {
+                negative_prompt: 'blurry, low quality, distorted, ugly, bad anatomy',
             }
-        );
+        });
 
-        if (!response.ok) {
-            const error = await response.text();
-            throw new Error(`Hugging Face API error: ${response.status} - ${error}`);
-        }
-
-        // Get the image as a buffer
-        const arrayBuffer = await response.arrayBuffer();
+        // Convert Blob to ArrayBuffer
+        const arrayBuffer = await blob.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
 
         // Convert to base64
