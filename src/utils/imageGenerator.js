@@ -11,7 +11,9 @@ export const generateDishImage = async (description) => {
         const response = await fetch(`/api/generate-image?description=${encodeURIComponent(description)}`);
 
         if (!response.ok) {
-            throw new Error(`API error: ${response.status}`);
+            const errorData = await response.json().catch(() => ({}));
+            console.error('Frontend reported 500. Backend error:', errorData);
+            throw new Error(errorData.message || `API error: ${response.status}`);
         }
 
         const data = await response.json();

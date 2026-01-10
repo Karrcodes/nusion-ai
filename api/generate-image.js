@@ -23,10 +23,10 @@ export default async function handler(req, res) {
 
     try {
         // Construct Pollinations URL
-        // We use 'flux' model for high quality, and add a random seed based on description hash
+        // We use 'turbo' model for speed to prevent Vercel timeouts
         const seed = Math.floor(Math.random() * 100000);
-        const encodedPrompt = encodeURIComponent(`Michelin star fine dining dish, ${description}, professional food photography, 8k, photorealistic`);
-        const pollinationsUrl = `https://pollinations.ai/p/${encodedPrompt}?width=800&height=600&model=flux&seed=${seed}&nologo=true`;
+        const encodedPrompt = encodeURIComponent(`${description}, food photography, 8k`);
+        const pollinationsUrl = `https://pollinations.ai/p/${encodedPrompt}?width=800&height=600&model=turbo&seed=${seed}&nologo=true`;
 
         console.log(`🎨 Fetching from Pollinations: ${pollinationsUrl}`);
 
