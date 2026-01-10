@@ -123,7 +123,7 @@ const AuthForms = ({ type, mode }) => {
                 ← Back
             </Link>
 
-            <div className="glass-panel p-6 md:p-10 w-full max-w-md relative overflow-hidden">
+            <div className="glass-panel p-6 md:p-10 w-full max-w-md relative overflow-hidden rounded-2xl">
                 {/* Decorative Background */}
                 <div className="absolute -top-20 -right-20 w-40 h-40 bg-accent-wa/10 rounded-full blur-2xl"></div>
                 <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-accent-jp/10 rounded-full blur-2xl"></div>
