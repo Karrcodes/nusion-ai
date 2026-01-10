@@ -22,11 +22,11 @@ export default async function handler(req, res) {
     }
 
     try {
-        // Construct Pollinations URL
         // We use 'turbo' model for speed to prevent Vercel timeouts
         const seed = Math.floor(Math.random() * 100000);
         const encodedPrompt = encodeURIComponent(`${description}, food photography, 8k`);
-        const pollinationsUrl = `https://pollinations.ai/p/${encodedPrompt}?width=800&height=600&model=turbo&seed=${seed}&nologo=true`;
+        // Use the dedicated image API endpoint, not the frontend URL
+        const pollinationsUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=800&height=600&model=turbo&seed=${seed}&nologo=true`;
 
         console.log(`🎨 Fetching from Pollinations: ${pollinationsUrl}`);
 
