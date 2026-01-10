@@ -2,7 +2,6 @@ import { useRef, useState, useEffect } from 'react';
 import html2canvas from 'html2canvas';
 import { currentConfig } from '../config/restaurantConfig';
 import OriginModal from './OriginModal';
-import OriginModal from './OriginModal';
 
 const RecommendationResult = ({ result, onReset }) => {
     const cardRef = useRef(null);
