@@ -4,14 +4,12 @@ import createGlobe from 'cobe';
 const OriginModal = ({ isOpen, onClose, course }) => {
     const [isVisible, setIsVisible] = useState(false);
     const canvasRef = useRef();
-    const scrollRef = useRef(null);
+    const scrollRef = useRef(null); // Now points to the main container
     const [scrollProgress, setScrollProgress] = useState(0);
 
-    // Derived Coordinates (Mapping 0-100% to approximate Lat/Lon for visual effect)
+    // Derived Coordinates
     const targetX = course.origin?.coordinates?.x || 50;
     const targetY = course.origin?.coordinates?.y || 50;
-
-    // Convert to Radians for Cobe
     const basePhi = (targetX / 100) * Math.PI * 2;
     const baseTheta = (targetY / 100) * Math.PI;
 
@@ -28,7 +26,6 @@ const OriginModal = ({ isOpen, onClose, course }) => {
         }
     }, [isOpen]);
 
-    // Cleanup scroll lock on unmount
     useEffect(() => {
         return () => {
             document.body.style.overflow = 'auto';
@@ -36,9 +33,7 @@ const OriginModal = ({ isOpen, onClose, course }) => {
         };
     }, []);
 
-    // Use a ref to track scroll progress without triggering re-renders of the globe
     const progressRef = useRef(0);
-
     useEffect(() => {
         progressRef.current = scrollProgress;
     }, [scrollProgress]);
@@ -46,23 +41,9 @@ const OriginModal = ({ isOpen, onClose, course }) => {
     // Initialize Globe
     useEffect(() => {
         let globe;
-        let onResize;
 
-        // Only initialize if visible and canvas is ready
         if (isVisible && canvasRef.current) {
-            let phi = 0;
-            let width = 0;
-
-            onResize = () => {
-                if (canvasRef.current) {
-                    width = canvasRef.current.offsetWidth;
-                }
-            };
-            window.addEventListener('resize', onResize);
-            onResize();
-
-            // Fallback width if 0
-            if (width === 0) width = 600;
+            let width = canvasRef.current.clientWidth || 600;
 
             globe = createGlobe(canvasRef.current, {
                 devicePixelRatio: 2,
@@ -81,24 +62,20 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                     { location: [baseTheta * (180 / Math.PI) - 90, basePhi * (180 / Math.PI)], size: 0.1 }
                 ],
                 onRender: (state) => {
-                    // Smooth Rotation & Zoom (LERP)
                     const currentProgress = progressRef.current || 0;
 
                     const targetPhi = (basePhi + 0.5) - (currentProgress * 2);
                     const targetTheta = 0.3 + (currentProgress * 0.5);
-                    const targetSize = width * 2 * (1 + (currentProgress * 2)); // Zoom 1x -> 3x
+                    const targetSize = width * 2 * (1 + (currentProgress * 2));
 
-                    // Linear Interpolation
                     state.phi += (targetPhi - state.phi) * 0.08;
                     state.theta += (targetTheta - state.theta) * 0.08;
 
-                    // Smooth Zoom
                     const currentSize = state.width;
                     const newSize = currentSize + (targetSize - currentSize) * 0.08;
                     state.width = newSize;
                     state.height = newSize;
 
-                    // Drift
                     state.phi += 0.001;
                 }
             });
@@ -106,17 +83,14 @@ const OriginModal = ({ isOpen, onClose, course }) => {
 
         return () => {
             if (globe) globe.destroy();
-            if (onResize) window.removeEventListener('resize', onResize);
         };
-    }, [isVisible, basePhi, baseTheta]); // Depend on isVisible to re-init when modal opens
+    }, [isVisible, basePhi, baseTheta]);
 
-    // Handle Scroll Parallax
-    const handleScroll = () => {
-        if (scrollRef.current) {
-            const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
-            const progress = scrollTop / (scrollHeight - clientHeight);
-            setScrollProgress(progress);
-        }
+    // Handle Scroll on Main Container
+    const handleScroll = (e) => {
+        const { scrollTop, scrollHeight, clientHeight } = e.target;
+        const progress = scrollTop / (scrollHeight - clientHeight);
+        setScrollProgress(progress);
     };
 
     if (!isVisible && !isOpen) return null;
@@ -128,32 +102,33 @@ const OriginModal = ({ isOpen, onClose, course }) => {
             onClick={onClose}
         >
             <div
-                className={`relative w-full max-w-5xl h-[85vh] bg-[#050505] border border-white/10 rounded-none md:rounded-3xl overflow-hidden shadow-[0_0_100px_rgba(212,175,55,0.1)] transition-all duration-700 transform ${isOpen ? 'scale-100 translate-y-0' : 'scale-95 translate-y-10'
+                className={`relative w-full max-w-5xl h-[85vh] bg-[#050505] border border-white/10 rounded-none md:rounded-3xl shadow-[0_0_100px_rgba(212,175,55,0.1)] transition-all duration-700 transform ${isOpen ? 'scale-100 translate-y-0' : 'scale-95 translate-y-10'
                     }`}
                 onClick={(e) => e.stopPropagation()}
+            // MOVED: Scroll Handling to Main Container
             >
-                {/* Background Noise with Radial Gradient */}
-                <div className="absolute inset-0 opacity-[0.05] pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_right,_#1a1a1a_0%,_#000_100%)] opacity-50 z-0"></div>
-
-                {/* Close Button */}
-                <button
-                    onClick={onClose}
-                    className="absolute top-6 right-6 z-50 w-8 h-8 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white/50 hover:bg-white hover:text-black transition-all duration-300 group"
+                {/* Scrollable Container Wrapper */}
+                <div
+                    className="absolute inset-0 overflow-y-auto no-scrollbar scroll-smooth"
+                    onScroll={handleScroll}
                 >
-                    <span className="text-xl leading-none mb-1">×</span>
-                </button>
+                    {/* Background Noise with Radial Gradient (Fixed) */}
+                    <div className="fixed inset-0 opacity-[0.05] pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
+                    <div className="fixed inset-0 bg-[radial-gradient(circle_at_right,_#1a1a1a_0%,_#000_100%)] opacity-50 z-0"></div>
 
-                <div className="relative z-10 w-full h-full flex flex-col md:flex-row">
+                    {/* Close Button (Fixed) */}
+                    <button
+                        onClick={onClose}
+                        className="fixed top-6 right-6 z-[60] w-8 h-8 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white/50 hover:bg-white hover:text-black transition-all duration-300 group"
+                    >
+                        <span className="text-xl leading-none mb-1">×</span>
+                    </button>
 
-                    {/* Left Panel: Scrollable Content */}
-                    <div className="w-full md:w-[45%] h-full relative z-20 pointer-events-none">
-                        <div
-                            ref={scrollRef}
-                            onScroll={handleScroll}
-                            className="absolute inset-0 overflow-y-auto no-scrollbar pointer-events-auto p-10 md:p-16"
-                        >
-                            <div className="min-h-[120%] pb-20">
+                    <div className="relative z-10 w-full min-h-full flex flex-col md:flex-row">
+
+                        {/* Left Panel: Content (Flows naturally) */}
+                        <div className="w-full md:w-[45%] relative z-20 pointer-events-none pt-10 md:pt-16 pb-20 pl-10 md:pl-16 pr-10 md:pr-0">
+                            <div className="pointer-events-auto">
                                 <span className="text-[var(--color-gold)] font-cinzel text-[10px] tracking-[0.4em] mb-8 block animate-[fadeIn_0.8s_ease-out] border-b border-[var(--color-gold)]/30 pb-4 w-max">
                                     LOG NO. {course.id?.replace(/\D/g, '') || '01'}
                                 </span>
@@ -211,26 +186,26 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    {/* Right Panel: COBE Globe */}
-                    <div className="w-full md:w-[55%] h-[40vh] md:h-full absolute md:relative top-0 right-0 z-0 flex items-center justify-center overflow-hidden">
-                        <div className="relative w-full h-full max-w-[600px] max-h-[600px] flex items-center justify-center">
-                            <canvas
-                                ref={canvasRef}
-                                style={{ width: 600, height: 600, maxWidth: '100%', aspectRatio: '1' }}
-                                className="opacity-80 mix-blend-screen transition-opacity duration-1000 ease-in"
-                            />
+                        {/* Right Panel: COBE Globe (Sticky) */}
+                        <div className="w-full md:w-[55%] h-[40vh] md:h-auto md:sticky md:top-0 z-0 flex items-center justify-center overflow-hidden">
+                            <div className="relative w-full h-[600px] flex items-center justify-center top-0 md:top-20">
+                                <canvas
+                                    ref={canvasRef}
+                                    style={{ width: 600, height: 600, maxWidth: '100%', aspectRatio: '1' }}
+                                    className="opacity-100 transition-opacity duration-1000 ease-in"
+                                />
 
-                            {/* Overlay Gradient for Fade effect */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-transparent pointer-events-none md:hidden"></div>
-                        </div>
+                                {/* Overlay Gradient for Fade effect */}
+                                <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-transparent pointer-events-none md:hidden"></div>
+                            </div>
 
-                        {/* Status Overlay */}
-                        <div className="absolute bottom-10 right-10 text-right pointer-events-none">
-                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
-                                <div className="w-1.5 h-1.5 bg-[var(--color-gold)] rounded-full animate-pulse"></div>
-                                <span className="text-[9px] font-mono tracking-widest text-[var(--color-gold)]">LIVE SATELLITE</span>
+                            {/* Status Overlay */}
+                            <div className="absolute bottom-10 right-10 text-right pointer-events-none">
+                                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
+                                    <div className="w-1.5 h-1.5 bg-[var(--color-gold)] rounded-full animate-pulse"></div>
+                                    <span className="text-[9px] font-mono tracking-widest text-[var(--color-gold)]">LIVE SATELLITE</span>
+                                </div>
                             </div>
                         </div>
                     </div>
