@@ -18,7 +18,7 @@ const AuthSelection = ({ onSelect, mode, onSwitchMode }) => {
                 {/* Restaurant Card */}
                 <div
                     onClick={() => onSelect('restaurant')}
-                    className="glass-panel p-12 flex flex-col items-center text-center cursor-pointer hover:-translate-y-2 transition-transform duration-300 group border-2 border-transparent hover:border-accent-jp/30"
+                    className="glass-panel p-12 flex flex-col items-center text-center cursor-pointer hover:-translate-y-2 transition-transform duration-300 group border-2 border-transparent hover:border-accent-jp/30 rounded-2xl"
                 >
                     <div className="w-20 h-20 rounded-full bg-accent-jp/20 flex items-center justify-center mb-6 text-accent-jp group-hover:scale-110 transition-transform">
                         <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
@@ -32,7 +32,7 @@ const AuthSelection = ({ onSelect, mode, onSwitchMode }) => {
                 {/* Diner Card */}
                 <div
                     onClick={() => onSelect('diner')}
-                    className="glass-panel p-12 flex flex-col items-center text-center cursor-pointer hover:-translate-y-2 transition-transform duration-300 group border-2 border-transparent hover:border-accent-wa/30"
+                    className="glass-panel p-12 flex flex-col items-center text-center cursor-pointer hover:-translate-y-2 transition-transform duration-300 group border-2 border-transparent hover:border-accent-wa/30 rounded-2xl"
                 >
                     <div className="w-20 h-20 rounded-full bg-accent-wa/20 flex items-center justify-center mb-6 text-accent-wa group-hover:scale-110 transition-transform">
                         <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
