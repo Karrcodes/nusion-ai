@@ -236,7 +236,7 @@ const DinerDashboard = ({ user }) => {
                             <p className="text-text-secondary">Input your biometrics and optimization parameters for the Nusion Engine.</p>
                         </header>
 
-                        <div className="glass-panel p-8 space-y-8">
+                        <div className="glass-panel p-8 space-y-8 rounded-2xl">
 
                             {/* Personal Info */}
                             <div className="flex flex-col md:flex-row gap-8 items-start">
@@ -266,19 +266,19 @@ const DinerDashboard = ({ user }) => {
                                 </div>
 
                                 <div className="flex-1 grid md:grid-cols-2 gap-6 w-full">
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-mono text-text-secondary uppercase">Full Name</label>
+                                    <div className="space-y-3">
+                                        <label className="text-xs font-mono text-text-secondary uppercase leading-tight block">Full Name</label>
                                         <input
                                             type="text"
                                             value={preferences.name || user?.name || ''}
                                             onChange={(e) => handleChange('name', e.target.value)}
                                             placeholder="Enter your name"
-                                            className="glass-input bg-white/50 focus:bg-white"
+                                            className="w-full px-4 py-3 bg-white/50 border border-glass-border rounded-lg text-text-primary focus:bg-white focus:border-accent-wa focus:outline-none transition-colors leading-normal"
                                         />
                                     </div>
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-mono text-text-secondary uppercase">Email</label>
-                                        <input type="text" value={user?.email || ''} readOnly className="glass-input opacity-60 cursor-not-allowed" />
+                                    <div className="space-y-3">
+                                        <label className="text-xs font-mono text-text-secondary uppercase leading-tight block">Email</label>
+                                        <input type="text" value={user?.email || ''} readOnly className="w-full px-4 py-3 bg-white/50 border border-glass-border rounded-lg text-text-primary opacity-60 cursor-not-allowed leading-normal" />
                                     </div>
                                 </div>
                             </div>
@@ -287,12 +287,12 @@ const DinerDashboard = ({ user }) => {
 
                             {/* Optimization Metrics */}
                             <div className="grid md:grid-cols-2 gap-6">
-                                <div className="space-y-2">
-                                    <label className="text-xs font-mono text-text-secondary uppercase">Primary Location</label>
+                                <div className="space-y-3">
+                                    <label className="text-xs font-mono text-text-secondary uppercase leading-tight block">Primary Location</label>
                                     <select
                                         value={preferences.location || ''}
                                         onChange={(e) => handleChange('location', e.target.value)}
-                                        className="glass-input bg-white/50 focus:bg-white appearance-none"
+                                        className="w-full px-4 py-3 bg-white/50 border border-glass-border rounded-lg text-text-primary focus:bg-white focus:border-accent-wa focus:outline-none transition-colors appearance-none leading-normal"
                                     >
                                         <option value="" disabled>Select Location</option>
                                         <option value="London">London, UK</option>
@@ -303,12 +303,12 @@ const DinerDashboard = ({ user }) => {
                                         <option value="Accra">Accra, Ghana</option>
                                     </select>
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="text-xs font-mono text-text-secondary uppercase">Budget Range</label>
+                                <div className="space-y-3">
+                                    <label className="text-xs font-mono text-text-secondary uppercase leading-tight block">Budget Range</label>
                                     <select
                                         value={preferences.budget}
                                         onChange={(e) => handleChange('budget', e.target.value)}
-                                        className="glass-input bg-white/50 focus:bg-white appearance-none"
+                                        className="w-full px-4 py-3 bg-white/50 border border-glass-border rounded-lg text-text-primary focus:bg-white focus:border-accent-wa focus:outline-none transition-colors appearance-none leading-normal"
                                     >
                                         <option value="$">$ (Cheap Eats)</option>
                                         <option value="$$">$$ (Casual)</option>
@@ -318,9 +318,9 @@ const DinerDashboard = ({ user }) => {
                                 </div>
                             </div>
 
-                            <div className="space-y-2">
-                                <label className="text-xs font-mono text-text-secondary uppercase">Specific Allergies & Aversions</label>
-                                <div className="flex flex-wrap gap-2 mb-2">
+                            <div className="space-y-3">
+                                <label className="text-xs font-mono text-text-secondary uppercase leading-tight block">Specific Allergies & Aversions</label>
+                                <div className="flex flex-wrap gap-2 mb-3">
                                     {['Peanuts', 'Shellfish', 'Dairy', 'Gluten', 'Soy', 'Eggs', 'Tree Nuts', 'Fish'].map(allergen => {
                                         const isActive = (preferences.allergiesList || []).includes(allergen);
                                         return (
@@ -348,7 +348,7 @@ const DinerDashboard = ({ user }) => {
                                     value={preferences.allergies || ''}
                                     onChange={(e) => handleChange('allergies', e.target.value)}
                                     placeholder="Any other restrictions? (e.g. Cilantro, Mushrooms...)"
-                                    className="glass-input bg-white/50 focus:bg-white"
+                                    className="w-full px-4 py-3 bg-white/50 border border-glass-border rounded-lg text-text-primary focus:bg-white focus:border-accent-wa focus:outline-none transition-colors resize-none leading-normal"
                                 ></textarea>
                             </div>
 
