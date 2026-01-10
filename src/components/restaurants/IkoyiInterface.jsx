@@ -242,29 +242,31 @@ function IkoyiInterface({ user }) {
                 <main className={`w-full max-w-5xl relative min-h-[500px] flex flex-col justify-center items-center transition-all duration-500`}>
 
                     {loading ? (
-                        <div className="flex flex-col items-center w-full max-w-md">
-                            <div className="text-5xl mb-6 animate-bounce">
-                                {loadingPhase === 'consulting' && '👨‍🍳'}
-                                {loadingPhase === 'visualising' && '🎨'}
-                                {loadingPhase === 'plating' && '🍽️'}
+                        <div className="flex flex-col items-center w-full max-w-md animate-[fadeIn_0.5s]">
+                            {/* Sleek Minimal Loader - No Emojis */}
+                            <div className="w-16 h-16 mb-8 relative">
+                                <div className="absolute inset-0 border-[1px] border-[var(--color-gold)] opacity-20 rounded-full"></div>
+                                <div className="absolute inset-0 border-t-[1px] border-[var(--color-gold)] rounded-full animate-spin"></div>
+                                <div className="absolute inset-4 border-[1px] border-[var(--color-gold)] opacity-10 rounded-full"></div>
                             </div>
 
-                            <h3 className="text-xl font-bold text-text-primary mb-2 tracking-wide uppercase">
-                                {loadingPhase === 'consulting' && 'Consulting Chef...'}
-                                {loadingPhase === 'visualising' && 'Designing Presentation...'}
-                                {loadingPhase === 'plating' && 'Plating Dishes...'}
+                            <h3 className="text-2xl font-cinzel text-white mb-2 tracking-[0.2em] uppercase">
+                                {loadingPhase === 'consulting' && 'Analysing Palate'}
+                                {loadingPhase === 'visualising' && 'Curating Visuals'}
+                                {loadingPhase === 'plating' && 'Finalising Service'}
                             </h3>
 
-                            <div className="w-full h-[1px] bg-white/10 mt-8 mb-4">
+                            <div className="w-64 h-[2px] bg-white/5 mt-8 mb-4 relative overflow-hidden rounded-full">
                                 <div
-                                    className="h-full transition-all duration-[2000ms] ease-linear bg-[var(--color-gold)]"
+                                    className="h-full bg-[var(--color-gold)] shadow-[0_0_10px_var(--color-gold)] transition-all duration-700 ease-out"
                                     style={{ width: `${progress}%` }}
                                 ></div>
                             </div>
-                            <p className="text-[10px] text-[var(--color-gold)] font-cinzel tracking-[0.3em] animate-pulse">
-                                {loadingPhase === 'consulting' && 'CONSULTING CHEF'}
-                                {loadingPhase === 'visualising' && 'DESIGNING PLATING'}
-                                {loadingPhase === 'plating' && 'FINALIZING SERVICE'}
+
+                            <p className="text-[9px] text-[var(--color-gold)] font-mono tracking-[0.4em] opacity-80 animate-pulse">
+                                {loadingPhase === 'consulting' && 'AI_CHEF_INIT_SEQ_01'}
+                                {loadingPhase === 'visualising' && 'RENDERING_TEXTURES_HQ'}
+                                {loadingPhase === 'plating' && 'PLATING_COMPLETE'}
                             </p>
                         </div>
                     ) : result ? (
