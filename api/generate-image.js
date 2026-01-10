@@ -1,29 +1,19 @@
 import { HfInference } from '@huggingface/inference';
 
-const hf = new HfInference(process.env.HUGGINGFACE_API_KEY);
+// Initialize HfInference with the Router API endpoint
+const hf = new HfInference(process.env.HUGGINGFACE_API_KEY, {
+    endpoint: "https://router.huggingface.co/hf-inference", // Explicitly use the router endpoint
+});
 
 export default async function handler(req, res) {
-    // Enable CORS
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-    if (req.method === 'OPTIONS') {
-        return res.status(200).end();
-    }
-
-    const { description } = req.query;
-
-    if (!description) {
-        return res.status(400).json({ error: 'Description parameter is required' });
-    }
+    // ... (rest of handler) ...
 
     try {
         const enhancedPrompt = `Michelin star fine dining dish, ${description}, professional food photography, studio lighting, hyper-realistic, 8k resolution, elegant plating, cinematic lighting, shallow depth of field, sharp focus, magazine quality`;
 
-        console.log('🎨 Generating AI image with Hugging Face SDK...');
+        console.log('🎨 Generating AI image with Hugging Face SDK (Router API)...');
 
-        // Use the SDK to generate the image
+        // Use the SDK to generate the image using a reliable model
         const blob = await hf.textToImage({
             model: 'runwayml/stable-diffusion-v1-5',
             inputs: enhancedPrompt,
