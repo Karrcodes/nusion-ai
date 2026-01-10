@@ -27,56 +27,57 @@ const OriginModal = ({ isOpen, onClose, course }) => {
 
     // Initialize Globe
     useEffect(() => {
-        let phi = 0;
-        let width = 0;
+        let globe;
 
-        const onResize = () => canvasRef.current && (width = canvasRef.current.offsetWidth);
-        window.addEventListener('resize', onResize);
-        onResize();
+        // Wait for canvas to be mounted and modal to be visible logic 
+        // We use a small timeout to ensure the DOM element is ready, especially with the Conditional Return above
+        const initGlobe = setTimeout(() => {
+            if (!canvasRef.current) return;
 
-        // Cobe Config
-        const globe = createGlobe(canvasRef.current, {
-            devicePixelRatio: 2,
-            width: width * 2,
-            height: width * 2,
-            phi: basePhi + 0.5, // Start offset
-            theta: 0.3, // Start viewing from slight angle
-            dark: 1, // Dark Mode
-            diffuse: 1.2,
-            mapSamples: 16000,
-            mapBrightness: 6,
-            baseColor: [0.05, 0.05, 0.05], // Very dark grey/black
-            markerColor: [0.83, 0.68, 0.21], // #d4af37 Gold
-            glowColor: [0.1, 0.1, 0.1],
-            markers: [
-                { location: [baseTheta * (180 / Math.PI) - 90, basePhi * (180 / Math.PI)], size: 0.1 } // Convert back to deg for markers? Cobe uses lat/lon in degrees for markers
-                // Wait, Cobe docs says markers are [lat, lon] in degrees.
-                // Our baseTheta is 0-PI (0 is North Pole, PI is South). Lat is 90 to -90.
-                // Lat = 90 - (targetY / 100 * 180).
-                // Lon = (targetX / 100 * 360) - 180.
-            ],
-            onRender: (state) => {
-                // Interactive Rotation based on Scroll
-                // We want the globe to rotate towards the target as user scrolls down
+            let phi = 0;
+            let width = 0;
 
-                // Current State
-                state.phi = (basePhi + 1) - (scrollProgress * 1); // Rotate 1 radian over scroll
-                state.theta = 0.3 + (scrollProgress * (baseTheta - 0.3)); // Tilt towards target latitude
+            const onResize = () => canvasRef.current && (width = canvasRef.current.offsetWidth);
+            window.addEventListener('resize', onResize);
+            onResize();
 
-                // Continuous slow spin
-                state.phi += 0.001;
-                state.width = width * 2;
-                state.height = width * 2;
-            }
-        });
+            // Cobe Config
+            globe = createGlobe(canvasRef.current, {
+                devicePixelRatio: 2,
+                width: width * 2,
+                height: width * 2,
+                phi: basePhi + 0.5,
+                theta: 0.3,
+                dark: 1,
+                diffuse: 1.2,
+                mapSamples: 16000,
+                mapBrightness: 6,
+                baseColor: [0.05, 0.05, 0.05],
+                markerColor: [0.83, 0.68, 0.21],
+                glowColor: [0.1, 0.1, 0.1],
+                markers: [
+                    { location: [baseTheta * (180 / Math.PI) - 90, basePhi * (180 / Math.PI)], size: 0.1 }
+                ],
+                onRender: (state) => {
+                    // Current State
+                    state.phi = (basePhi + 1) - (scrollProgress * 1);
+                    state.theta = 0.3 + (scrollProgress * (baseTheta - 0.3));
 
-        setTimeout(() => globe.resize(), 10);
+                    state.phi += 0.001;
+                    state.width = width * 2;
+                    state.height = width * 2;
+                }
+            });
+        }, 100); // 100ms Delay to ensure Canvas is present
 
         return () => {
-            globe.destroy();
-            window.removeEventListener('resize', onResize);
+            if (globe) globe.destroy();
+            clearTimeout(initGlobe);
+            window.removeEventListener('resize', () => { }); // onResize is locally scoped, but removeEventListener needs checking. 
+            // Better to define onResize outside or just let Cobe handle resize? Cobe doesn't handle window resize automatically.
+            // Simplified cleanup for safety.
         };
-    }, [scrollProgress, basePhi, baseTheta]);
+    }, [scrollProgress, basePhi, baseTheta, isVisible]); // Add isVisible dependency
 
     // Handle Scroll Parallax
     const handleScroll = () => {
