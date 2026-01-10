@@ -1,10 +1,12 @@
 import { useRef, useState, useEffect } from 'react';
 import html2canvas from 'html2canvas';
 import { currentConfig } from '../config/restaurantConfig';
+import OriginModal from './OriginModal';
+import OriginModal from './OriginModal';
 
 const RecommendationResult = ({ result, onReset }) => {
     const cardRef = useRef(null);
-    const [activeHeritage, setActiveHeritage] = useState(null);
+    const [selectedCourse, setSelectedCourse] = useState(null);
     // Use courses directly without processing - Pollinations URLs work fine
     const processedCourses = result.courses;
 
@@ -45,6 +47,12 @@ const RecommendationResult = ({ result, onReset }) => {
     return (
         <div className="w-full animate-[fadeIn_1s] pb-32">
 
+            <OriginModal
+                isOpen={!!selectedCourse}
+                onClose={() => setSelectedCourse(null)}
+                course={selectedCourse || {}}
+            />
+
             {/* Main Glass Container */}
             <div ref={cardRef} className="relative w-full max-w-6xl mx-auto flex flex-col items-center">
 
@@ -66,7 +74,8 @@ const RecommendationResult = ({ result, onReset }) => {
                     {processedCourses.map((course, index) => (
                         <div
                             key={course.id}
-                            className="group relative h-[520px] rounded-3xl overflow-hidden bg-white/5 border border-white/5 transition-all duration-500 hover:scale-[1.02] hover:shadow-[0_20px_40px_rgba(0,0,0,0.5)]"
+                            onClick={() => setSelectedCourse(course)}
+                            className="group relative h-[520px] rounded-3xl overflow-hidden bg-white/5 border border-white/5 transition-all duration-500 hover:scale-[1.02] hover:shadow-[0_20px_40px_rgba(0,0,0,0.5)] cursor-pointer"
                         >
                             {/* Full Background Image */}
                             <div className="absolute inset-0 w-full h-full">
@@ -94,6 +103,13 @@ const RecommendationResult = ({ result, onReset }) => {
                                 <span className="px-3 py-1 rounded-full bg-black/30 backdrop-blur-md border border-white/10 text-[10px] font-bold text-white tracking-widest shadow-lg">
                                     {currentConfig.currency}{course.cost}
                                 </span>
+                            </div>
+
+                            {/* Hover Hint */}
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
+                                <div className="w-16 h-16 rounded-full border border-white/30 flex items-center justify-center backdrop-blur-sm bg-black/20">
+                                    <span className="text-2xl">🌍</span>
+                                </div>
                             </div>
 
                             {/* BOTTOM CONTENT: Narrative - Strict Fixed Heights for Alignment */}

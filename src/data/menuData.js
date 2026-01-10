@@ -11,7 +11,12 @@ export const menuItems = [
         flavorProfile: "Smoky",
         description: "Thinly sliced Wagyu beef with traditional suya spice dust and peanut crumble.",
         pairing: "Smoked Stout or Full-Bodied Malbec",
-        originStory: "Suya is a spicy skewer that originated with the Hausa people of Northern Nigeria. It’s more than street food; it’s a communal tradition of open-fire grilling using a proprietary blend of peanuts (kulikuli) and spices like ginger and cayenne."
+        originStory: "Suya is a spicy skewer that originated with the Hausa people of Northern Nigeria. It’s more than street food; it’s a communal tradition of open-fire grilling using a proprietary blend of peanuts (kulikuli) and spices like ginger and cayenne.",
+        origin: {
+            region: "Kano, Nigeria",
+            coordinates: { x: 54, y: 52 },
+            ingredient: "Kulikuli (Peanut Cake)"
+        }
     },
     {
         id: 's2',
@@ -24,7 +29,12 @@ export const menuItems = [
         flavorProfile: "Sweet",
         description: "Sweet mashed plantain pastry shells filled with scotch bonnet jam and crème fraîche.",
         pairing: "Off-Dry Riesling",
-        originStory: "Mosa are traditional Nigerian puff-puff like snacks made from over-ripe plantains, reducing food waste by turning sweetness into gold. We’ve elevated this humble street snack into a delicate tartlet form."
+        originStory: "Mosa are traditional Nigerian puff-puff like snacks made from over-ripe plantains, reducing food waste by turning sweetness into gold. We’ve elevated this humble street snack into a delicate tartlet form.",
+        origin: {
+            region: "Lagos, Nigeria",
+            coordinates: { x: 53, y: 55 },
+            ingredient: "Plantain (Ogede)"
+        }
     },
     {
         id: 's3',
@@ -37,7 +47,12 @@ export const menuItems = [
         flavorProfile: "Spicy",
         description: "Crystal clear broth infused with grains of selim and fresh catfish delicately poached.",
         pairing: "Chilled Palm Wine",
-        originStory: "Pepper soup is a medicinal staple in West Africa, often served to guests or new mothers for its healing properties. Key to its distinct aroma are indigenous spices like Calabash Nutmeg (Ehuru) and Grains of Selim (Uda)."
+        originStory: "Pepper soup is a medicinal staple in West Africa, often served to guests or new mothers for its healing properties. Key to its distinct aroma are indigenous spices like Calabash Nutmeg (Ehuru) and Grains of Selim (Uda).",
+        origin: {
+            region: "Niger Delta",
+            coordinates: { x: 54, y: 56 },
+            ingredient: "Grains of Selim (Uda)"
+        }
     },
     {
         id: 's4',
@@ -50,7 +65,12 @@ export const menuItems = [
         flavorProfile: "Earthy",
         description: "Giant African land snails in spiced phyllo pastry with wild spinach dip.",
         pairing: "Natural Orange Wine",
-        originStory: "The Giant African Land Snail is a delicacy prized for its texture and iron content. While the French have Escargot, West Africans have enjoyed these 'Congo Meat' delicacies in spicy stews for centuries."
+        originStory: "The Giant African Land Snail is a delicacy prized for its texture and iron content. While the French have Escargot, West Africans have enjoyed these 'Congo Meat' delicacies in spicy stews for centuries.",
+        origin: {
+            region: "Congo Basin",
+            coordinates: { x: 56, y: 60 },
+            ingredient: "Giant African Land Snail"
+        }
     },
     {
         id: 's5',
@@ -63,7 +83,12 @@ export const menuItems = [
         flavorProfile: "Umami",
         description: "Black-eyed pea fritters served with truffle aioli and pickled red onions.",
         pairing: "Vintage Champagne",
-        originStory: "Akara is a breakfast staple made from peeled, whipped black-eyed peas. Light and fluffy, it originated with the Yoruba people and travelled across the Atlantic to Brazil, where it is known as Acarajé."
+        originStory: "Akara is a breakfast staple made from peeled, whipped black-eyed peas. Light and fluffy, it originated with the Yoruba people and travelled across the Atlantic to Brazil, where it is known as Acarajé.",
+        origin: {
+            region: "Yorubaland / Bahia",
+            coordinates: { x: 53, y: 53 },
+            ingredient: "Black-Eyed Peas"
+        }
     },
 
     // --- MAINS ---
@@ -78,7 +103,12 @@ export const menuItems = [
         flavorProfile: "Rich",
         description: "Creamy arborio rice cooked in a rich tomato-pepper stew broth, topped with grilled lobster tail.",
         pairing: "Oaked Chardonnay",
-        originStory: "Jollof Rice is the heart of West African celebrations. Its origin is debated (Senegal's Thieboudienne is the likely ancestor), but its smoky tomato base is a unifying flavor profile across the region."
+        originStory: "Jollof Rice is the heart of West African celebrations. Its origin is debated (Senegal's Thieboudienne is the likely ancestor), but its smoky tomato base is a unifying flavor profile across the region.",
+        origin: {
+            region: "Saint-Louis, Senegal",
+            coordinates: { x: 48, y: 49 },
+            ingredient: "Broken Rice / Tomato"
+        }
     },
     {
         id: 'm2',
@@ -91,7 +121,12 @@ export const menuItems = [
         flavorProfile: "Nutty",
         description: "Whole roasted quail stuffed with melon seed pudding and bitter leaf pesto.",
         pairing: "Junmai Daiginjo Sake",
-        originStory: "Egusi is made from the fat-rich seeds of melons indigenous to Africa. It creates a creamy, nutty soup that is a textural masterpiece, typically thickened with leaf vegetables and served with pounded yam."
+        originStory: "Egusi is made from the fat-rich seeds of melons indigenous to Africa. It creates a creamy, nutty soup that is a textural masterpiece, typically thickened with leaf vegetables and served with pounded yam.",
+        origin: {
+            region: "Igboland, Nigeria",
+            coordinates: { x: 55, y: 55 },
+            ingredient: "Melon Seeds (Egusi)"
+        }
     },
     {
         id: 'm3',
@@ -104,7 +139,12 @@ export const menuItems = [
         flavorProfile: "Acidic",
         description: "Slow-braised beef short ribs in a hibiscus and ginger reduction served with yam purée.",
         pairing: "Zinfandel",
-        originStory: "Zobo (Sobolo/Bissap) is a refreshing drink made from dried Roselle (Hibiscus) leaves. Its tart, cranberry-like profile makes it a perfect natural tenderizer and glaze for rich meats."
+        originStory: "Zobo (Sobolo/Bissap) is a refreshing drink made from dried Roselle (Hibiscus) leaves. Its tart, cranberry-like profile makes it a perfect natural tenderizer and glaze for rich meats.",
+        origin: {
+            region: "Sudan / Sahel",
+            coordinates: { x: 60, y: 48 },
+            ingredient: "Hibiscus Sabdariffa"
+        }
     },
     {
         id: 'm4',
@@ -117,7 +157,12 @@ export const menuItems = [
         flavorProfile: "Herbal",
         description: "Pan-seared seabass fillet resting on a bed of dark, scent-leaf infused soup.",
         pairing: "Sauvignon Blanc",
-        originStory: "Native to the Edo people of Nigeria, Omoebe (Black Soup) gets its striking color from the oxidation of blended Scent Leaves (Efirin) and Bitter Leaves. It is traditionally regarded as a 'cleansing' soup."
+        originStory: "Native to the Edo people of Nigeria, Omoebe (Black Soup) gets its striking color from the oxidation of blended Scent Leaves (Efirin) and Bitter Leaves. It is traditionally regarded as a 'cleansing' soup.",
+        origin: {
+            region: "Benin City, Edo",
+            coordinates: { x: 54, y: 54 },
+            ingredient: "Scent Leaf (Efirin)"
+        }
     },
     {
         id: 'm5',
@@ -130,7 +175,12 @@ export const menuItems = [
         flavorProfile: "Savoury",
         description: "Spiced spinach and mushroom stew encased in golden puff pastry.",
         pairing: "Pinot Noir",
-        originStory: "Efo Riro loosely translates to 'stirred vegetables'. It is a rich, savory spinach stew traditionally cooked with locust bean (Iru) and crayfish, demonstrating the depth of flavor possible with fermented indigenous ingredients."
+        originStory: "Efo Riro loosely translates to 'stirred vegetables'. It is a rich, savory spinach stew traditionally cooked with locust bean (Iru) and crayfish, demonstrating the depth of flavor possible with fermented indigenous ingredients.",
+        origin: {
+            region: "Osun State, Nigeria",
+            coordinates: { x: 53, y: 53 },
+            ingredient: "Locust Bean (Iru)"
+        }
     },
 
     // --- DESSERTS ---
@@ -145,7 +195,12 @@ export const menuItems = [
         flavorProfile: "Fruity",
         description: "Deconstructed cheesecake with spiced tigernut crust and mango coulis.",
         pairing: "Late Harvest Gewürztraminer",
-        originStory: "Tigernuts (Ofio) are not nuts but ancient tubers cultivated in Egypt and West Africa for millennia. They produce a naturally sweet, creamy milk that is a popular street snack."
+        originStory: "Tigernuts (Ofio) are not nuts but ancient tubers cultivated in Egypt and West Africa for millennia. They produce a naturally sweet, creamy milk that is a popular street snack.",
+        origin: {
+            region: "Nile Valley / Ancient Egypt",
+            coordinates: { x: 62, y: 40 },
+            ingredient: "Tigernut (Cyperus esculentus)"
+        }
     },
     {
         id: 'd2',
@@ -158,7 +213,12 @@ export const menuItems = [
         flavorProfile: "Sweet",
         description: "Fried dough balls filled with cardamom chantilly cream and chocolate-chili drizzle.",
         pairing: "Espresso Martini",
-        originStory: "Puff Puff is the ubiquitous West African doughnut hole. Simple yeast dough, deep-fried until golden. It is impossible to attend a Nigerian party without seeing a mountain of these."
+        originStory: "Puff Puff is the ubiquitous West African doughnut hole. Simple yeast dough, deep-fried until golden. It is impossible to attend a Nigerian party without seeing a mountain of these.",
+        origin: {
+            region: "Lagos Street Food",
+            coordinates: { x: 53, y: 55 },
+            ingredient: "Yeast Dough"
+        }
     },
     {
         id: 'd3',
@@ -171,7 +231,12 @@ export const menuItems = [
         flavorProfile: "Tart",
         description: "Refreshing duo of sorbets with crystalized ginger shards.",
         pairing: "Sparkling Rosé",
-        originStory: "The Baobab tree is the 'Tree of Life' in the savannah. Its fruit dries naturally on the branch and is a superfruit powder with a sharp, citrusy flavor rich in Vitamin C."
+        originStory: "The Baobab tree is the 'Tree of Life' in the savannah. Its fruit dries naturally on the branch and is a superfruit powder with a sharp, citrusy flavor rich in Vitamin C.",
+        origin: {
+            region: "Senegal Savannah",
+            coordinates: { x: 48, y: 48 },
+            ingredient: "Baobab Fruit"
+        }
     },
     {
         id: 'd4',
@@ -184,7 +249,12 @@ export const menuItems = [
         flavorProfile: "Earthy",
         description: "Warm millet flour cakes with a molten honey and cinnamon center.",
         pairing: "Aged Tawny Port",
-        originStory: "Millet is one of the oldest ancient grains of the Sahel region. Fura de Nunu is a popular drink made from fermented millet balls and yogurt, inspiring the earthy profile of this dessert."
+        originStory: "Millet is one of the oldest ancient grains of the Sahel region. Fura de Nunu is a popular drink made from fermented millet balls and yogurt, inspiring the earthy profile of this dessert.",
+        origin: {
+            region: "Mali / Sahel",
+            coordinates: { x: 50, y: 45 },
+            ingredient: "Pearl Millet"
+        }
     },
     {
         id: 'd5',
@@ -197,6 +267,11 @@ export const menuItems = [
         flavorProfile: "Creamy",
         description: "Layers of crunchy chin chin soaked in espresso and mascarpone cream.",
         pairing: "Irish Coffee",
-        originStory: "Chin Chin is a crunchy fried dough snack, traditionally cut into small cubes. It graces every Christmas table in Nigeria and is dangerously addictive."
+        originStory: "Chin Chin is a crunchy fried dough snack, traditionally cut into small cubes. It graces every Christmas table in Nigeria and is dangerously addictive.",
+        origin: {
+            region: "Southern Nigeria",
+            coordinates: { x: 54, y: 56 },
+            ingredient: "Nutmeg / Wheat"
+        }
     }
 ];
