@@ -86,12 +86,15 @@ const RecommendationResult = ({ result, onReset }) => {
                                         src={course.image}
                                         alt={course.name}
                                         className="w-full h-64 object-cover"
+                                        onLoad={() => console.log('✅ Image loaded:', course.name)}
                                         onError={(e) => {
+                                            console.error('❌ Image failed to load:', course.name, course.image);
                                             e.target.style.display = 'none';
                                         }}
                                     />
                                 </div>
                             )}
+                            {!course.image && console.log('⚠️ No image for course:', course.name)}
 
                             {/* Metadata Line */}
                             <div className="flex items-center gap-4 text-[10px] uppercase tracking-widest text-[var(--color-charcoal)]/40 font-cinzel">
