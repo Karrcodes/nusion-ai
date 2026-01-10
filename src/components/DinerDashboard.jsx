@@ -369,7 +369,7 @@ const DinerDashboard = ({ user }) => {
                                         <div
                                             key={idx}
                                             onClick={() => navigate('/ikoyi', { state: { historicalResult: gen } })}
-                                            className="glass-panel overflow-hidden group cursor-pointer hover:-translate-y-1 transition-transform duration-300"
+                                            className="glass-panel overflow-hidden group cursor-pointer hover:-translate-y-1 transition-transform duration-300 rounded-2xl"
                                             title="View this Menu"
                                         >
                                             {/* Collage Image Section */}
@@ -377,9 +377,17 @@ const DinerDashboard = ({ user }) => {
                                                 {gen.courses && gen.courses.slice(0, 3).map((course, i) => (
                                                     <div key={i} className="h-full w-full relative border-r border-white/10 last:border-r-0">
                                                         {course.image ? (
-                                                            <img src={course.image} alt={course.name} className="w-full h-full object-cover" />
+                                                            <img
+                                                                src={course.image}
+                                                                alt={course.name}
+                                                                className="w-full h-full object-cover"
+                                                                onError={(e) => {
+                                                                    e.target.style.display = 'none';
+                                                                    e.target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center bg-stone-300 text-4xl">🍽️</div>';
+                                                                }}
+                                                            />
                                                         ) : (
-                                                            <div className="w-full h-full flex items-center justify-center bg-gray-200 text-xs">🍽️</div>
+                                                            <div className="w-full h-full flex items-center justify-center bg-stone-300 text-4xl">🍽️</div>
                                                         )}
                                                     </div>
                                                 ))}
