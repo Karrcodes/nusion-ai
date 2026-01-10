@@ -24,9 +24,9 @@ export default async function handler(req, res) {
 
         console.log('🎨 Generating AI image with Hugging Face Router API...');
 
-        // Use Hugging Face ROUTER endpoint with SDXL (supported model)
+        // Use Hugging Face ROUTER endpoint with SD v1.5 (most reliable free model)
         const response = await fetch(
-            'https://router.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0',
+            'https://router.huggingface.co/models/runwayml/stable-diffusion-v1-5',
             {
                 method: 'POST',
                 headers: {
@@ -35,6 +35,9 @@ export default async function handler(req, res) {
                 },
                 body: JSON.stringify({
                     inputs: enhancedPrompt,
+                    options: {
+                        wait_for_model: true
+                    }
                 }),
             }
         );
