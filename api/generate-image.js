@@ -1,9 +1,5 @@
-import { HfInference } from '@huggingface/inference';
-
 // Initialize HfInference with the Router API endpoint
-const hf = new HfInference(process.env.HUGGINGFACE_API_KEY, {
-    endpoint: "https://router.huggingface.co/hf-inference", // Explicitly use the router endpoint
-});
+// Removed unused HfInference import to prevent confusion
 
 export default async function handler(req, res) {
     // Enable CORS
@@ -22,13 +18,13 @@ export default async function handler(req, res) {
     }
 
     try {
-        // We use 'turbo' model for speed to prevent Vercel timeouts
+        // We use 'flux' model for better quality and to avoid 'turbo' rate limits
         const seed = Math.floor(Math.random() * 100000);
-        const encodedPrompt = encodeURIComponent(`${description}, food photography, 8k`);
-        // Use the dedicated image API endpoint, not the frontend URL
-        const pollinationsUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=800&height=600&model=turbo&seed=${seed}&nologo=true`;
+        const encodedPrompt = encodeURIComponent(`${description}, food photography, 8k, photorealistic, cinematic lighting`);
+        // Use the dedicated image API endpoint
+        const pollinationsUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=800&height=600&model=flux&seed=${seed}&nologo=true`;
 
-        console.log(`🎨 Fetching from Pollinations: ${pollinationsUrl}`);
+        console.log(`🎨 Fetching from Pollinations (Flux): ${pollinationsUrl}`);
 
         // Fetch the image from Pollinations
         const response = await fetch(pollinationsUrl, {
@@ -44,8 +40,6 @@ export default async function handler(req, res) {
         const contentType = response.headers.get('content-type');
         if (!contentType || !contentType.startsWith('image/')) {
             console.warn('Received non-image content type:', contentType);
-            // Sometimes it redirects or returns HTML waiting page. 
-            // In a real proxy, we might need a retry loop, but for now let's error if not image
             throw new Error('Received non-image response from Pollinations');
         }
 
