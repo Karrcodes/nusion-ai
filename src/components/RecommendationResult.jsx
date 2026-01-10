@@ -96,22 +96,31 @@ const RecommendationResult = ({ result, onReset }) => {
                                 </span>
                             </div>
 
-                            {/* BOTTOM CONTENT: Narrative */}
-                            <div className="absolute bottom-0 left-0 w-full p-8 translate-y-4 transition-transform duration-300 group-hover:translate-y-0">
-                                <h3 className="text-2xl font-serif font-bold text-white mb-2 leading-tight group-hover:text-[var(--color-gold)] transition-colors min-h-[3rem] line-clamp-2 drop-shadow-lg">
-                                    {course.name}
-                                </h3>
+                            {/* BOTTOM CONTENT: Narrative - Strict Fixed Heights for Alignment */}
+                            <div className="absolute bottom-0 left-0 w-full p-8 translate-y-4 transition-transform duration-300 group-hover:translate-y-0 bg-gradient-to-t from-black via-black/80 to-transparent pt-20">
+                                {/* Title: Fixed height for exact 2 lines */}
+                                <div className="h-[4.5rem] flex items-end mb-2">
+                                    <h3 className="text-2xl font-serif font-bold text-white leading-tight group-hover:text-[var(--color-gold)] transition-colors line-clamp-2 drop-shadow-lg w-full">
+                                        {course.name}
+                                    </h3>
+                                </div>
 
-                                <p className="text-white/80 font-light text-sm line-clamp-3 mb-4 group-hover:line-clamp-none transition-all drop-shadow-md">
-                                    {course.description}
-                                </p>
+                                {/* Description: Fixed height for exact 3 lines */}
+                                <div className="h-[4.5em] mb-4 overflow-hidden">
+                                    <p className="text-white/80 font-light text-sm leading-relaxed line-clamp-3 group-hover:text-white transition-colors drop-shadow-md">
+                                        {course.description}
+                                    </p>
+                                </div>
 
-                                <div className="flex flex-wrap gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">
-                                    {course.flavorProfile.split(',').map((tag, i) => (
-                                        <span key={i} className="text-[9px] uppercase tracking-wider text-white/60 border border-white/20 px-2 py-1 rounded-sm bg-black/20 backdrop-blur-sm">
-                                            {tag.trim()}
-                                        </span>
-                                    ))}
+                                {/* Tags: Fixed height container */}
+                                <div className="h-[2rem] flex items-center overflow-hidden">
+                                    <div className="flex flex-wrap gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100 transform translate-y-2 group-hover:translate-y-0">
+                                        {course.flavorProfile.split(',').map((tag, i) => (
+                                            <span key={i} className="text-[9px] uppercase tracking-wider text-white/70 border border-white/20 px-2 py-1 rounded-sm bg-black/40 backdrop-blur-md">
+                                                {tag.trim()}
+                                            </span>
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
                         </div>
