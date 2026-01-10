@@ -22,11 +22,11 @@ export default async function handler(req, res) {
     try {
         const enhancedPrompt = `Michelin star fine dining dish, ${description}, professional food photography, studio lighting, hyper-realistic, 8k resolution, elegant plating, cinematic lighting, shallow depth of field, sharp focus, magazine quality`;
 
-        console.log('Generating image with Hugging Face...');
+        console.log('🎨 Generating AI image with Hugging Face Serverless API...');
 
-        // Call Hugging Face Inference API (router endpoint)
+        // Use Hugging Face Serverless Inference API (correct endpoint)
         const response = await fetch(
-            'https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell',
+            'https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-2-1',
             {
                 method: 'POST',
                 headers: {
@@ -35,6 +35,9 @@ export default async function handler(req, res) {
                 },
                 body: JSON.stringify({
                     inputs: enhancedPrompt,
+                    options: {
+                        wait_for_model: true
+                    }
                 }),
             }
         );
