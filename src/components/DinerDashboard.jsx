@@ -281,7 +281,8 @@ const DinerDashboard = ({ user }) => {
                                                     </div>
                                                 </Link>
                                             );
-                                        })}
+                                        })
+                                    )}
                                 </div>
                             </section>
                         )}
@@ -345,7 +346,8 @@ const DinerDashboard = ({ user }) => {
                                                     </div>
                                                 </Link>
                                             );
-                                        })}
+                                        })
+                                    )}
                                 </div>
                             </section>
                         )}
