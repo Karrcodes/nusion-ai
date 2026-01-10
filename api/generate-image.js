@@ -1,6 +1,6 @@
 /**
  * Vercel Serverless Function - Hugging Face Image Generation
- * Uses Hugging Face Inference API for AI-generated food images
+ * Uses Hugging Face Router API for AI-generated food images
  */
 
 export default async function handler(req, res) {
@@ -22,11 +22,11 @@ export default async function handler(req, res) {
     try {
         const enhancedPrompt = `Michelin star fine dining dish, ${description}, professional food photography, studio lighting, hyper-realistic, 8k resolution, elegant plating, cinematic lighting, shallow depth of field, sharp focus, magazine quality`;
 
-        console.log('🎨 Generating AI image with Hugging Face Serverless API...');
+        console.log('🎨 Generating AI image with Hugging Face Router API...');
 
-        // Use Hugging Face Serverless Inference API (correct endpoint)
+        // Use Hugging Face ROUTER endpoint (new API)
         const response = await fetch(
-            'https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-2-1',
+            'https://router.huggingface.co/models/stabilityai/stable-diffusion-2-1',
             {
                 method: 'POST',
                 headers: {
@@ -35,9 +35,6 @@ export default async function handler(req, res) {
                 },
                 body: JSON.stringify({
                     inputs: enhancedPrompt,
-                    options: {
-                        wait_for_model: true
-                    }
                 }),
             }
         );
