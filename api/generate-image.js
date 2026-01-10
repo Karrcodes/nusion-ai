@@ -24,9 +24,9 @@ export default async function handler(req, res) {
 
         console.log('Generating image with Hugging Face...');
 
-        // Call Hugging Face Inference API
+        // Call Hugging Face Inference API (updated endpoint)
         const response = await fetch(
-            'https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0',
+            'https://router.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0',
             {
                 method: 'POST',
                 headers: {
