@@ -66,22 +66,26 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                     { location: [baseTheta * (180 / Math.PI) - 90, basePhi * (180 / Math.PI)], size: 0.1 }
                 ],
                 onRender: (state) => {
-                    // Smooth Rotation & Zoom based on Ref
-                    // This runs on every frame without react re-renders due to the empty dependency array for scroll
+                    // Smooth Rotation & Zoom (LERP)
+                    // We calculate the TARGET values based on scroll, then slowly move current state towards them
                     const currentProgress = progressRef.current;
 
-                    // Rotate
-                    state.phi = (basePhi + 0.5) - (currentProgress * 2);
-                    state.theta = 0.3 + (currentProgress * 0.5);
+                    const targetPhi = (basePhi + 0.5) - (currentProgress * 2);
+                    const targetTheta = 0.3 + (currentProgress * 0.5);
+                    const targetSize = width * 2 * (1 + (currentProgress * 2)); // Zoom 1x -> 3x
 
-                    // Continuous slow spin
+                    // Linear Interpolation (0.08 = responsive smoothness)
+                    state.phi += (targetPhi - state.phi) * 0.08;
+                    state.theta += (targetTheta - state.theta) * 0.08;
+
+                    // Smooth Zoom
+                    const currentSize = state.width;
+                    const newSize = currentSize + (targetSize - currentSize) * 0.08;
+                    state.width = newSize;
+                    state.height = newSize;
+
+                    // Add subtle constant drift
                     state.phi += 0.001;
-
-                    // Zoom Effect (Scaling Width/Height)
-                    // As we scroll (progress 0 -> 1), we want to zoom in (scale up)
-                    const zoomFactor = 1 + (currentProgress * 2); // 1x to 3x zoom
-                    state.width = width * 2 * zoomFactor;
-                    state.height = width * 2 * zoomFactor;
                 }
             });
         }, 100); // 100ms Delay
