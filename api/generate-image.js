@@ -1,11 +1,10 @@
 /**
- * Vercel Serverless Function - Image Generation Proxy
- * Fetches AI-generated images from Pollinations.ai and returns them as base64
- * This bypasses CORS restrictions by handling the request server-side
+ * Vercel Serverless Function - Hugging Face Image Generation
+ * Uses Hugging Face Inference API for AI-generated food images
  */
 
 export default async function handler(req, res) {
-    // Enable CORS for your domain
+    // Enable CORS
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -21,19 +20,32 @@ export default async function handler(req, res) {
     }
 
     try {
-        const seed = Math.floor(Math.random() * 1000000);
         const enhancedPrompt = `Michelin star fine dining dish, ${description}, professional food photography, studio lighting, hyper-realistic, 8k resolution, elegant plating, cinematic lighting, shallow depth of field, sharp focus, magazine quality`;
 
-        const encodedPrompt = encodeURIComponent(enhancedPrompt);
-        const pollinationsUrl = `https://pollinations.ai/p/${encodedPrompt}?width=1024&height=1024&seed=${seed}&nologo=true&model=flux`;
+        console.log('Generating image with Hugging Face...');
 
-        console.log('Fetching image from Pollinations:', pollinationsUrl);
-
-        // Fetch the image from Pollinations
-        const response = await fetch(pollinationsUrl);
+        // Call Hugging Face Inference API
+        const response = await fetch(
+            'https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0',
+            {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    inputs: enhancedPrompt,
+                    parameters: {
+                        negative_prompt: 'blurry, low quality, distorted, ugly, bad anatomy',
+                        num_inference_steps: 30,
+                    }
+                }),
+            }
+        );
 
         if (!response.ok) {
-            throw new Error(`Pollinations API error: ${response.status}`);
+            const error = await response.text();
+            throw new Error(`Hugging Face API error: ${response.status} - ${error}`);
         }
 
         // Get the image as a buffer
@@ -44,7 +56,8 @@ export default async function handler(req, res) {
         const base64 = buffer.toString('base64');
         const dataUrl = `data:image/jpeg;base64,${base64}`;
 
-        // Return the base64 image
+        console.log('✅ Image generated successfully');
+
         return res.status(200).json({
             success: true,
             image: dataUrl
