@@ -8,8 +8,6 @@ const OriginModal = ({ isOpen, onClose, course }) => {
     const [scrollProgress, setScrollProgress] = useState(0);
 
     // Derived Coordinates (Mapping 0-100% to approximate Lat/Lon for visual effect)
-    // x (0-100) -> phi (Longitude) - roughly mapping 0 to -PI and 100 to PI
-    // y (0-100) -> theta (Latitude) - roughly mapping 0 to 0 (North) and 100 to PI (South)
     const targetX = course.origin?.coordinates?.x || 50;
     const targetY = course.origin?.coordinates?.y || 50;
 
@@ -20,21 +18,23 @@ const OriginModal = ({ isOpen, onClose, course }) => {
     useEffect(() => {
         if (isOpen) {
             setIsVisible(true);
-            // Lock Body Scroll
             document.body.style.overflow = 'hidden';
-            document.body.style.touchAction = 'none'; // Prevent touch scroll chaining
+            document.body.style.touchAction = 'none';
         } else {
-            document.body.style.overflow = 'auto'; // Restore
+            document.body.style.overflow = 'auto';
             document.body.style.touchAction = 'auto';
-            setTimeout(() => setIsVisible(false), 300);
+            const tm = setTimeout(() => setIsVisible(false), 300);
+            return () => clearTimeout(tm);
         }
+    }, [isOpen]);
 
-        // Cleanup on unmount or close
+    // Cleanup scroll lock on unmount
+    useEffect(() => {
         return () => {
             document.body.style.overflow = 'auto';
             document.body.style.touchAction = 'auto';
         };
-    }, [isOpen]);
+    }, []);
 
     // Use a ref to track scroll progress without triggering re-renders of the globe
     const progressRef = useRef(0);
@@ -46,20 +46,24 @@ const OriginModal = ({ isOpen, onClose, course }) => {
     // Initialize Globe
     useEffect(() => {
         let globe;
+        let onResize;
 
-        // Wait for canvas to be mounted and modal to be visible logic 
-        // We use a small timeout to ensure the DOM element is ready, especially with the Conditional Return above
-        const initGlobe = setTimeout(() => {
-            if (!canvasRef.current) return;
-
+        // Only initialize if visible and canvas is ready
+        if (isVisible && canvasRef.current) {
             let phi = 0;
             let width = 0;
 
-            const onResize = () => canvasRef.current && (width = canvasRef.current.offsetWidth);
+            onResize = () => {
+                if (canvasRef.current) {
+                    width = canvasRef.current.offsetWidth;
+                }
+            };
             window.addEventListener('resize', onResize);
             onResize();
 
-            // Cobe Config
+            // Fallback width if 0
+            if (width === 0) width = 600;
+
             globe = createGlobe(canvasRef.current, {
                 devicePixelRatio: 2,
                 width: width * 2,
@@ -78,14 +82,13 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                 ],
                 onRender: (state) => {
                     // Smooth Rotation & Zoom (LERP)
-                    // We calculate the TARGET values based on scroll, then slowly move current state towards them
-                    const currentProgress = progressRef.current;
+                    const currentProgress = progressRef.current || 0;
 
                     const targetPhi = (basePhi + 0.5) - (currentProgress * 2);
                     const targetTheta = 0.3 + (currentProgress * 0.5);
                     const targetSize = width * 2 * (1 + (currentProgress * 2)); // Zoom 1x -> 3x
 
-                    // Linear Interpolation (0.08 = responsive smoothness)
+                    // Linear Interpolation
                     state.phi += (targetPhi - state.phi) * 0.08;
                     state.theta += (targetTheta - state.theta) * 0.08;
 
@@ -95,18 +98,17 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                     state.width = newSize;
                     state.height = newSize;
 
-                    // Add subtle constant drift
+                    // Drift
                     state.phi += 0.001;
                 }
             });
-        }, 100); // 100ms Delay
+        }
 
         return () => {
             if (globe) globe.destroy();
-            clearTimeout(initGlobe);
-            window.removeEventListener('resize', () => { });
+            if (onResize) window.removeEventListener('resize', onResize);
         };
-    }, [basePhi, baseTheta, isVisible]); // REMOVED scrollProgress dependency
+    }, [isVisible, basePhi, baseTheta]); // Depend on isVisible to re-init when modal opens
 
     // Handle Scroll Parallax
     const handleScroll = () => {
