@@ -6,19 +6,19 @@
 
 @layer base {
   :root {
-    --color-midnight: #0f0f13;
-    --color-charcoal: #1a1a1f;
-    --color-gold: #d4af37;
+    --color-midnight: #0a0a0c;
+    --color-charcoal: #151518;
+    --color-gold: #e5c07b; /* lighter, more metallic gold for dark mode */
     --color-gold-dim: #8a702a;
     --color-cream: #fdfbf7;
     --color-paper: #f0ebe0;
   }
 
   body {
-    @apply font-main bg-[var(--color-midnight)] text-[var(--color-cream)] min-h-screen;
+    @apply font-main bg-[var(--color-midnight)] text-white min-h-screen selection:bg-[var(--color-gold)] selection:text-[var(--color-midnight)];
     background-image: 
-        radial-gradient(circle at 50% 0%, #1f1f25 0%, transparent 60%),
-        radial-gradient(circle at 85% 30%, rgba(212, 175, 55, 0.03) 0%, transparent 40%);
+        radial-gradient(circle at 50% 0%, #1c1c21 0%, transparent 60%),
+        radial-gradient(circle at 85% 30%, rgba(229, 192, 123, 0.05) 0%, transparent 40%);
   }
 
   h1, h2, h3, h4, .font-cinzel {
@@ -38,22 +38,12 @@
 @layer components {
   /* Minimal Editorial Inputs */
   .editorial-input {
-      @apply bg-transparent border-b border-white/20 text-[var(--color-cream)] py-2 outline-none transition-all placeholder-white/20 text-center font-serif text-xl;
+      @apply bg-transparent border-b border-white/20 text-white py-2 outline-none transition-all placeholder-white/20 text-center font-serif text-xl focus:border-[var(--color-gold)];
   }
   
-  .editorial-input:focus {
-      @apply border-[var(--color-gold)];
-  }
-
   /* Fine Dining Button */
   .btn-gold {
       @apply border border-[var(--color-gold)] text-[var(--color-gold)] bg-transparent px-8 py-3 uppercase tracking-[0.2em] text-xs font-bold transition-all hover:bg-[var(--color-gold)] hover:text-[var(--color-midnight)] relative overflow-hidden;
-  }
-
-  /* Paper Menu Card */
-  .menu-card {
-      @apply bg-[var(--color-cream)] text-[var(--color-midnight)] shadow-[0_20px_50px_rgba(0,0,0,0.5)] h-auto w-full max-w-4xl mx-auto p-12 relative;
-      background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E");
   }
   
   .text-gold {
