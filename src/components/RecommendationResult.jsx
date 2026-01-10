@@ -66,7 +66,7 @@ const RecommendationResult = ({ result, onReset }) => {
                     {processedCourses.map((course, index) => (
                         <div
                             key={course.id}
-                            className="group relative h-[500px] rounded-3xl overflow-hidden bg-white/5 border border-white/5 transition-all duration-500 hover:scale-[1.02] hover:shadow-[0_20px_40px_rgba(0,0,0,0.5)]"
+                            className="group relative h-[520px] rounded-3xl overflow-hidden bg-white/5 border border-white/5 transition-all duration-500 hover:scale-[1.02] hover:shadow-[0_20px_40px_rgba(0,0,0,0.5)]"
                         >
                             {/* Full Background Image */}
                             <div className="absolute inset-0 w-full h-full">
@@ -82,32 +82,33 @@ const RecommendationResult = ({ result, onReset }) => {
                                 ) : (
                                     <div className="w-full h-full bg-gradient-to-br from-gray-800 to-black" />
                                 )}
-                                {/* Gradient Overlay - Always present for text readability */}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-90 transition-opacity duration-300 group-hover:opacity-80" />
+                                {/* Gradient Overlay */}
+                                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-90 transition-opacity duration-300 group-hover:opacity-80" />
                             </div>
 
-                            {/* Floating Content */}
-                            <div className="absolute bottom-0 left-0 w-full p-8 translate-y-2 transition-transform duration-300 group-hover:translate-y-0">
-                                <div className="flex justify-between items-start mb-2">
-                                    <span className="text-[9px] uppercase tracking-[0.3em] text-[var(--color-gold)] font-cinzel">
-                                        0{index + 1} // {index === 0 ? 'Start' : index === 1 ? 'Main' : 'Sweet'}
-                                    </span>
-                                    <span className="px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-[10px] font-bold text-white tracking-widest">
-                                        {currentConfig.currency}{course.cost}
-                                    </span>
-                                </div>
+                            {/* TOP CONTENT: Always Aligned */}
+                            <div className="absolute top-0 left-0 w-full p-6 flex justify-between items-start z-10">
+                                <span className="text-[9px] uppercase tracking-[0.3em] text-[var(--color-gold)] font-cinzel drop-shadow-md">
+                                    0{index + 1} // {index === 0 ? 'Start' : index === 1 ? 'Main' : 'Sweet'}
+                                </span>
+                                <span className="px-3 py-1 rounded-full bg-black/30 backdrop-blur-md border border-white/10 text-[10px] font-bold text-white tracking-widest shadow-lg">
+                                    {currentConfig.currency}{course.cost}
+                                </span>
+                            </div>
 
-                                <h3 className="text-2xl font-serif font-bold text-white mb-3 leading-tight group-hover:text-[var(--color-gold)] transition-colors">
+                            {/* BOTTOM CONTENT: Narrative */}
+                            <div className="absolute bottom-0 left-0 w-full p-8 translate-y-4 transition-transform duration-300 group-hover:translate-y-0">
+                                <h3 className="text-2xl font-serif font-bold text-white mb-2 leading-tight group-hover:text-[var(--color-gold)] transition-colors min-h-[3rem] line-clamp-2 drop-shadow-lg">
                                     {course.name}
                                 </h3>
 
-                                <p className="text-white/70 font-light text-sm line-clamp-3 mb-4 group-hover:line-clamp-none transition-all">
+                                <p className="text-white/80 font-light text-sm line-clamp-3 mb-4 group-hover:line-clamp-none transition-all drop-shadow-md">
                                     {course.description}
                                 </p>
 
                                 <div className="flex flex-wrap gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">
                                     {course.flavorProfile.split(',').map((tag, i) => (
-                                        <span key={i} className="text-[9px] uppercase tracking-wider text-white/40 border border-white/10 px-2 py-1 rounded-sm">
+                                        <span key={i} className="text-[9px] uppercase tracking-wider text-white/60 border border-white/20 px-2 py-1 rounded-sm bg-black/20 backdrop-blur-sm">
                                             {tag.trim()}
                                         </span>
                                     ))}
