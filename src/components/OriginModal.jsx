@@ -25,6 +25,13 @@ const OriginModal = ({ isOpen, onClose, course }) => {
         }
     }, [isOpen]);
 
+    // Use a ref to track scroll progress without triggering re-renders of the globe
+    const progressRef = useRef(0);
+
+    useEffect(() => {
+        progressRef.current = scrollProgress;
+    }, [scrollProgress]);
+
     // Initialize Globe
     useEffect(() => {
         let globe;
@@ -59,25 +66,32 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                     { location: [baseTheta * (180 / Math.PI) - 90, basePhi * (180 / Math.PI)], size: 0.1 }
                 ],
                 onRender: (state) => {
-                    // Current State
-                    state.phi = (basePhi + 1) - (scrollProgress * 1);
-                    state.theta = 0.3 + (scrollProgress * (baseTheta - 0.3));
+                    // Smooth Rotation & Zoom based on Ref
+                    // This runs on every frame without react re-renders due to the empty dependency array for scroll
+                    const currentProgress = progressRef.current;
 
+                    // Rotate
+                    state.phi = (basePhi + 0.5) - (currentProgress * 2);
+                    state.theta = 0.3 + (currentProgress * 0.5);
+
+                    // Continuous slow spin
                     state.phi += 0.001;
-                    state.width = width * 2;
-                    state.height = width * 2;
+
+                    // Zoom Effect (Scaling Width/Height)
+                    // As we scroll (progress 0 -> 1), we want to zoom in (scale up)
+                    const zoomFactor = 1 + (currentProgress * 2); // 1x to 3x zoom
+                    state.width = width * 2 * zoomFactor;
+                    state.height = width * 2 * zoomFactor;
                 }
             });
-        }, 100); // 100ms Delay to ensure Canvas is present
+        }, 100); // 100ms Delay
 
         return () => {
             if (globe) globe.destroy();
             clearTimeout(initGlobe);
-            window.removeEventListener('resize', () => { }); // onResize is locally scoped, but removeEventListener needs checking. 
-            // Better to define onResize outside or just let Cobe handle resize? Cobe doesn't handle window resize automatically.
-            // Simplified cleanup for safety.
+            window.removeEventListener('resize', () => { });
         };
-    }, [scrollProgress, basePhi, baseTheta, isVisible]); // Add isVisible dependency
+    }, [basePhi, baseTheta, isVisible]); // REMOVED scrollProgress dependency
 
     // Handle Scroll Parallax
     const handleScroll = () => {
