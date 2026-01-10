@@ -24,9 +24,9 @@ export default async function handler(req, res) {
 
         console.log('Generating image with Hugging Face...');
 
-        // Call Hugging Face Inference API (updated endpoint)
+        // Call Hugging Face Inference API (router endpoint)
         const response = await fetch(
-            'https://router.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0',
+            'https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell',
             {
                 method: 'POST',
                 headers: {
@@ -35,10 +35,6 @@ export default async function handler(req, res) {
                 },
                 body: JSON.stringify({
                     inputs: enhancedPrompt,
-                    parameters: {
-                        negative_prompt: 'blurry, low quality, distorted, ugly, bad anatomy',
-                        num_inference_steps: 30,
-                    }
                 }),
             }
         );
