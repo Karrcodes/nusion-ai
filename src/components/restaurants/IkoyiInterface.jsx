@@ -126,11 +126,15 @@ function IkoyiInterface({ user }) {
             const coursesWithImages = await Promise.all(
                 recommendation.courses.map(async (course, index) => {
                     try {
-                        await new Promise(r => setTimeout(r, index * 50)); // Stagger Reduced
+                        // Increase stagger to 2.5s to respect Rate Limits on Flux API (Free Tier)
+                        // This prevents the "hit limit" error on the 3rd image
+                        await new Promise(r => setTimeout(r, index * 2500));
+
                         console.log(`🖼️ Generating image ${index + 1}/${recommendation.courses.length} for:`, course.name);
                         const imageUrl = await generateDishImage(course.description);
                         console.log(`✅ Image generated for ${course.name}:`, imageUrl);
-                        setProgress(prev => Math.min(prev + 20, 95));
+                        // Incremental Progress Bar update
+                        setProgress(prev => Math.min(prev + (60 / recommendation.courses.length), 95));
                         return { ...course, image: imageUrl };
                     } catch (err) {
                         console.error(`❌ Failed to generate image for ${course.name}`, err);

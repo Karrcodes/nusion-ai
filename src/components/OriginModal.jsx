@@ -20,9 +20,20 @@ const OriginModal = ({ isOpen, onClose, course }) => {
     useEffect(() => {
         if (isOpen) {
             setIsVisible(true);
+            // Lock Body Scroll
+            document.body.style.overflow = 'hidden';
+            document.body.style.touchAction = 'none'; // Prevent touch scroll chaining
         } else {
+            document.body.style.overflow = 'auto'; // Restore
+            document.body.style.touchAction = 'auto';
             setTimeout(() => setIsVisible(false), 300);
         }
+
+        // Cleanup on unmount or close
+        return () => {
+            document.body.style.overflow = 'auto';
+            document.body.style.touchAction = 'auto';
+        };
     }, [isOpen]);
 
     // Use a ref to track scroll progress without triggering re-renders of the globe
