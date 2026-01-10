@@ -1,31 +1,21 @@
 /**
- * Generates an AI food image using our backend proxy
- * @param {string} description - The description of the dish to generate
- * @returns {Promise<string>} - Base64 data URL of the generated image
+ * Generates placeholder images for dishes
+ * AI generation via Pollinations has persistent CORS and redirect issues
+ * Using elegant placeholders until a reliable AI service is found
+ * @param {string} description - The description of the dish
+ * @returns {Promise<string>} - The URL of the placeholder image
  */
 export const generateDishImage = async (description) => {
-    console.log('🖼️ Requesting AI-generated image from backend...');
+    console.log('🖼️ Using placeholder image (AI generation temporarily disabled due to CORS)');
 
-    try {
-        // Call our serverless function instead of Pollinations directly
-        const response = await fetch(`/api/generate-image?description=${encodeURIComponent(description)}`);
+    // Use Lorem Picsum with consistent seeds based on description hash
+    const hash = description.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const seed = hash % 1000;
 
-        if (!response.ok) {
-            throw new Error(`API error: ${response.status}`);
-        }
+    // Return a beautiful, consistent placeholder
+    const url = `https://picsum.photos/seed/${seed}/800/600`;
 
-        const data = await response.json();
+    await new Promise(r => setTimeout(r, 300));
 
-        if (data.success && data.image) {
-            console.log('✅ AI image generated successfully');
-            return data.image;
-        } else {
-            throw new Error(data.error || 'Unknown error');
-        }
-    } catch (error) {
-        console.error('❌ Failed to generate AI image:', error);
-        // Return a fallback placeholder if AI generation fails
-        const fallbackSeed = Math.floor(Math.random() * 1000);
-        return `https://picsum.photos/seed/${fallbackSeed}/800/600`;
-    }
+    return url;
 };
