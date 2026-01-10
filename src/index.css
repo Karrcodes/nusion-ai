@@ -8,7 +8,8 @@
   :root {
     --color-midnight: #0a0a0c;
     --color-charcoal: #151518;
-    --color-gold: #e5c07b; /* lighter, more metallic gold for dark mode */
+    --color-gold: #e5c07b;
+    /* lighter, more metallic gold for dark mode */
     --color-gold-dim: #8a702a;
     --color-cream: #fdfbf7;
     --color-paper: #f0ebe0;
@@ -16,12 +17,16 @@
 
   body {
     @apply font-main bg-[var(--color-midnight)] text-white min-h-screen selection:bg-[var(--color-gold)] selection:text-[var(--color-midnight)];
-    background-image: 
-        radial-gradient(circle at 50% 0%, #1c1c21 0%, transparent 60%),
-        radial-gradient(circle at 85% 30%, rgba(229, 192, 123, 0.05) 0%, transparent 40%);
+    background-image:
+      radial-gradient(circle at 50% 0%, #1c1c21 0%, transparent 60%),
+      radial-gradient(circle at 85% 30%, rgba(229, 192, 123, 0.05) 0%, transparent 40%);
   }
 
-  h1, h2, h3, h4, .font-cinzel {
+  h1,
+  h2,
+  h3,
+  h4,
+  .font-cinzel {
     font-family: 'Cinzel', serif;
     @apply tracking-widest uppercase;
   }
@@ -29,35 +34,76 @@
   .font-serif {
     font-family: 'Playfair Display', serif;
   }
-  
+
   .font-main {
     font-family: 'Inter', sans-serif;
   }
 }
 
 @layer components {
+
   /* Minimal Editorial Inputs */
   .editorial-input {
-      @apply bg-transparent border-b border-white/20 text-white py-2 outline-none transition-all placeholder-white/20 text-center font-serif text-xl focus:border-[var(--color-gold)];
+    @apply bg-transparent border-b border-white/20 text-white py-2 outline-none transition-all placeholder-white/20 text-center font-serif text-xl focus:border-[var(--color-gold)];
   }
-  
+
   /* Fine Dining Button */
   .btn-gold {
-      @apply border border-[var(--color-gold)] text-[var(--color-gold)] bg-transparent px-8 py-3 uppercase tracking-[0.2em] text-xs font-bold transition-all hover:bg-[var(--color-gold)] hover:text-[var(--color-midnight)] relative overflow-hidden;
+    @apply border border-[var(--color-gold)] text-[var(--color-gold)] bg-transparent px-8 py-3 uppercase tracking-[0.2em] text-xs font-bold transition-all hover:bg-[var(--color-gold)] hover:text-[var(--color-midnight)] relative overflow-hidden;
   }
-  
+
   .text-gold {
-      color: var(--color-gold);
+    color: var(--color-gold);
+  }
+
+  /* Custom Scrollbars */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--color-gold);
+    border-radius: 4px;
+  }
+
+  /* Hide Scrollbar But Allow Scroll */
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
   }
 }
 
 /* Animations */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes slowFade {
-    0%, 100% { opacity: 0.3; }
-    50% { opacity: 0.6; }
+
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+
+  50% {
+    opacity: 0.6;
+  }
 }
