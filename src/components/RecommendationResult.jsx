@@ -5,49 +5,8 @@ import { currentConfig } from '../config/restaurantConfig';
 const RecommendationResult = ({ result, onReset }) => {
     const cardRef = useRef(null);
     const [activeHeritage, setActiveHeritage] = useState(null);
-    const [processedCourses, setProcessedCourses] = useState(result.courses);
-
-    // Convert images to Base64/Blob URL to ensure html2canvas can capture them
-    useEffect(() => {
-        const processImages = async () => {
-            const newCourses = await Promise.all(result.courses.map(async (course) => {
-                if (!course.image) return course;
-                try {
-                    // Use images.weserv.nl as a reliable CORS proxy
-                    // This service adds CORS headers and optimizes the image
-                    const proxyUrl = `https://images.weserv.nl/?url=${encodeURIComponent(course.image)}&output=jpg&n=-1`;
-
-                    const response = await fetch(proxyUrl);
-                    const blob = await response.blob();
-
-                    if (blob.size === 0 || !blob.type.startsWith('image')) {
-                        throw new Error("Invalid blob received");
-                    }
-
-                    return new Promise((resolve) => {
-                        const reader = new FileReader();
-                        reader.onloadend = () => {
-                            if (typeof reader.result === 'string' && reader.result.startsWith('data:image')) {
-                                resolve({ ...course, image: reader.result });
-                            } else {
-                                resolve(course);
-                            }
-                        };
-                        reader.onerror = () => resolve(course);
-                        reader.readAsDataURL(blob);
-                    });
-                } catch (e) {
-                    console.error("Image processing failed:", e);
-                    return course;
-                }
-            }));
-            setProcessedCourses(newCourses);
-        };
-
-        if (result?.courses) {
-            processImages();
-        }
-    }, [result.courses]);
+    // Use courses directly without processing - Pollinations URLs work fine
+    const processedCourses = result.courses;
 
     const downloadRef = useRef(null);
 
