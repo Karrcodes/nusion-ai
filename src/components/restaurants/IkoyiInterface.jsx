@@ -121,20 +121,25 @@ function IkoyiInterface({ user }) {
             setProgress(40);
 
             setLoadingPhase('visualising');
+            console.log('🎨 Starting image generation for', recommendation.courses.length, 'courses');
 
             const coursesWithImages = await Promise.all(
                 recommendation.courses.map(async (course, index) => {
                     try {
                         await new Promise(r => setTimeout(r, index * 50)); // Stagger Reduced
+                        console.log(`🖼️ Generating image ${index + 1}/${recommendation.courses.length} for:`, course.name);
                         const imageUrl = await generateDishImage(course.description);
+                        console.log(`✅ Image generated for ${course.name}:`, imageUrl);
                         setProgress(prev => Math.min(prev + 20, 95));
                         return { ...course, image: imageUrl };
                     } catch (err) {
-                        console.error(`Failed to generate image for ${course.name}`, err);
+                        console.error(`❌ Failed to generate image for ${course.name}`, err);
                         return { ...course, image: null };
                     }
                 })
             );
+
+            console.log('🎨 Image generation complete. Courses with images:', coursesWithImages);
 
             setLoadingPhase('plating');
             setProgress(100);
