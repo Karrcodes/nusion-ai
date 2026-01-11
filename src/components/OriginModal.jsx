@@ -37,7 +37,7 @@ const OriginModal = ({ isOpen, onClose, course }) => {
 
     // Parallax: Move globe down slightly as we scroll
     const parallaxOffset = scrollProgress * 150;
-    const zoomScale = 1 + (scrollProgress * 0.2); // Subtle zoom
+    const zoomScale = 1 + (scrollProgress * 0.8); // FIXED: Stronger zoom (was 0.2)
 
     if (!isVisible && !isOpen) return null;
 
@@ -165,7 +165,7 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                                     {/* ATMOSPHERE GLOW */}
                                     <div className="absolute inset-0 rounded-full shadow-[inset_10px_10px_50px_rgba(255,255,255,0.05)] pointer-events-none"></div>
                                 </div>
-                                <style jsx>{`
+                                <style>{`
                                     @keyframes spinGlobe {
                                         from { background-position: 0 0; }
                                         to { background-position: -200% 0; }
