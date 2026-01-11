@@ -72,37 +72,45 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                     theta: 0.3,
                     dark: 1,
                     diffuse: 1.2,
-                    mapSamples: 16000,
-                    mapBrightness: 8, // Increased for visibility
-                    baseColor: [0.1, 0.1, 0.1], // Slightly lighter base for contrast
-                    markerColor: [0.9, 0.8, 0.5], // Gold pop
-                    glowColor: [0.15, 0.15, 0.15],
-                    markers: [
-                        { location: [baseTheta * (180 / Math.PI) - 90, basePhi * (180 / Math.PI)], size: 0.1 }
-                    ],
-                    onRender: (state) => {
-                        const currentProgress = progressRef.current || 0;
+                    globe = createGlobe(canvasRef.current, {
+                        devicePixelRatio: 2,
+                        width: width * 2,
+                        height: width * 2,
+                        phi: basePhi + 0.5,
+                        theta: 0.3,
+                        dark: 1,
+                        diffuse: 1.2,
+                        mapSamples: 25000, // Significantly increased
+                        mapBrightness: 12, // High brightness for visibility
+                        baseColor: [0.3, 0.3, 0.3], // Lighter grey base
+                        markerColor: [0.9, 0.8, 0.5],
+                        glowColor: [0.15, 0.15, 0.15],
+                        markers: [
+                            { location: [baseTheta * (180 / Math.PI) - 90, basePhi * (180 / Math.PI)], size: 0.1 }
+                        ],
+                        onRender: (state) => {
+                            const currentProgress = progressRef.current || 0;
 
-                        const targetPhi = (basePhi + 0.5) - (currentProgress * 2);
-                        const targetTheta = 0.3 + (currentProgress * 0.5);
+                            const targetPhi = (basePhi + 0.5) - (currentProgress * 2);
+                            const targetTheta = 0.3 + (currentProgress * 0.5);
 
-                        // Linear Interpolation for Rotation
-                        state.phi += (targetPhi - state.phi) * 0.08;
-                        state.theta += (targetTheta - state.theta) * 0.08;
+                            // Linear Interpolation for Rotation
+                            state.phi += (targetPhi - state.phi) * 0.08;
+                            state.theta += (targetTheta - state.theta) * 0.08;
 
-                        // Constant Drift
-                        state.phi += 0.001;
-                    }
-                });
-            }, 100);
-        }
+                            // Constant Drift
+                            state.phi += 0.001;
+                        }
+                    });
+                }, 100);
+            }
 
         return () => {
-            if (globe) globe.destroy();
-            if (initTimer) clearTimeout(initTimer);
-            if (onResize) window.removeEventListener('resize', onResize);
-        };
-    }, [isVisible, basePhi, baseTheta]);
+                if (globe) globe.destroy();
+                if (initTimer) clearTimeout(initTimer);
+                if (onResize) window.removeEventListener('resize', onResize);
+            };
+        }, [isVisible, basePhi, baseTheta]);
 
     // Handle Scroll on Main Container
     const handleScroll = (e) => {
@@ -124,13 +132,15 @@ const OriginModal = ({ isOpen, onClose, course }) => {
     // Or just use fixed positioning with top offset?
     // User wants: "Globe scrolls slower".
     // Implementation: Sticky top-0 + translateY(progress * 100px). As you scroll down, globe slides down slightly (counteracting scrolldown), effectively moving slower relative to viewport? 
-    // No, "scrolls slower" usually means it moves UP, but not as fast as text.
     // Sticky means it doesn't move up at all.
     // Let's implement a parallax offset: Sticky + translateY(-progress * 20%).
     const parallaxOffset = scrollProgress * 150; // Moves down 150px as you scroll 100%
 
     // Text Parallax: Text Content moves slightly faster/slower? 
     // Usually text is the reference. Let's just make the globe sticky and add the slight downward drift.
+    // IMPLEMENTATION NOTE: 
+    // "Smoothness" in parallax comes from 1:1 sync with scroll. CSS transitions cause lag/floatiness.
+    // We remove the transition on the parallax transform to make it "lock" to the finger/mouse.
 
     if (!isVisible && !isOpen) return null;
 
@@ -165,7 +175,8 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                     <div className="relative z-10 w-full min-h-full flex flex-col md:flex-row">
 
                         {/* Left Panel: Content (Flows naturally) */}
-                        <div className="w-full md:w-[45%] relative z-20 pointer-events-none pt-10 md:pt-16 pb-20 pl-10 md:pl-16 pr-10 md:pr-0">
+                        {/* GRADIENT FIX: Added background gradient to soften the overlap with globe */}
+                        <div className="w-full md:w-[45%] relative z-20 pointer-events-none pt-10 md:pt-16 pb-20 pl-10 md:pl-16 pr-10 md:pr-0 bg-gradient-to-r from-black/90 via-black/60 to-transparent">
                             <div className="pointer-events-auto">
                                 <span className="text-[var(--color-gold)] font-cinzel text-[10px] tracking-[0.4em] mb-8 block animate-[fadeIn_0.8s_ease-out] border-b border-[var(--color-gold)]/30 pb-4 w-max">
                                     LOG NO. {course.id?.replace(/\D/g, '') || '01'}
@@ -232,12 +243,12 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                         <div className="w-full md:w-[55%] h-[40vh] md:h-auto md:sticky md:top-0 md:self-start z-0 flex items-center justify-center overflow-hidden">
                             <div
                                 className="relative w-full h-[600px] flex items-center justify-center md:top-0"
-                                style={{ transform: `translateY(${parallaxOffset}px)` }} // Parallax Drift
+                                style={{ transform: `translateY(${parallaxOffset}px)` }} // Instant update (No Transition)
                             >
                                 {/* CSS TRANSFORM ZOOM */}
                                 <div style={{
                                     transform: `scale(${zoomScale})`,
-                                    transition: 'transform 0.1s linear', // Changed to linear for tighter sync
+                                    transition: 'transform 0.5s ease-out', // Keep zoom smooth (it's an effect, not a scroll response)
                                     width: 600,
                                     height: 600,
                                     maxWidth: '100%'
