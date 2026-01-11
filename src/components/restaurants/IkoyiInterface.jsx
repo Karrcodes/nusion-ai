@@ -134,15 +134,18 @@ function IkoyiInterface({ user }) {
 
                 try {
                     // Stagger: Wait 2.5s before making the request (except potentially the first one, but consistency is safer)
-                    if (i > 0) {
-                        await new Promise(r => setTimeout(r, 2500));
-                    }
+                    // if (i > 0) {
+                    //      await new Promise(r => setTimeout(r, 2500)); 
+                    // }
 
-                    const imageUrl = await generateDishImage(course.description);
+                    // TEMP: Disable AI Generation for Testing Speed
+                    // const imageUrl = await generateDishImage(course.description);
+                    const imageUrl = "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&q=80&w=800"; // Placeholder
+
                     console.log(`✅ Image generated for ${course.name}:`, imageUrl);
                     coursesWithImages.push({ ...course, image: imageUrl });
 
-                    // Update progress
+                    // Update progress (Faster)
                     setProgress(prev => Math.min(prev + (60 / recommendation.courses.length), 95));
                 } catch (err) {
                     console.error(`❌ Failed to generate image for ${course.name}`, err);

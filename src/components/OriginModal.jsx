@@ -73,10 +73,10 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                     dark: 1,
                     diffuse: 1.2,
                     mapSamples: 16000,
-                    mapBrightness: 6,
-                    baseColor: [0.05, 0.05, 0.05],
-                    markerColor: [0.83, 0.68, 0.21],
-                    glowColor: [0.1, 0.1, 0.1],
+                    mapBrightness: 8, // Increased for visibility
+                    baseColor: [0.1, 0.1, 0.1], // Slightly lighter base for contrast
+                    markerColor: [0.9, 0.8, 0.5], // Gold pop
+                    glowColor: [0.15, 0.15, 0.15],
                     markers: [
                         { location: [baseTheta * (180 / Math.PI) - 90, basePhi * (180 / Math.PI)], size: 0.1 }
                     ],
@@ -113,8 +113,24 @@ const OriginModal = ({ isOpen, onClose, course }) => {
         }
     };
 
-    // Calculate Zoom scale based on progress
-    const zoomScale = 1 + (scrollProgress * 2);
+    // Calculate Zoom & Parallax
+    // Zoom: 1 -> 1.5x (Subtler)
+    const zoomScale = 1 + (scrollProgress * 1.5);
+    // Parallax: Globe moves UP slower than content. Content moves naturally. 
+    // We add a slight translation to the globe to make it feel detached.
+    // Actually, "Sticky" keeps it fixed. "Scrolls slower" means it DOES move up, but lags behind.
+    // If we keep it sticky, it moves 0. If we unsticky it, it moves 1:1.
+    // To make it move "slower", we can use sticky + translateY(down).
+    // Or just use fixed positioning with top offset?
+    // User wants: "Globe scrolls slower".
+    // Implementation: Sticky top-0 + translateY(progress * 100px). As you scroll down, globe slides down slightly (counteracting scrolldown), effectively moving slower relative to viewport? 
+    // No, "scrolls slower" usually means it moves UP, but not as fast as text.
+    // Sticky means it doesn't move up at all.
+    // Let's implement a parallax offset: Sticky + translateY(-progress * 20%).
+    const parallaxOffset = scrollProgress * 150; // Moves down 150px as you scroll 100%
+
+    // Text Parallax: Text Content moves slightly faster/slower? 
+    // Usually text is the reference. Let's just make the globe sticky and add the slight downward drift.
 
     if (!isVisible && !isOpen) return null;
 
@@ -208,12 +224,20 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                         </div>
 
                         {/* Right Panel: COBE Globe (Sticky) */}
-                        <div className="w-full md:w-[55%] h-[40vh] md:h-auto md:sticky md:top-0 z-0 flex items-center justify-center overflow-hidden">
-                            <div className="relative w-full h-[600px] flex items-center justify-center top-0 md:top-20">
+                        {/* 
+                            Flexbox Note: self-start ensures sticky works inside flex container.
+                            Sticky top-0 keeps it in view.
+                            translate-y uses parallaxOffset to drift it down slowly.
+                        */}
+                        <div className="w-full md:w-[55%] h-[40vh] md:h-auto md:sticky md:top-0 md:self-start z-0 flex items-center justify-center overflow-hidden">
+                            <div
+                                className="relative w-full h-[600px] flex items-center justify-center md:top-0"
+                                style={{ transform: `translateY(${parallaxOffset}px)` }} // Parallax Drift
+                            >
                                 {/* CSS TRANSFORM ZOOM */}
                                 <div style={{
                                     transform: `scale(${zoomScale})`,
-                                    transition: 'transform 0.5s ease-out', // Smooth CSS transition for Zoom
+                                    transition: 'transform 0.1s linear', // Changed to linear for tighter sync
                                     width: 600,
                                     height: 600,
                                     maxWidth: '100%'
@@ -225,7 +249,7 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                                     />
                                 </div>
 
-                                {/* Overlay Gradient for Fade effect */}
+                                {/* Overlay for Text Contrast when overlapping */}
                                 <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-transparent pointer-events-none md:hidden"></div>
                             </div>
 
