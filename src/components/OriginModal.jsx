@@ -140,12 +140,12 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                                 <div className="relative w-[500px] h-[500px] rounded-full overflow-hidden shadow-[inset_-60px_-20px_100px_rgba(0,0,0,0.95),_0_0_50px_rgba(0,0,0,0.5)] bg-blue-900">
 
                                     {/* MAP LAYER: Spinning Background Image */}
-                                    {/* FIXED: Removed blend modes that were hiding the map. Added Fallback Blue. */}
+                                    {/* FIXED: Switched to reliable GitHub Raw URL for texture. Wikipedia hotlinking was likely blocked. */}
                                     <div
-                                        className="absolute inset-0 w-[200%] h-full bg-[url('https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/Earthmap1000x500compac.jpg/1000px-Earthmap1000x500compac.jpg')] bg-cover bg-repeat-x opacity-100"
+                                        className="absolute inset-0 w-[200%] h-full bg-[url('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_atmos_2048.jpg')] bg-repeat-x opacity-100"
                                         style={{
                                             animation: 'spinGlobe 60s linear infinite',
-                                            backgroundSize: 'auto 100%'
+                                            backgroundSize: 'auto 100%' // Crucial for 2:1 aspect ratio on 1:1 container
                                         }}
                                     ></div>
 
