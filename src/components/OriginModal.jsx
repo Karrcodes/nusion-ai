@@ -65,25 +65,25 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                 if (width === 0) width = 600;
 
                 globe = createGlobe(canvasRef.current, {
-                    devicePixelRatio: 2,
-                    width: width * 2,
-                    height: width * 2,
+                    devicePixelRatio: 1, // FIXED: Force 1 to rule out scaling bugs
+                    width: 1000,         // FIXED: Force valid size
+                    height: 1000,
                     phi: 0,
                     theta: 0.3,
                     dark: 0,
                     diffuse: 1.2,
                     mapSamples: 12000,
                     mapBrightness: 6,
-                    baseColor: [0, 0, 1],     // BLUE BASE (Ocean Test)
-                    markerColor: [1, 0, 0],   // RED MARKERS (Dot Test)
-                    glowColor: [0, 1, 0],     // GREEN GLOW (Shader Test)
+                    baseColor: [0, 0, 1],     // Blue Base
+                    markerColor: [1, 0, 0],   // Red Markers
+                    glowColor: [0, 1, 0],     // Green Glow
                     opacity: 1,
                     markers: [
-                        { location: [10, 10], size: 0.2 }, // GIANT TEST MARKER
-                        { location: [baseTheta * (180 / Math.PI) - 90, basePhi * (180 / Math.PI)], size: 0.1 }
+                        { location: [10, 10], size: 1 },    // MASSIVE TEST BLOB 1
+                        { location: [100, 10], size: 1 },   // MASSIVE TEST BLOB 2
+                        { location: [baseTheta * (180 / Math.PI) - 90, basePhi * (180 / Math.PI)], size: 0.5 } // Bigger Course Marker
                     ],
                     onRender: (state) => {
-                        // Continuous spin to ensure test marker rotates into view
                         state.phi += 0.01;
                         state.theta = 0.3;
                     }
