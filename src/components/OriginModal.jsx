@@ -159,12 +159,27 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                                 <div className="relative w-[500px] h-[500px] rounded-full overflow-hidden shadow-[inset_-60px_-20px_100px_rgba(0,0,0,0.95),_0_0_50px_rgba(0,0,0,0.5)] bg-black">
 
                                     {/* MAP LAYER: Spinning Background Image */}
-                                    {/* PIVOT: JS-Driven Animation to bypass CSS quirks. */}
+                                    {/* PIVOT: CSS-Generated Holographic Grid. 
+                                        Eliminates image loading failures. Guarantees visible rotation. */}
                                     <div
                                         ref={mapRef}
-                                        className="absolute inset-0 w-[200%] h-full bg-[url('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_lights_2048.png')] bg-repeat-x opacity-100 brightness-150 grayscale"
+                                        className="absolute inset-0 w-full h-full opacity-60"
                                         style={{
-                                            backgroundSize: 'auto 100%'
+                                            backgroundImage: `
+                                                repeating-linear-gradient(90deg, transparent 0, transparent 49px, rgba(212, 175, 55, 0.2) 50px),
+                                                repeating-linear-gradient(0deg, transparent 0, transparent 49px, rgba(212, 175, 55, 0.1) 50px)
+                                            `,
+                                            backgroundSize: '200% 100%, 100% 100%'
+                                        }}
+                                    ></div>
+
+                                    {/* PURE CSS CONTINENT BLOBS (Abstract) */}
+                                    {/* Adding a subtle abstract noise layer to look like landmasses */}
+                                    <div
+                                        className="absolute inset-0 w-[200%] h-full opacity-30 bg-repeat-x mix-blend-overlay"
+                                        style={{
+                                            backgroundImage: `url('https://grainy-gradients.vercel.app/noise.svg')`,
+                                            animation: 'spinGlobe 40s linear infinite'
                                         }}
                                     ></div>
 
