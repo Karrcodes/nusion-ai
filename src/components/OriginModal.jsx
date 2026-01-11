@@ -69,25 +69,23 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                     width: width * 2,
                     height: width * 2,
                     phi: 0,
-                    theta: 0.3, // Back to comfortable angle
-                    dark: 1,
+                    theta: 0.3,
+                    dark: 0,
                     diffuse: 1.2,
-                    mapSamples: 25000,
+                    mapSamples: 12000,
                     mapBrightness: 6,
-                    baseColor: [0.1, 0.1, 0.1],     // Dark Base
-                    markerColor: [1, 1, 1],         // White Markers
-                    glowColor: [1, 1, 1],
+                    baseColor: [0, 0, 1],     // BLUE BASE (Ocean Test)
+                    markerColor: [1, 0, 0],   // RED MARKERS (Dot Test)
+                    glowColor: [0, 1, 0],     // GREEN GLOW (Shader Test)
                     opacity: 1,
                     markers: [
+                        { location: [10, 10], size: 0.2 }, // GIANT TEST MARKER
                         { location: [baseTheta * (180 / Math.PI) - 90, basePhi * (180 / Math.PI)], size: 0.1 }
                     ],
                     onRender: (state) => {
-                        // FIXED: Removed Scroll-Lock Lerp that was freezing the globe on the ocean.
-                        // Now purely spinning to verify map visibility.
-                        state.phi += 0.005;
-
-                        // Keep Theta stable
-                        state.theta = 1.35; // Equator view
+                        // Continuous spin to ensure test marker rotates into view
+                        state.phi += 0.01;
+                        state.theta = 0.3;
                     }
                 });
             }, 100);
