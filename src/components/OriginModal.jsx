@@ -68,30 +68,32 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                     devicePixelRatio: 2,
                     width: width * 2,
                     height: width * 2,
-                    phi: basePhi + 0.5,
+                    phi: 0,
                     theta: 0.3,
                     dark: 1,
                     diffuse: 1.2,
-                    mapSamples: 25000,    // High visibility
-                    mapBrightness: 12,    // Bright dots
-                    baseColor: [0.3, 0.3, 0.3], // Visible base
-                    markerColor: [0.9, 0.8, 0.5],
-                    glowColor: [0.15, 0.15, 0.15],
+                    mapSamples: 16000,
+                    mapBrightness: 6,
+                    baseColor: [0.1, 0.1, 0.1],
+                    markerColor: [1, 1, 1],
+                    glowColor: [0.7, 0.7, 0.7],
+                    opacity: 1,
                     markers: [
                         { location: [baseTheta * (180 / Math.PI) - 90, basePhi * (180 / Math.PI)], size: 0.1 }
                     ],
                     onRender: (state) => {
                         const currentProgress = progressRef.current || 0;
 
+                        // Rotations
                         const targetPhi = (basePhi + 0.5) - (currentProgress * 2);
                         const targetTheta = 0.3 + (currentProgress * 0.5);
 
-                        // Linear Interpolation for Rotation
+                        // Lerp
                         state.phi += (targetPhi - state.phi) * 0.08;
                         state.theta += (targetTheta - state.theta) * 0.08;
 
-                        // Constant Drift
-                        state.phi += 0.001;
+                        // Auto-spin (slow)
+                        state.phi += 0.003;
                     }
                 });
             }, 100);
