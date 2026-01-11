@@ -69,14 +69,14 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                     width: width * 2,
                     height: width * 2,
                     phi: 0,
-                    theta: 0.3,
-                    dark: 0,
+                    theta: 1.35, // FIXED: 1.35 = ~Equator. 0.3 was North Pole (Ocean).
+                    dark: 1,
                     diffuse: 1.2,
-                    mapSamples: 40000,
+                    mapSamples: 20000,
                     mapBrightness: 6,
-                    baseColor: [0, 0, 0], // True Black Base
-                    markerColor: [1, 1, 1], // Pure White Dots
-                    glowColor: [0.5, 0.5, 0.5], // Subtle Grey Glow
+                    baseColor: [0.3, 0.3, 0.3],     // Standard Dark Grey Base
+                    markerColor: [1, 0.5, 0.5],     // distinct marker color
+                    glowColor: [1, 1, 1],           // Bright Glow
                     opacity: 1,
                     markers: [
                         { location: [baseTheta * (180 / Math.PI) - 90, basePhi * (180 / Math.PI)], size: 0.1 }
@@ -86,7 +86,7 @@ const OriginModal = ({ isOpen, onClose, course }) => {
 
                         // Rotations
                         const targetPhi = (basePhi + 0.5) - (currentProgress * 2);
-                        const targetTheta = 0.3 + (currentProgress * 0.5);
+                        const targetTheta = 0.3 + (currentProgress * 0.5); // Still animating towards pole is fine, but start at equator
 
                         // Lerp
                         state.phi += (targetPhi - state.phi) * 0.08;
