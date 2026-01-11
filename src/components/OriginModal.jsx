@@ -4,7 +4,7 @@ import createGlobe from 'cobe';
 const OriginModal = ({ isOpen, onClose, course }) => {
     const [isVisible, setIsVisible] = useState(false);
     const canvasRef = useRef();
-    const scrollRef = useRef(null);
+    const scrollRef = useRef(null); // Now points to the main container
     const [scrollProgress, setScrollProgress] = useState(0);
 
     // Derived Coordinates
@@ -33,13 +33,14 @@ const OriginModal = ({ isOpen, onClose, course }) => {
         };
     }, []);
 
+    // Scroll Progress for Rotation Logic
     const progressRef = useRef(0);
     useEffect(() => {
         progressRef.current = scrollProgress;
     }, [scrollProgress]);
 
     // Initialize Globe
-    // RESTORED: Safety delay and resize listener to ensure rendering
+    // FIXED: Removed width/height resizing from loop (caused crash). Using CSS for zoom.
     useEffect(() => {
         let globe;
         let onResize;
@@ -60,6 +61,8 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                 };
                 window.addEventListener('resize', onResize);
                 onResize(); // Initial measurement
+
+                if (width === 0) width = 600;
 
                 globe = createGlobe(canvasRef.current, {
                     devicePixelRatio: 2,
@@ -82,16 +85,12 @@ const OriginModal = ({ isOpen, onClose, course }) => {
 
                         const targetPhi = (basePhi + 0.5) - (currentProgress * 2);
                         const targetTheta = 0.3 + (currentProgress * 0.5);
-                        const targetSize = width * 2 * (1 + (currentProgress * 2));
 
+                        // Linear Interpolation for Rotation
                         state.phi += (targetPhi - state.phi) * 0.08;
                         state.theta += (targetTheta - state.theta) * 0.08;
 
-                        const currentSize = state.width;
-                        const newSize = currentSize + (targetSize - currentSize) * 0.08;
-                        state.width = newSize;
-                        state.height = newSize;
-
+                        // Constant Drift
                         state.phi += 0.001;
                     }
                 });
@@ -108,12 +107,14 @@ const OriginModal = ({ isOpen, onClose, course }) => {
     // Handle Scroll on Main Container
     const handleScroll = (e) => {
         const { scrollTop, scrollHeight, clientHeight } = e.target;
-        // Guard against divide by zero if no scroll exists yet
         if (scrollHeight - clientHeight > 0) {
             const progress = scrollTop / (scrollHeight - clientHeight);
             setScrollProgress(progress);
         }
     };
+
+    // Calculate Zoom scale based on progress
+    const zoomScale = 1 + (scrollProgress * 2);
 
     if (!isVisible && !isOpen) return null;
 
@@ -133,11 +134,11 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                     className="absolute inset-0 overflow-y-auto no-scrollbar scroll-smooth"
                     onScroll={handleScroll}
                 >
-                    {/* Background Noise with Radial Gradient (Fixed) */}
+                    {/* Background Noise with Radial Gradient */}
                     <div className="fixed inset-0 opacity-[0.05] pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
                     <div className="fixed inset-0 bg-[radial-gradient(circle_at_right,_#1a1a1a_0%,_#000_100%)] opacity-50 z-0"></div>
 
-                    {/* Close Button (Fixed) */}
+                    {/* Close Button */}
                     <button
                         onClick={onClose}
                         className="fixed top-6 right-6 z-[60] w-8 h-8 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white/50 hover:bg-white hover:text-black transition-all duration-300 group"
@@ -159,14 +160,12 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                                 </h2>
 
                                 <div className="space-y-20 animate-[fadeIn_1s_delay-200ms]">
-
                                     {/* Story */}
                                     <div>
                                         <p className="text-white/80 text-lg leading-relaxed font-light">
                                             {course.originStory}
                                         </p>
                                     </div>
-
                                     {/* The Source */}
                                     <div className="border-l-2 border-[var(--color-gold)] pl-6 transition-all duration-500 hover:pl-8">
                                         <h4 className="text-white/40 text-[9px] uppercase tracking-[0.2em] mb-2 font-cinzel">The Source</h4>
@@ -211,11 +210,20 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                         {/* Right Panel: COBE Globe (Sticky) */}
                         <div className="w-full md:w-[55%] h-[40vh] md:h-auto md:sticky md:top-0 z-0 flex items-center justify-center overflow-hidden">
                             <div className="relative w-full h-[600px] flex items-center justify-center top-0 md:top-20">
-                                <canvas
-                                    ref={canvasRef}
-                                    style={{ width: 600, height: 600, maxWidth: '100%', aspectRatio: '1' }}
-                                    className="opacity-100 transition-opacity duration-1000 ease-in"
-                                />
+                                {/* CSS TRANSFORM ZOOM */}
+                                <div style={{
+                                    transform: `scale(${zoomScale})`,
+                                    transition: 'transform 0.5s ease-out', // Smooth CSS transition for Zoom
+                                    width: 600,
+                                    height: 600,
+                                    maxWidth: '100%'
+                                }}>
+                                    <canvas
+                                        ref={canvasRef}
+                                        style={{ width: '100%', height: '100%', aspectRatio: '1' }}
+                                        className="opacity-100 transition-opacity duration-1000 ease-in"
+                                    />
+                                </div>
 
                                 {/* Overlay Gradient for Fade effect */}
                                 <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-transparent pointer-events-none md:hidden"></div>
