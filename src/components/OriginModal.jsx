@@ -70,13 +70,13 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                     height: width * 2,
                     phi: 0,
                     theta: 0.3,
-                    dark: 1,
+                    dark: 0,
                     diffuse: 1.2,
-                    mapSamples: 16000,
+                    mapSamples: 40000,
                     mapBrightness: 6,
-                    baseColor: [0.1, 0.1, 0.1],
-                    markerColor: [1, 1, 1],
-                    glowColor: [0.7, 0.7, 0.7],
+                    baseColor: [0, 0, 0], // True Black Base
+                    markerColor: [1, 1, 1], // Pure White Dots
+                    glowColor: [0.5, 0.5, 0.5], // Subtle Grey Glow
                     opacity: 1,
                     markers: [
                         { location: [baseTheta * (180 / Math.PI) - 90, basePhi * (180 / Math.PI)], size: 0.1 }
