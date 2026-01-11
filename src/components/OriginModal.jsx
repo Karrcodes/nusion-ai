@@ -4,7 +4,26 @@ import { useEffect, useState, useRef } from 'react';
 const OriginModal = ({ isOpen, onClose, course }) => {
     const [isVisible, setIsVisible] = useState(false);
     const scrollRef = useRef(null);
+    const mapRef = useRef(null); // Ref for direct DOM manipulation
     const [scrollProgress, setScrollProgress] = useState(0);
+
+    // JS Animation Loop for Globe Rotation (Bypasses CSS Limitations)
+    useEffect(() => {
+        let animationFrameId;
+        let position = 0;
+        const animate = () => {
+            position -= 0.05; // Speed Control (Negative = Correct Spin Direction)
+            if (mapRef.current) {
+                mapRef.current.style.backgroundPosition = `${position}% 0`;
+            }
+            animationFrameId = requestAnimationFrame(animate);
+        };
+        // Start animation only when visible to save resources
+        if (isVisible) {
+            animate();
+        }
+        return () => cancelAnimationFrame(animationFrameId);
+    }, [isVisible]);
 
     // Derived Coordinates for 2D Map (Approximate)
     // Map is Equirectangular. 
@@ -140,13 +159,11 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                                 <div className="relative w-[500px] h-[500px] rounded-full overflow-hidden shadow-[inset_-60px_-20px_100px_rgba(0,0,0,0.95),_0_0_50px_rgba(0,0,0,0.5)] bg-black">
 
                                     {/* MAP LAYER: Spinning Background Image */}
-                                    {/* PIVOT: 'Black Marble' (Earth Lights) Texture. 
-                                        This replicates the "Black Globe with Dots" aesthetic the user wants,
-                                        but uses a reliable image instead of the bugged WebGL renderer. */}
+                                    {/* PIVOT: JS-Driven Animation to bypass CSS quirks. */}
                                     <div
+                                        ref={mapRef}
                                         className="absolute inset-0 w-[200%] h-full bg-[url('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_lights_2048.png')] bg-repeat-x opacity-100 brightness-150 grayscale"
                                         style={{
-                                            animation: 'spinGlobe 60s linear infinite',
                                             backgroundSize: 'auto 100%'
                                         }}
                                     ></div>
@@ -166,10 +183,6 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                                     <div className="absolute inset-0 rounded-full shadow-[inset_10px_10px_50px_rgba(255,255,255,0.05)] pointer-events-none"></div>
                                 </div>
                                 <style>{`
-                                    @keyframes spinGlobe {
-                                        from { background-position: 0 0; }
-                                        to { background-position: -200% 0; }
-                                    }
                                     .animate-ping-slow {
                                         animation: ping 3s cubic-bezier(0, 0, 0.2, 1) infinite;
                                     }
