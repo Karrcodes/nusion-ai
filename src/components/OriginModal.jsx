@@ -72,45 +72,37 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                     theta: 0.3,
                     dark: 1,
                     diffuse: 1.2,
-                    globe = createGlobe(canvasRef.current, {
-                        devicePixelRatio: 2,
-                        width: width * 2,
-                        height: width * 2,
-                        phi: basePhi + 0.5,
-                        theta: 0.3,
-                        dark: 1,
-                        diffuse: 1.2,
-                        mapSamples: 25000, // Significantly increased
-                        mapBrightness: 12, // High brightness for visibility
-                        baseColor: [0.3, 0.3, 0.3], // Lighter grey base
-                        markerColor: [0.9, 0.8, 0.5],
-                        glowColor: [0.15, 0.15, 0.15],
-                        markers: [
-                            { location: [baseTheta * (180 / Math.PI) - 90, basePhi * (180 / Math.PI)], size: 0.1 }
-                        ],
-                        onRender: (state) => {
-                            const currentProgress = progressRef.current || 0;
+                    mapSamples: 25000,    // High visibility
+                    mapBrightness: 12,    // Bright dots
+                    baseColor: [0.3, 0.3, 0.3], // Visible base
+                    markerColor: [0.9, 0.8, 0.5],
+                    glowColor: [0.15, 0.15, 0.15],
+                    markers: [
+                        { location: [baseTheta * (180 / Math.PI) - 90, basePhi * (180 / Math.PI)], size: 0.1 }
+                    ],
+                    onRender: (state) => {
+                        const currentProgress = progressRef.current || 0;
 
-                            const targetPhi = (basePhi + 0.5) - (currentProgress * 2);
-                            const targetTheta = 0.3 + (currentProgress * 0.5);
+                        const targetPhi = (basePhi + 0.5) - (currentProgress * 2);
+                        const targetTheta = 0.3 + (currentProgress * 0.5);
 
-                            // Linear Interpolation for Rotation
-                            state.phi += (targetPhi - state.phi) * 0.08;
-                            state.theta += (targetTheta - state.theta) * 0.08;
+                        // Linear Interpolation for Rotation
+                        state.phi += (targetPhi - state.phi) * 0.08;
+                        state.theta += (targetTheta - state.theta) * 0.08;
 
-                            // Constant Drift
-                            state.phi += 0.001;
-                        }
-                    });
-                }, 100);
-            }
+                        // Constant Drift
+                        state.phi += 0.001;
+                    }
+                });
+            }, 100);
+        }
 
         return () => {
-                if (globe) globe.destroy();
-                if (initTimer) clearTimeout(initTimer);
-                if (onResize) window.removeEventListener('resize', onResize);
-            };
-        }, [isVisible, basePhi, baseTheta]);
+            if (globe) globe.destroy();
+            if (initTimer) clearTimeout(initTimer);
+            if (onResize) window.removeEventListener('resize', onResize);
+        };
+    }, [isVisible, basePhi, baseTheta]);
 
     // Handle Scroll on Main Container
     const handleScroll = (e) => {
