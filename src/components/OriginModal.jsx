@@ -4,7 +4,7 @@ import createGlobe from 'cobe';
 const OriginModal = ({ isOpen, onClose, course }) => {
     const [isVisible, setIsVisible] = useState(false);
     const canvasRef = useRef();
-    const scrollRef = useRef(null); // Now points to the main container
+    const scrollRef = useRef(null);
     const [scrollProgress, setScrollProgress] = useState(0);
 
     // Derived Coordinates
@@ -39,58 +39,80 @@ const OriginModal = ({ isOpen, onClose, course }) => {
     }, [scrollProgress]);
 
     // Initialize Globe
+    // RESTORED: Safety delay and resize listener to ensure rendering
     useEffect(() => {
         let globe;
+        let onResize;
+        let initTimer;
 
-        if (isVisible && canvasRef.current) {
-            let width = canvasRef.current.clientWidth || 600;
+        if (isVisible) {
+            // 100ms Delay to allow transition to settle and canvas to mount
+            initTimer = setTimeout(() => {
+                if (!canvasRef.current) return;
 
-            globe = createGlobe(canvasRef.current, {
-                devicePixelRatio: 2,
-                width: width * 2,
-                height: width * 2,
-                phi: basePhi + 0.5,
-                theta: 0.3,
-                dark: 1,
-                diffuse: 1.2,
-                mapSamples: 16000,
-                mapBrightness: 6,
-                baseColor: [0.05, 0.05, 0.05],
-                markerColor: [0.83, 0.68, 0.21],
-                glowColor: [0.1, 0.1, 0.1],
-                markers: [
-                    { location: [baseTheta * (180 / Math.PI) - 90, basePhi * (180 / Math.PI)], size: 0.1 }
-                ],
-                onRender: (state) => {
-                    const currentProgress = progressRef.current || 0;
+                let width = 0;
 
-                    const targetPhi = (basePhi + 0.5) - (currentProgress * 2);
-                    const targetTheta = 0.3 + (currentProgress * 0.5);
-                    const targetSize = width * 2 * (1 + (currentProgress * 2));
+                // Dynamic Resize Handler
+                onResize = () => {
+                    if (canvasRef.current) {
+                        width = canvasRef.current.offsetWidth || 600;
+                    }
+                };
+                window.addEventListener('resize', onResize);
+                onResize(); // Initial measurement
 
-                    state.phi += (targetPhi - state.phi) * 0.08;
-                    state.theta += (targetTheta - state.theta) * 0.08;
+                globe = createGlobe(canvasRef.current, {
+                    devicePixelRatio: 2,
+                    width: width * 2,
+                    height: width * 2,
+                    phi: basePhi + 0.5,
+                    theta: 0.3,
+                    dark: 1,
+                    diffuse: 1.2,
+                    mapSamples: 16000,
+                    mapBrightness: 6,
+                    baseColor: [0.05, 0.05, 0.05],
+                    markerColor: [0.83, 0.68, 0.21],
+                    glowColor: [0.1, 0.1, 0.1],
+                    markers: [
+                        { location: [baseTheta * (180 / Math.PI) - 90, basePhi * (180 / Math.PI)], size: 0.1 }
+                    ],
+                    onRender: (state) => {
+                        const currentProgress = progressRef.current || 0;
 
-                    const currentSize = state.width;
-                    const newSize = currentSize + (targetSize - currentSize) * 0.08;
-                    state.width = newSize;
-                    state.height = newSize;
+                        const targetPhi = (basePhi + 0.5) - (currentProgress * 2);
+                        const targetTheta = 0.3 + (currentProgress * 0.5);
+                        const targetSize = width * 2 * (1 + (currentProgress * 2));
 
-                    state.phi += 0.001;
-                }
-            });
+                        state.phi += (targetPhi - state.phi) * 0.08;
+                        state.theta += (targetTheta - state.theta) * 0.08;
+
+                        const currentSize = state.width;
+                        const newSize = currentSize + (targetSize - currentSize) * 0.08;
+                        state.width = newSize;
+                        state.height = newSize;
+
+                        state.phi += 0.001;
+                    }
+                });
+            }, 100);
         }
 
         return () => {
             if (globe) globe.destroy();
+            if (initTimer) clearTimeout(initTimer);
+            if (onResize) window.removeEventListener('resize', onResize);
         };
     }, [isVisible, basePhi, baseTheta]);
 
     // Handle Scroll on Main Container
     const handleScroll = (e) => {
         const { scrollTop, scrollHeight, clientHeight } = e.target;
-        const progress = scrollTop / (scrollHeight - clientHeight);
-        setScrollProgress(progress);
+        // Guard against divide by zero if no scroll exists yet
+        if (scrollHeight - clientHeight > 0) {
+            const progress = scrollTop / (scrollHeight - clientHeight);
+            setScrollProgress(progress);
+        }
     };
 
     if (!isVisible && !isOpen) return null;
@@ -105,7 +127,6 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                 className={`relative w-full max-w-5xl h-[85vh] bg-[#050505] border border-white/10 rounded-none md:rounded-3xl shadow-[0_0_100px_rgba(212,175,55,0.1)] transition-all duration-700 transform ${isOpen ? 'scale-100 translate-y-0' : 'scale-95 translate-y-10'
                     }`}
                 onClick={(e) => e.stopPropagation()}
-            // MOVED: Scroll Handling to Main Container
             >
                 {/* Scrollable Container Wrapper */}
                 <div
