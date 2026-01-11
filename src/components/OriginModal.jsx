@@ -137,28 +137,29 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                                 style={{ transform: `translateY(${parallaxOffset}px) scale(${zoomScale})` }}
                             >
                                 {/* THE GLOBE CONTAINER */}
-                                <div className="relative w-[500px] h-[500px] rounded-full overflow-hidden shadow-[inset_-60px_-20px_100px_rgba(0,0,0,0.95),_0_0_50px_rgba(0,0,0,0.5)] bg-blue-900">
+                                <div className="relative w-[500px] h-[500px] rounded-full overflow-hidden shadow-[inset_-60px_-20px_100px_rgba(0,0,0,0.95),_0_0_50px_rgba(0,0,0,0.5)] bg-black">
 
                                     {/* MAP LAYER: Spinning Background Image */}
-                                    {/* FIXED: Switched to reliable GitHub Raw URL for texture. Wikipedia hotlinking was likely blocked. */}
+                                    {/* PIVOT: 'Black Marble' (Earth Lights) Texture. 
+                                        This replicates the "Black Globe with Dots" aesthetic the user wants,
+                                        but uses a reliable image instead of the bugged WebGL renderer. */}
                                     <div
-                                        className="absolute inset-0 w-[200%] h-full bg-[url('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_atmos_2048.jpg')] bg-repeat-x opacity-100"
+                                        className="absolute inset-0 w-[200%] h-full bg-[url('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_lights_2048.png')] bg-repeat-x opacity-100 brightness-150 grayscale"
                                         style={{
                                             animation: 'spinGlobe 60s linear infinite',
-                                            backgroundSize: 'auto 100%' // Crucial for 2:1 aspect ratio on 1:1 container
+                                            backgroundSize: 'auto 100%'
                                         }}
                                     ></div>
 
-                                    {/* STATIC MARKER: Since the map moves, the marker needs to move with it or be 'on' the map? 
-                                        In a 2D Background Animation, placing a marker on specific lat/lon is hard because the map slides.
-                                        Pivot: Just show a "Satellite Scan" line or a fixed "Target" reticle over the globe? 
-                                        OR, just let the globe spin for ambience. The User wants to SEE the map.
-                                        Let's add a "Targeting Scanner" effect instead of a specific pin, which feels more sci-fi/satellite.
-                                    */}
-                                    <div className="absolute inset-0 flex items-center justify-center opacity-30">
-                                        <div className="w-[500px] h-[1px] bg-red-500/50 absolute top-[50%]"></div>
-                                        <div className="h-[500px] w-[1px] bg-red-500/50 absolute left-[50%]"></div>
-                                        <div className="w-[300px] h-[300px] border border-red-500/30 rounded-full animate-ping-slow"></div>
+                                    {/* SCANNER UI: Minimalist Crosshair */}
+                                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                        {/* Subtle Grid Lines */}
+                                        <div className="w-full h-[1px] bg-white/10 absolute top-[50%]"></div>
+                                        <div className="h-full w-[1px] bg-white/10 absolute left-[50%]"></div>
+
+                                        {/* Pulsing Target Ring */}
+                                        <div className="w-[300px] h-[300px] border border-[var(--color-gold)]/30 rounded-full animate-ping-slow opacity-50"></div>
+                                        <div className="w-[10px] h-[10px] bg-[var(--color-gold)] rounded-full shadow-[0_0_20px_var(--color-gold)]"></div>
                                     </div>
 
                                     {/* ATMOSPHERE GLOW */}
