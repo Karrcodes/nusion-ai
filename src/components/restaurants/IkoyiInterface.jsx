@@ -123,25 +123,32 @@ function IkoyiInterface({ user }) {
             setLoadingPhase('visualising');
             console.log('🎨 Starting image generation for', recommendation.courses.length, 'courses');
 
-            const coursesWithImages = await Promise.all(
-                recommendation.courses.map(async (course, index) => {
-                    try {
-                        // Increase stagger to 2.5s to respect Rate Limits on Flux API (Free Tier)
-                        // This prevents the "hit limit" error on the 3rd image
-                        await new Promise(r => setTimeout(r, index * 2500));
+            // SEQUENTIAL GENERATION LOOPS (Strict Rate Limit Protection)
+            // We use a simple for-loop instead of Promise.all to ensure one finishes before the next starts.
 
-                        console.log(`🖼️ Generating image ${index + 1}/${recommendation.courses.length} for:`, course.name);
-                        const imageUrl = await generateDishImage(course.description);
-                        console.log(`✅ Image generated for ${course.name}:`, imageUrl);
-                        // Incremental Progress Bar update
-                        setProgress(prev => Math.min(prev + (60 / recommendation.courses.length), 95));
-                        return { ...course, image: imageUrl };
-                    } catch (err) {
-                        console.error(`❌ Failed to generate image for ${course.name}`, err);
-                        return { ...course, image: null };
+            const coursesWithImages = [];
+
+            for (let i = 0; i < recommendation.courses.length; i++) {
+                const course = recommendation.courses[i];
+                console.log(`🖼️ Generating image ${i + 1}/${recommendation.courses.length} for:`, course.name);
+
+                try {
+                    // Stagger: Wait 2.5s before making the request (except potentially the first one, but consistency is safer)
+                    if (i > 0) {
+                        await new Promise(r => setTimeout(r, 2500));
                     }
-                })
-            );
+
+                    const imageUrl = await generateDishImage(course.description);
+                    console.log(`✅ Image generated for ${course.name}:`, imageUrl);
+                    coursesWithImages.push({ ...course, image: imageUrl });
+
+                    // Update progress
+                    setProgress(prev => Math.min(prev + (60 / recommendation.courses.length), 95));
+                } catch (err) {
+                    console.error(`❌ Failed to generate image for ${course.name}`, err);
+                    coursesWithImages.push({ ...course, image: null });
+                }
+            }
 
             console.log('🎨 Image generation complete. Courses with images:', coursesWithImages);
 

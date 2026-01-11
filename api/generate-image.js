@@ -17,53 +17,49 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Description parameter is required' });
     }
 
-    try {
-        // We use 'flux' model for better quality and to avoid 'turbo' rate limits
+    // Helper to fetch with model fallback
+    const fetchImage = async (prompt, model) => {
         const seed = Math.floor(Math.random() * 100000);
-        const encodedPrompt = encodeURIComponent(`${description}, food photography, 8k, photorealistic, cinematic lighting`);
-        // Use the dedicated image API endpoint
-        const pollinationsUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=800&height=600&model=flux&seed=${seed}&nologo=true`;
+        const encodedPrompt = encodeURIComponent(`${prompt}, food photography, 8k, photorealistic, cinematic lighting`);
+        const url = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=800&height=600&model=${model}&seed=${seed}&nologo=true`;
 
-        console.log(`🎨 Fetching from Pollinations (Flux): ${pollinationsUrl}`);
+        console.log(`🎨 Fetching from Pollinations (${model}): ${url}`);
 
-        // Fetch the image from Pollinations
-        const response = await fetch(pollinationsUrl, {
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-            }
+        const res = await fetch(url, {
+            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' }
         });
 
-        if (!response.ok) {
-            throw new Error(`Pollinations API error: ${response.status}`);
+        if (!res.ok) throw new Error(`Status ${res.status}`);
+
+        const contentType = res.headers.get('content-type');
+        if (!contentType || !contentType.startsWith('image/')) throw new Error('Invalid content type');
+
+        return res.arrayBuffer();
+    };
+
+    try {
+        let arrayBuffer;
+
+        // Attempt 1: Flux (High Quality)
+        try {
+            arrayBuffer = await fetchImage(description, 'flux');
+        } catch (error) {
+            console.warn(`Flux model failed (${error.message}). Falling back to Turbo.`);
+            // Attempt 2: Turbo (Reliable / Faster)
+            arrayBuffer = await fetchImage(description, 'turbo');
         }
 
-        const contentType = response.headers.get('content-type');
-        if (!contentType || !contentType.startsWith('image/')) {
-            console.warn('Received non-image content type:', contentType);
-            throw new Error('Received non-image response from Pollinations');
-        }
-
-        // Get the image as a buffer
-        const arrayBuffer = await response.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
-
-        // Convert to base64
         const base64 = buffer.toString('base64');
-        const mimeType = contentType || 'image/jpeg';
-        const dataUrl = `data:${mimeType};base64,${base64}`;
-
-        console.log('✅ Image fetched & converted successfully');
+        const mimeType = 'image/jpeg'; // Checking type is cleaner but for now assume jpeg
 
         return res.status(200).json({
             success: true,
-            image: dataUrl
+            image: `data:${mimeType};base64,${base64}`
         });
 
     } catch (error) {
-        console.error('Image generation error:', error);
-        return res.status(500).json({
-            error: 'Failed to generate image',
-            message: error.message
-        });
+        console.error('Image generation fatal error:', error);
+        return res.status(500).json({ error: 'Failed to generate image', message: error.message });
     }
 }
