@@ -1,17 +1,17 @@
 import { useEffect, useState, useRef } from 'react';
-import createGlobe from 'cobe';
+// import createGlobe from 'cobe'; // Removed due to rendering incompatibility
 
 const OriginModal = ({ isOpen, onClose, course }) => {
     const [isVisible, setIsVisible] = useState(false);
-    const canvasRef = useRef();
-    const scrollRef = useRef(null); // Now points to the main container
+    const scrollRef = useRef(null);
     const [scrollProgress, setScrollProgress] = useState(0);
 
-    // Derived Coordinates
-    const targetX = course.origin?.coordinates?.x || 50;
-    const targetY = course.origin?.coordinates?.y || 50;
-    const basePhi = (targetX / 100) * Math.PI * 2;
-    const baseTheta = (targetY / 100) * Math.PI;
+    // Derived Coordinates for 2D Map (Approximate)
+    // Map is Equirectangular. 
+    // X (0-100) -> Left% (0-100)
+    // Y (0-100) -> Top% (0-100)
+    const markerLeft = `${course.origin?.coordinates?.y || 50}%`;
+    const markerTop = `${100 - (course.origin?.coordinates?.x || 50)}%`; // Invert Lat for Top
 
     useEffect(() => {
         if (isOpen) {
@@ -26,79 +26,7 @@ const OriginModal = ({ isOpen, onClose, course }) => {
         }
     }, [isOpen]);
 
-    useEffect(() => {
-        return () => {
-            document.body.style.overflow = 'auto';
-            document.body.style.touchAction = 'auto';
-        };
-    }, []);
-
-    // Scroll Progress for Rotation Logic
-    const progressRef = useRef(0);
-    useEffect(() => {
-        progressRef.current = scrollProgress;
-    }, [scrollProgress]);
-
-    // Initialize Globe
-    // FIXED: Removed width/height resizing from loop (caused crash). Using CSS for zoom.
-    useEffect(() => {
-        let globe;
-        let onResize;
-        let initTimer;
-
-        if (isVisible) {
-            // 100ms Delay to allow transition to settle and canvas to mount
-            initTimer = setTimeout(() => {
-                if (!canvasRef.current) return;
-
-                let width = 0;
-
-                // Dynamic Resize Handler
-                onResize = () => {
-                    if (canvasRef.current) {
-                        width = canvasRef.current.offsetWidth || 600;
-                    }
-                };
-                window.addEventListener('resize', onResize);
-                onResize(); // Initial measurement
-
-                if (width === 0) width = 600;
-
-                globe = createGlobe(canvasRef.current, {
-                    devicePixelRatio: 1, // FIXED: Force 1 to rule out scaling bugs
-                    width: 1000,         // FIXED: Force valid size
-                    height: 1000,
-                    phi: 0,
-                    theta: 0.3,
-                    dark: 0,
-                    diffuse: 1.2,
-                    mapSamples: 12000,
-                    mapBrightness: 6,
-                    baseColor: [0, 0, 1],     // Blue Base
-                    markerColor: [1, 0, 0],   // Red Markers
-                    glowColor: [0, 1, 0],     // Green Glow
-                    opacity: 1,
-                    markers: [
-                        { location: [10, 10], size: 1 },    // MASSIVE TEST BLOB 1
-                        { location: [100, 10], size: 1 },   // MASSIVE TEST BLOB 2
-                        { location: [baseTheta * (180 / Math.PI) - 90, basePhi * (180 / Math.PI)], size: 0.5 } // Bigger Course Marker
-                    ],
-                    onRender: (state) => {
-                        state.phi += 0.01;
-                        state.theta = 0.3;
-                    }
-                });
-            }, 100);
-        }
-
-        return () => {
-            if (globe) globe.destroy();
-            if (initTimer) clearTimeout(initTimer);
-            if (onResize) window.removeEventListener('resize', onResize);
-        };
-    }, [isVisible, basePhi, baseTheta]);
-
-    // Handle Scroll on Main Container
+    // Handle Scroll
     const handleScroll = (e) => {
         const { scrollTop, scrollHeight, clientHeight } = e.target;
         if (scrollHeight - clientHeight > 0) {
@@ -107,26 +35,9 @@ const OriginModal = ({ isOpen, onClose, course }) => {
         }
     };
 
-    // Calculate Zoom & Parallax
-    // Zoom: 1 -> 1.5x (Subtler)
-    const zoomScale = 1 + (scrollProgress * 1.5);
-    // Parallax: Globe moves UP slower than content. Content moves naturally. 
-    // We add a slight translation to the globe to make it feel detached.
-    // Actually, "Sticky" keeps it fixed. "Scrolls slower" means it DOES move up, but lags behind.
-    // If we keep it sticky, it moves 0. If we unsticky it, it moves 1:1.
-    // To make it move "slower", we can use sticky + translateY(down).
-    // Or just use fixed positioning with top offset?
-    // User wants: "Globe scrolls slower".
-    // Implementation: Sticky top-0 + translateY(progress * 100px). As you scroll down, globe slides down slightly (counteracting scrolldown), effectively moving slower relative to viewport? 
-    // Sticky means it doesn't move up at all.
-    // Let's implement a parallax offset: Sticky + translateY(-progress * 20%).
-    const parallaxOffset = scrollProgress * 150; // Moves down 150px as you scroll 100%
-
-    // Text Parallax: Text Content moves slightly faster/slower? 
-    // Usually text is the reference. Let's just make the globe sticky and add the slight downward drift.
-    // IMPLEMENTATION NOTE: 
-    // "Smoothness" in parallax comes from 1:1 sync with scroll. CSS transitions cause lag/floatiness.
-    // We remove the transition on the parallax transform to make it "lock" to the finger/mouse.
+    // Parallax: Move globe down slightly as we scroll
+    const parallaxOffset = scrollProgress * 150;
+    const zoomScale = 1 + (scrollProgress * 0.2); // Subtle zoom
 
     if (!isVisible && !isOpen) return null;
 
@@ -146,7 +57,7 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                     className="absolute inset-0 overflow-y-auto no-scrollbar scroll-smooth"
                     onScroll={handleScroll}
                 >
-                    {/* Background Noise with Radial Gradient */}
+                    {/* Background Noise used elsewhere */}
                     <div className="fixed inset-0 opacity-[0.05] pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
                     <div className="fixed inset-0 bg-[radial-gradient(circle_at_right,_#1a1a1a_0%,_#000_100%)] opacity-50 z-0"></div>
 
@@ -160,8 +71,7 @@ const OriginModal = ({ isOpen, onClose, course }) => {
 
                     <div className="relative z-10 w-full min-h-full flex flex-col md:flex-row">
 
-                        {/* Left Panel: Content (Flows naturally) */}
-                        {/* GRADIENT FIX: Widened to 60% and used via-black/40 for a much softer, longer fade. */}
+                        {/* Left Panel: Content */}
                         <div className="w-full md:w-[60%] relative z-20 pointer-events-none pt-10 md:pt-16 pb-20 pl-10 md:pl-16 pr-10 md:pr-0 bg-gradient-to-r from-black via-black/40 to-transparent">
                             <div className="pointer-events-auto max-w-xl">
                                 <span className="text-[var(--color-gold)] font-cinzel text-[10px] tracking-[0.4em] mb-8 block animate-[fadeIn_0.8s_ease-out] border-b border-[var(--color-gold)]/30 pb-4 w-max">
@@ -220,34 +130,51 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                             </div>
                         </div>
 
-                        {/* Right Panel: COBE Globe (Sticky) */}
-                        {/* 
-                            Flexbox Note: self-start ensures sticky works inside flex container.
-                            Sticky top-0 keeps it in view.
-                            translate-y uses parallaxOffset to drift it down slowly.
-                            -ml-40 (increased) pulls the globe deeper UNDER the widened gradient.
-                        */}
-                        <div className="w-full md:w-[60%] h-[40vh] md:h-auto md:sticky md:top-0 md:self-start z-0 flex items-center justify-center overflow-hidden md:-ml-40">
+                        {/* Right Panel: CSS TEXTURE GLOBE */}
+                        <div className="w-full md:w-[60%] h-[50vh] md:h-auto md:sticky md:top-0 md:self-start z-0 flex items-center justify-center overflow-hidden md:-ml-40 mt-10 md:mt-0">
                             <div
-                                className="relative w-full h-[600px] flex items-center justify-center md:top-0"
-                                style={{ transform: `translateY(${parallaxOffset}px)` }} // Instant update (No Transition)
+                                className="relative flex items-center justify-center md:top-0"
+                                style={{ transform: `translateY(${parallaxOffset}px) scale(${zoomScale})` }}
                             >
-                                {/* CSS TRANSFORM ZOOM */}
-                                <div style={{
-                                    transform: `scale(${zoomScale})`,
-                                    transition: 'transform 0.5s ease-out', // Keep zoom smooth (it's an effect, not a scroll response)
-                                    width: 600,
-                                    height: 600,
-                                    maxWidth: '100%'
-                                }}>
-                                    <canvas
-                                        ref={canvasRef}
-                                        style={{ width: '100%', height: '100%', aspectRatio: '1' }}
-                                        className="opacity-100 transition-opacity duration-1000 ease-in"
-                                    />
-                                </div>
+                                {/* THE GLOBE CONTAINER */}
+                                <div className="relative w-[500px] h-[500px] rounded-full overflow-hidden shadow-[inset_-60px_-20px_100px_rgba(0,0,0,0.95),_0_0_50px_rgba(0,0,0,0.5)] bg-black">
 
-                                {/* Overlay for Text Contrast when overlapping */}
+                                    {/* MAP LAYER: Spinning Background Image */}
+                                    {/* High-Contrast "Dark Mode" Earth Map styled via CSS Filters on a standard map */}
+                                    <div
+                                        className="absolute inset-0 w-[200%] h-full bg-[url('https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/Earthmap1000x500compac.jpg/1000px-Earthmap1000x500compac.jpg')] bg-cover bg-repeat-x opacity-80 mix-blend-screen grayscale contrast-125 brightness-75"
+                                        style={{
+                                            animation: 'spinGlobe 60s linear infinite',
+                                            backgroundSize: 'auto 100%' // Cover height, repeat width
+                                        }}
+                                    ></div>
+
+                                    {/* STATIC MARKER: Since the map moves, the marker needs to move with it or be 'on' the map? 
+                                        In a 2D Background Animation, placing a marker on specific lat/lon is hard because the map slides.
+                                        Pivot: Just show a "Satellite Scan" line or a fixed "Target" reticle over the globe? 
+                                        OR, just let the globe spin for ambience. The User wants to SEE the map.
+                                        Let's add a "Targeting Scanner" effect instead of a specific pin, which feels more sci-fi/satellite.
+                                    */}
+                                    <div className="absolute inset-0 flex items-center justify-center opacity-30">
+                                        <div className="w-[500px] h-[1px] bg-red-500/50 absolute top-[50%]"></div>
+                                        <div className="h-[500px] w-[1px] bg-red-500/50 absolute left-[50%]"></div>
+                                        <div className="w-[300px] h-[300px] border border-red-500/30 rounded-full animate-ping-slow"></div>
+                                    </div>
+
+                                    {/* ATMOSPHERE GLOW */}
+                                    <div className="absolute inset-0 rounded-full shadow-[inset_10px_10px_50px_rgba(255,255,255,0.05)] pointer-events-none"></div>
+                                </div>
+                                <style jsx>{`
+                                    @keyframes spinGlobe {
+                                        from { background-position: 0 0; }
+                                        to { background-position: -200% 0; }
+                                    }
+                                    .animate-ping-slow {
+                                        animation: ping 3s cubic-bezier(0, 0, 0.2, 1) infinite;
+                                    }
+                                `}</style>
+
+                                {/* Overlay for Text Contrast */}
                                 <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-transparent pointer-events-none md:hidden"></div>
                             </div>
 
