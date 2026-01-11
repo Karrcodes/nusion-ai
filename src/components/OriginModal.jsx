@@ -167,8 +167,8 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                     <div className="relative z-10 w-full min-h-full flex flex-col md:flex-row">
 
                         {/* Left Panel: Content (Flows naturally) */}
-                        {/* GRADIENT FIX: true overlap required for fade. Gradient needs to be opaque on the left for text. */}
-                        <div className="w-full md:w-[50%] relative z-20 pointer-events-none pt-10 md:pt-16 pb-20 pl-10 md:pl-16 pr-10 md:pr-0 bg-gradient-to-r from-black via-black/90 to-transparent">
+                        {/* GRADIENT FIX: Widened to 60% and used via-black/40 for a much softer, longer fade. */}
+                        <div className="w-full md:w-[60%] relative z-20 pointer-events-none pt-10 md:pt-16 pb-20 pl-10 md:pl-16 pr-10 md:pr-0 bg-gradient-to-r from-black via-black/40 to-transparent">
                             <div className="pointer-events-auto max-w-xl">
                                 <span className="text-[var(--color-gold)] font-cinzel text-[10px] tracking-[0.4em] mb-8 block animate-[fadeIn_0.8s_ease-out] border-b border-[var(--color-gold)]/30 pb-4 w-max">
                                     LOG NO. {course.id?.replace(/\D/g, '') || '01'}
@@ -231,9 +231,9 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                             Flexbox Note: self-start ensures sticky works inside flex container.
                             Sticky top-0 keeps it in view.
                             translate-y uses parallaxOffset to drift it down slowly.
-                            -ml-32 pulls the globe UNDER the left panel's transparent gradient edge.
+                            -ml-40 (increased) pulls the globe deeper UNDER the widened gradient.
                         */}
-                        <div className="w-full md:w-[60%] h-[40vh] md:h-auto md:sticky md:top-0 md:self-start z-0 flex items-center justify-center overflow-hidden md:-ml-32">
+                        <div className="w-full md:w-[60%] h-[40vh] md:h-auto md:sticky md:top-0 md:self-start z-0 flex items-center justify-center overflow-hidden md:-ml-40">
                             <div
                                 className="relative w-full h-[600px] flex items-center justify-center md:top-0"
                                 style={{ transform: `translateY(${parallaxOffset}px)` }} // Instant update (No Transition)
