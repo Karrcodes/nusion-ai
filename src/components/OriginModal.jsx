@@ -69,31 +69,25 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                     width: width * 2,
                     height: width * 2,
                     phi: 0,
-                    theta: 1.35,
-                    dark: 0, // Light Mode
+                    theta: 0.3, // Back to comfortable angle
+                    dark: 1,
                     diffuse: 1.2,
-                    mapSamples: 20000,
+                    mapSamples: 25000,
                     mapBrightness: 6,
-                    baseColor: [1, 1, 1],     // PURE WHITE BASE (Diagnostic)
-                    markerColor: [1, 0, 0],   // RED MARKERS
-                    glowColor: [0.8, 0.8, 0.8],
+                    baseColor: [0.1, 0.1, 0.1],     // Dark Base
+                    markerColor: [1, 1, 1],         // White Markers
+                    glowColor: [1, 1, 1],
                     opacity: 1,
                     markers: [
                         { location: [baseTheta * (180 / Math.PI) - 90, basePhi * (180 / Math.PI)], size: 0.1 }
                     ],
                     onRender: (state) => {
-                        const currentProgress = progressRef.current || 0;
+                        // FIXED: Removed Scroll-Lock Lerp that was freezing the globe on the ocean.
+                        // Now purely spinning to verify map visibility.
+                        state.phi += 0.005;
 
-                        // Rotations
-                        const targetPhi = (basePhi + 0.5) - (currentProgress * 2);
-                        const targetTheta = 0.3 + (currentProgress * 0.5);
-
-                        // Lerp
-                        state.phi += (targetPhi - state.phi) * 0.08;
-                        state.theta += (targetTheta - state.theta) * 0.08;
-
-                        // Auto-spin
-                        state.phi += 0.003;
+                        // Keep Theta stable
+                        state.theta = 1.35; // Equator view
                     }
                 });
             }, 100);
