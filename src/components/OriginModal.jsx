@@ -137,15 +137,15 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                                 style={{ transform: `translateY(${parallaxOffset}px) scale(${zoomScale})` }}
                             >
                                 {/* THE GLOBE CONTAINER */}
-                                <div className="relative w-[500px] h-[500px] rounded-full overflow-hidden shadow-[inset_-60px_-20px_100px_rgba(0,0,0,0.95),_0_0_50px_rgba(0,0,0,0.5)] bg-black">
+                                <div className="relative w-[500px] h-[500px] rounded-full overflow-hidden shadow-[inset_-60px_-20px_100px_rgba(0,0,0,0.95),_0_0_50px_rgba(0,0,0,0.5)] bg-blue-900">
 
                                     {/* MAP LAYER: Spinning Background Image */}
-                                    {/* High-Contrast "Dark Mode" Earth Map styled via CSS Filters on a standard map */}
+                                    {/* FIXED: Removed blend modes that were hiding the map. Added Fallback Blue. */}
                                     <div
-                                        className="absolute inset-0 w-[200%] h-full bg-[url('https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/Earthmap1000x500compac.jpg/1000px-Earthmap1000x500compac.jpg')] bg-cover bg-repeat-x opacity-80 mix-blend-screen grayscale contrast-125 brightness-75"
+                                        className="absolute inset-0 w-[200%] h-full bg-[url('https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/Earthmap1000x500compac.jpg/1000px-Earthmap1000x500compac.jpg')] bg-cover bg-repeat-x opacity-100"
                                         style={{
                                             animation: 'spinGlobe 60s linear infinite',
-                                            backgroundSize: 'auto 100%' // Cover height, repeat width
+                                            backgroundSize: 'auto 100%'
                                         }}
                                     ></div>
 
