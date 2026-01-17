@@ -12,7 +12,7 @@ const OriginModal = ({ isOpen, onClose, course }) => {
         let animationFrameId;
         let position = 0;
         const animate = () => {
-            position -= 0.05; // Speed Control (Negative = Correct Spin Direction)
+            position -= 0.5; // FIXED: Increased speed (was 0.05) to ensure visible movement
             if (mapRef.current) {
                 mapRef.current.style.backgroundPosition = `${position}% 0`;
             }
@@ -159,17 +159,13 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                                 <div className="relative w-[500px] h-[500px] rounded-full overflow-hidden shadow-[inset_-60px_-20px_100px_rgba(0,0,0,0.95),_0_0_50px_rgba(0,0,0,0.5)] bg-black">
 
                                     {/* MAP LAYER: Spinning Background Image */}
-                                    {/* PIVOT: CSS-Generated Holographic Grid. 
-                                        Eliminates image loading failures. Guarantees visible rotation. */}
+                                    {/* RESTORED: Black Marble Texture (User Preference) + Faster Spin */}
                                     <div
                                         ref={mapRef}
-                                        className="absolute inset-0 w-full h-full opacity-60"
+                                        className="absolute inset-0 w-full h-full bg-repeat-x opacity-100 brightness-150 grayscale"
                                         style={{
-                                            backgroundImage: `
-                                                repeating-linear-gradient(90deg, transparent 0, transparent 49px, rgba(212, 175, 55, 0.2) 50px),
-                                                repeating-linear-gradient(0deg, transparent 0, transparent 49px, rgba(212, 175, 55, 0.1) 50px)
-                                            `,
-                                            backgroundSize: '200% 100%, 100% 100%'
+                                            backgroundImage: "url('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_lights_2048.png')",
+                                            backgroundSize: '200% 100%'
                                         }}
                                     ></div>
 
