@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
-// import createGlobe from 'cobe'; // Removed due to rendering incompatibility
+import { Globe3D } from './Globe3D';
+import { X } from 'lucide-react';
 
 const OriginModal = ({ isOpen, onClose, course }) => {
     const [isVisible, setIsVisible] = useState(false);
@@ -136,51 +137,18 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                                 style={{ transform: `translateY(${parallaxOffset}px) scale(${zoomScale})` }}
                             >
                                 {/* THE GLOBE CONTAINER */}
-                                <div className="relative w-[500px] h-[500px] rounded-full overflow-hidden shadow-[inset_-60px_-20px_100px_rgba(0,0,0,0.95),_0_0_50px_rgba(0,0,0,0.5)] bg-black group">
+                                <div className="relative w-[500px] h-[500px] rounded-full overflow-hidden shadow-[inset_-60px_-20px_100px_rgba(0,0,0,0.95),_0_0_50px_rgba(0,0,0,0.5)] bg-black group flex items-center justify-center">
 
-                                    {/* DEBUG: Calibration Controls (Visible on Hover) */}
-                                    <div className="absolute top-4 left-4 z-50 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/80 p-3 rounded-lg border border-white/20 backdrop-blur-md">
-                                        <div className="text-[10px] font-mono text-white mb-2 font-bold tracking-widest text-center">ALIGN MAP</div>
-                                        <div className="flex gap-2 justify-center">
-                                            <button onClick={(e) => { e.stopPropagation(); setCalibration(p => ({ ...p, y: p.y - 1 })) }} className="w-8 h-8 flex items-center justify-center bg-white/10 hover:bg-white/20 text-white rounded-full transition-colors">⬆</button>
-                                        </div>
-                                        <div className="flex gap-2 justify-center">
-                                            <button onClick={(e) => { e.stopPropagation(); setCalibration(p => ({ ...p, x: p.x - 1 })) }} className="w-8 h-8 flex items-center justify-center bg-white/10 hover:bg-white/20 text-white rounded-full transition-colors">⬅</button>
-                                            <button onClick={(e) => { e.stopPropagation(); setCalibration(p => ({ ...p, x: p.x + 1 })) }} className="w-8 h-8 flex items-center justify-center bg-white/10 hover:bg-white/20 text-white rounded-full transition-colors">➡</button>
-                                        </div>
-                                        <div className="flex gap-2 justify-center">
-                                            <button onClick={(e) => { e.stopPropagation(); setCalibration(p => ({ ...p, y: p.y + 1 })) }} className="w-8 h-8 flex items-center justify-center bg-white/10 hover:bg-white/20 text-white rounded-full transition-colors">⬇</button>
-                                        </div>
-                                        <div className="text-[9px] font-mono text-[var(--color-gold)] mt-1 text-center border-t border-white/10 pt-2">
-                                            X: {calibration.x} | Y: {calibration.y}
-                                        </div>
-                                        <div className="text-[8px] text-white/40 text-center uppercase">1 Click = 50px</div>
-                                    </div>
+                                    <Globe3D
+                                        lat={course.origin?.coordinates?.lat || 0}
+                                        lng={course.origin?.coordinates?.lng || 0}
+                                    />
 
-                                    {/* MAP LAYER */}
-                                    {/* SWITCH: Daytime Texture for clearer calibration, Standard Projection, Manual Offset enabled */}
-                                    <div
-                                        className="absolute left-0 top-0 w-[2000px] h-[1000px] bg-no-repeat opacity-100 brightness-110 contrast-125 transition-transform duration-1000 ease-out will-change-transform"
-                                        style={{
-                                            backgroundImage: "url('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_atmos_2048.jpg')",
-                                            backgroundSize: '100% 100%',
-                                            transform: `translate(${250 - (((course.origin?.coordinates?.lng || 0) + 180) / 360) * 2000 + (calibration.x * 50)
-                                                }px, ${250 - ((90 - (course.origin?.coordinates?.lat || 0)) / 180) * 1000 + (calibration.y * 50)
-                                                }px)`
-                                        }}
-                                    ></div>
-
-                                    {/* Pure CSS Continent Blobs - Removed */}
-
-                                    {/* SCANNER UI: Minimalist Crosshair */}
+                                    {/* SCANNER UI: Minimalist Crosshair Overlaid */}
                                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                        {/* Subtle Grid Lines */}
                                         <div className="w-full h-[1px] bg-white/10 absolute top-[50%]"></div>
                                         <div className="h-full w-[1px] bg-white/10 absolute left-[50%]"></div>
-
-                                        {/* Pulsing Target Ring */}
                                         <div className="w-[300px] h-[300px] border border-[var(--color-gold)]/30 rounded-full animate-ping-slow opacity-50"></div>
-                                        <div className="w-[10px] h-[10px] bg-[var(--color-gold)] rounded-full shadow-[0_0_20px_var(--color-gold)]"></div>
                                     </div>
 
                                     {/* ATMOSPHERE GLOW */}
