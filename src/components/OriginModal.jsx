@@ -5,7 +5,6 @@ const OriginModal = ({ isOpen, onClose, course }) => {
     const [isVisible, setIsVisible] = useState(false);
     const scrollRef = useRef(null);
     const [scrollProgress, setScrollProgress] = useState(0);
-    const [calibration, setCalibration] = useState({ x: 0, y: 0 }); // Added for manual map alignment
     // Derived Coordinates for 2D Map (Approximate)
     // Map is Equirectangular. 
     // X (0-100) -> Left% (0-100)
@@ -138,34 +137,16 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                                 {/* THE GLOBE CONTAINER */}
                                 <div className="relative w-[500px] h-[500px] rounded-full overflow-hidden shadow-[inset_-60px_-20px_100px_rgba(0,0,0,0.95),_0_0_50px_rgba(0,0,0,0.5)] bg-black group">
 
-                                    {/* DEBUG: Calibration Controls (Visible on Hover) */}
-                                    <div className="absolute top-4 left-4 z-50 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/80 p-2 rounded border border-white/20">
-                                        <div className="text-[10px] font-mono text-white mb-1">CALIBRATION MODE</div>
-                                        <div className="flex gap-1 justify-center">
-                                            <button onClick={(e) => { e.stopPropagation(); setCalibration(p => ({ ...p, y: p.y - 1 })) }} className="px-2 py-1 bg-white/10 hover:bg-white/20 text-white rounded">⬆</button>
-                                        </div>
-                                        <div className="flex gap-1 justify-center">
-                                            <button onClick={(e) => { e.stopPropagation(); setCalibration(p => ({ ...p, x: p.x - 1 })) }} className="px-2 py-1 bg-white/10 hover:bg-white/20 text-white rounded">⬅</button>
-                                            <button onClick={(e) => { e.stopPropagation(); setCalibration(p => ({ ...p, x: p.x + 1 })) }} className="px-2 py-1 bg-white/10 hover:bg-white/20 text-white rounded">➡</button>
-                                        </div>
-                                        <div className="flex gap-1 justify-center">
-                                            <button onClick={(e) => { e.stopPropagation(); setCalibration(p => ({ ...p, y: p.y + 1 })) }} className="px-2 py-1 bg-white/10 hover:bg-white/20 text-white rounded">⬇</button>
-                                        </div>
-                                        <div className="text-[9px] font-mono text-[var(--color-gold)] mt-1">
-                                            X: {calibration.x} | Y: {calibration.y}
-                                        </div>
-                                    </div>
-
                                     {/* MAP LAYER: Spinning Background Image */}
-                                    {/* RESTORED: Black Marble Texture (User Preference) + Faster Spin */}
+                                    {/* PIXEL-PERFECT MAPPING: Standard Equirectangular Projection */}
                                     <div
-                                        className="absolute left-0 top-0 w-[400%] h-[200%] bg-no-repeat opacity-100 brightness-150 grayscale transition-transform duration-1000 ease-out will-change-transform"
+                                        className="absolute left-0 top-0 w-[2000px] h-[1000px] bg-no-repeat opacity-100 brightness-150 grayscale transition-transform duration-1000 ease-out will-change-transform"
                                         style={{
                                             backgroundImage: "url('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_lights_2048.png')",
                                             backgroundSize: '100% 100%',
-                                            // SCIENTIFIC CENTERING (Zoomed 2x) + CALIBRATION
-                                            // Formula: Translate(Center - Target + Calibration)
-                                            transform: `translate(${12.5 - ((course.origin?.coordinates?.lng || 0) + 180) / 3.6 + calibration.x}%, ${25 - ((90 - (course.origin?.coordinates?.lat || 0)) / 1.8) + calibration.y}%)`
+                                            transform: `translate(${250 - (((course.origin?.coordinates?.lng || 0) + 180) / 360) * 2000
+                                                }px, ${250 - ((90 - (course.origin?.coordinates?.lat || 0)) / 180) * 1000
+                                                }px)`
                                         }}
                                     ></div>
 
