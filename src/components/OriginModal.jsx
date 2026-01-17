@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 const OriginModal = ({ isOpen, onClose, course }) => {
     const [isVisible, setIsVisible] = useState(false);
     const scrollRef = useRef(null);
+    const [scrollProgress, setScrollProgress] = useState(0); // RESTORED state definition
     // Derived Coordinates for 2D Map (Approximate)
     // Map is Equirectangular. 
     // X (0-100) -> Left% (0-100)
