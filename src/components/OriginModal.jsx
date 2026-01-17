@@ -4,33 +4,11 @@ import { useEffect, useState, useRef } from 'react';
 const OriginModal = ({ isOpen, onClose, course }) => {
     const [isVisible, setIsVisible] = useState(false);
     const scrollRef = useRef(null);
-    const mapRef = useRef(null); // Ref for direct DOM manipulation
-    const [scrollProgress, setScrollProgress] = useState(0);
-
-    // JS Animation Loop for Globe Rotation (Bypasses CSS Limitations)
-    useEffect(() => {
-        let animationFrameId;
-        let position = 0;
-        const animate = () => {
-            position -= 0.5; // FIXED: Increased speed (was 0.05) to ensure visible movement
-            if (mapRef.current) {
-                mapRef.current.style.backgroundPosition = `${position}% 0`;
-            }
-            animationFrameId = requestAnimationFrame(animate);
-        };
-        // Start animation only when visible to save resources
-        if (isVisible) {
-            animate();
-        }
-        return () => cancelAnimationFrame(animationFrameId);
-    }, [isVisible]);
-
     // Derived Coordinates for 2D Map (Approximate)
     // Map is Equirectangular. 
     // X (0-100) -> Left% (0-100)
     // Y (0-100) -> Top% (0-100)
-    const markerLeft = `${course.origin?.coordinates?.y || 50}%`;
-    const markerTop = `${100 - (course.origin?.coordinates?.x || 50)}%`; // Invert Lat for Top
+    // Based on data analysis: y=Longitude(X), x=Latitude(Y)
 
     useEffect(() => {
         if (isOpen) {
@@ -161,11 +139,11 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                                     {/* MAP LAYER: Spinning Background Image */}
                                     {/* RESTORED: Black Marble Texture (User Preference) + Faster Spin */}
                                     <div
-                                        ref={mapRef}
-                                        className="absolute inset-0 w-full h-full bg-repeat-x opacity-100 brightness-150 grayscale"
+                                        className="absolute left-1/2 top-1/2 w-[200%] h-full bg-no-repeat opacity-100 brightness-150 grayscale transition-transform duration-1000 ease-out will-change-transform"
                                         style={{
                                             backgroundImage: "url('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_lights_2048.png')",
-                                            backgroundSize: '200% 100%'
+                                            backgroundSize: '100% 100%',
+                                            transform: `translate(-${course.origin?.coordinates?.y || 50}%, -${course.origin?.coordinates?.x || 50}%)`
                                         }}
                                     ></div>
 
