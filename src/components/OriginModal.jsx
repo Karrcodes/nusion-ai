@@ -4,7 +4,8 @@ import { useEffect, useState, useRef } from 'react';
 const OriginModal = ({ isOpen, onClose, course }) => {
     const [isVisible, setIsVisible] = useState(false);
     const scrollRef = useRef(null);
-    const [scrollProgress, setScrollProgress] = useState(0); // RESTORED state definition
+    const [scrollProgress, setScrollProgress] = useState(0);
+    const [calibration, setCalibration] = useState({ x: 0, y: 0 }); // Added for manual map alignment
     // Derived Coordinates for 2D Map (Approximate)
     // Map is Equirectangular. 
     // X (0-100) -> Left% (0-100)
@@ -135,7 +136,25 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                                 style={{ transform: `translateY(${parallaxOffset}px) scale(${zoomScale})` }}
                             >
                                 {/* THE GLOBE CONTAINER */}
-                                <div className="relative w-[500px] h-[500px] rounded-full overflow-hidden shadow-[inset_-60px_-20px_100px_rgba(0,0,0,0.95),_0_0_50px_rgba(0,0,0,0.5)] bg-black">
+                                <div className="relative w-[500px] h-[500px] rounded-full overflow-hidden shadow-[inset_-60px_-20px_100px_rgba(0,0,0,0.95),_0_0_50px_rgba(0,0,0,0.5)] bg-black group">
+
+                                    {/* DEBUG: Calibration Controls (Visible on Hover) */}
+                                    <div className="absolute top-4 left-4 z-50 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/80 p-2 rounded border border-white/20">
+                                        <div className="text-[10px] font-mono text-white mb-1">CALIBRATION MODE</div>
+                                        <div className="flex gap-1 justify-center">
+                                            <button onClick={(e) => { e.stopPropagation(); setCalibration(p => ({ ...p, y: p.y - 1 })) }} className="px-2 py-1 bg-white/10 hover:bg-white/20 text-white rounded">⬆</button>
+                                        </div>
+                                        <div className="flex gap-1 justify-center">
+                                            <button onClick={(e) => { e.stopPropagation(); setCalibration(p => ({ ...p, x: p.x - 1 })) }} className="px-2 py-1 bg-white/10 hover:bg-white/20 text-white rounded">⬅</button>
+                                            <button onClick={(e) => { e.stopPropagation(); setCalibration(p => ({ ...p, x: p.x + 1 })) }} className="px-2 py-1 bg-white/10 hover:bg-white/20 text-white rounded">➡</button>
+                                        </div>
+                                        <div className="flex gap-1 justify-center">
+                                            <button onClick={(e) => { e.stopPropagation(); setCalibration(p => ({ ...p, y: p.y + 1 })) }} className="px-2 py-1 bg-white/10 hover:bg-white/20 text-white rounded">⬇</button>
+                                        </div>
+                                        <div className="text-[9px] font-mono text-[var(--color-gold)] mt-1">
+                                            X: {calibration.x} | Y: {calibration.y}
+                                        </div>
+                                    </div>
 
                                     {/* MAP LAYER: Spinning Background Image */}
                                     {/* RESTORED: Black Marble Texture (User Preference) + Faster Spin */}
@@ -144,23 +163,13 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                                         style={{
                                             backgroundImage: "url('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_lights_2048.png')",
                                             backgroundSize: '100% 100%',
-                                            // SCIENTIFIC CENTERING (Zoomed 2x):
-                                            // Container is 25% of Map Width (100/400) -> Center is 12.5%
-                                            // Container is 50% of Map Height (100/200) -> Center is 25%
-                                            // Formula: Translate(Center - Target)
-                                            transform: `translate(${12.5 - ((course.origin?.coordinates?.lng || 0) + 180) / 3.6}%, ${25 - ((90 - (course.origin?.coordinates?.lat || 0)) / 1.8)}%)`
+                                            // SCIENTIFIC CENTERING (Zoomed 2x) + CALIBRATION
+                                            // Formula: Translate(Center - Target + Calibration)
+                                            transform: `translate(${12.5 - ((course.origin?.coordinates?.lng || 0) + 180) / 3.6 + calibration.x}%, ${25 - ((90 - (course.origin?.coordinates?.lat || 0)) / 1.8) + calibration.y}%)`
                                         }}
                                     ></div>
 
-                                    {/* PURE CSS CONTINENT BLOBS (Abstract) */}
-                                    {/* Adding a subtle abstract noise layer to look like landmasses */}
-                                    <div
-                                        className="absolute inset-0 w-[200%] h-full opacity-30 bg-repeat-x mix-blend-overlay"
-                                        style={{
-                                            backgroundImage: `url('https://grainy-gradients.vercel.app/noise.svg')`,
-                                            animation: 'spinGlobe 40s linear infinite'
-                                        }}
-                                    ></div>
+                                    {/* Pure CSS Continent Blobs - Removed */}
 
                                     {/* SCANNER UI: Minimalist Crosshair */}
                                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -176,14 +185,6 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                                     {/* ATMOSPHERE GLOW */}
                                     <div className="absolute inset-0 rounded-full shadow-[inset_10px_10px_50px_rgba(255,255,255,0.05)] pointer-events-none"></div>
                                 </div>
-                                <style>{`
-                                    .animate-ping-slow {
-                                        animation: ping 3s cubic-bezier(0, 0, 0.2, 1) infinite;
-                                    }
-                                `}</style>
-
-                                {/* Overlay for Text Contrast */}
-                                <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-transparent pointer-events-none md:hidden"></div>
                             </div>
 
                             {/* Status Overlay */}
