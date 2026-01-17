@@ -95,10 +95,10 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                                         </p>
                                         <div className="flex items-center gap-4 mt-2">
                                             <p className="text-[var(--color-gold)] text-xs tracking-widest font-mono">
-                                                LAT {course.origin?.coordinates?.x}°
+                                                LAT {course.origin?.coordinates?.lat}°
                                             </p>
                                             <p className="text-[var(--color-gold)] text-xs tracking-widest font-mono">
-                                                LON {course.origin?.coordinates?.y}°
+                                                LON {course.origin?.coordinates?.lng}°
                                             </p>
                                         </div>
                                     </div>
@@ -144,8 +144,10 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                                         style={{
                                             backgroundImage: "url('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_lights_2048.png')",
                                             backgroundSize: '100% 100%',
-                                            // CALIBRATION: Y-8% to shift coordinates North (Data had slight Southern bias)
-                                            transform: `translate(-${course.origin?.coordinates?.x || 50}%, -${(course.origin?.coordinates?.y || 50) - 8}%)`
+                                            // SCIENTIFIC MAPPING: Equirectangular Projection
+                                            // X: (Longitude + 180) / 360 * 100%
+                                            // Y: (90 - Latitude) / 180 * 100%
+                                            transform: `translate(-${((course.origin?.coordinates?.lng || 0) + 180) / 3.6}%, -${(90 - (course.origin?.coordinates?.lat || 0)) / 1.8}%)`
                                         }}
                                     ></div>
 

@@ -1,5 +1,6 @@
 export const menuItems = [
     // --- STARTERS ---
+    // --- STARTERS ---
     {
         id: 's1',
         name: "Suya Wagyu Carpaccio",
@@ -14,7 +15,7 @@ export const menuItems = [
         originStory: "Suya is a spicy skewer that originated with the Hausa people of Northern Nigeria. It’s more than street food; it’s a communal tradition of open-fire grilling using a proprietary blend of peanuts (kulikuli) and spices like ginger and cayenne.",
         origin: {
             region: "Kano, Nigeria",
-            coordinates: { x: 54, y: 52 },
+            coordinates: { lat: 12.00, lng: 8.52 },
             ingredient: "Kulikuli (Peanut Cake)"
         }
     },
@@ -32,7 +33,7 @@ export const menuItems = [
         originStory: "Mosa are traditional Nigerian puff-puff like snacks made from over-ripe plantains, reducing food waste by turning sweetness into gold. We’ve elevated this humble street snack into a delicate tartlet form.",
         origin: {
             region: "Lagos, Nigeria",
-            coordinates: { x: 53, y: 55 },
+            coordinates: { lat: 6.45, lng: 3.40 },
             ingredient: "Plantain (Ogede)"
         }
     },
@@ -50,7 +51,7 @@ export const menuItems = [
         originStory: "Pepper soup is a medicinal staple in West Africa, often served to guests or new mothers for its healing properties. Key to its distinct aroma are indigenous spices like Calabash Nutmeg (Ehuru) and Grains of Selim (Uda).",
         origin: {
             region: "Niger Delta",
-            coordinates: { x: 54, y: 56 },
+            coordinates: { lat: 5.31, lng: 6.47 },
             ingredient: "Grains of Selim (Uda)"
         }
     },
@@ -68,7 +69,7 @@ export const menuItems = [
         originStory: "The Giant African Land Snail is a delicacy prized for its texture and iron content. While the French have Escargot, West Africans have enjoyed these 'Congo Meat' delicacies in spicy stews for centuries.",
         origin: {
             region: "Congo Basin",
-            coordinates: { x: 56, y: 60 },
+            coordinates: { lat: -1.00, lng: 20.00 },
             ingredient: "Giant African Land Snail"
         }
     },
@@ -86,7 +87,7 @@ export const menuItems = [
         originStory: "Akara is a breakfast staple made from peeled, whipped black-eyed peas. Light and fluffy, it originated with the Yoruba people and travelled across the Atlantic to Brazil, where it is known as Acarajé.",
         origin: {
             region: "Yorubaland / Bahia",
-            coordinates: { x: 53, y: 53 },
+            coordinates: { lat: 7.37, lng: 3.94 },
             ingredient: "Black-Eyed Peas"
         }
     },
@@ -106,7 +107,7 @@ export const menuItems = [
         originStory: "Jollof Rice is the heart of West African celebrations. Its origin is debated (Senegal's Thieboudienne is the likely ancestor), but its smoky tomato base is a unifying flavor profile across the region.",
         origin: {
             region: "Saint-Louis, Senegal",
-            coordinates: { x: 48, y: 49 },
+            coordinates: { lat: 16.03, lng: -16.48 },
             ingredient: "Broken Rice / Tomato"
         }
     },
@@ -124,7 +125,7 @@ export const menuItems = [
         originStory: "Egusi is made from the fat-rich seeds of melons indigenous to Africa. It creates a creamy, nutty soup that is a textural masterpiece, typically thickened with leaf vegetables and served with pounded yam.",
         origin: {
             region: "Igboland, Nigeria",
-            coordinates: { x: 55, y: 55 },
+            coordinates: { lat: 6.45, lng: 7.50 },
             ingredient: "Melon Seeds (Egusi)"
         }
     },
@@ -142,7 +143,7 @@ export const menuItems = [
         originStory: "Zobo (Sobolo/Bissap) is a refreshing drink made from dried Roselle (Hibiscus) leaves. Its tart, cranberry-like profile makes it a perfect natural tenderizer and glaze for rich meats.",
         origin: {
             region: "Sudan / Sahel",
-            coordinates: { x: 60, y: 48 },
+            coordinates: { lat: 12.86, lng: 30.21 },
             ingredient: "Hibiscus Sabdariffa"
         }
     },
@@ -160,7 +161,7 @@ export const menuItems = [
         originStory: "Native to the Edo people of Nigeria, Omoebe (Black Soup) gets its striking color from the oxidation of blended Scent Leaves (Efirin) and Bitter Leaves. It is traditionally regarded as a 'cleansing' soup.",
         origin: {
             region: "Benin City, Edo",
-            coordinates: { x: 54, y: 54 },
+            coordinates: { lat: 6.33, lng: 5.62 },
             ingredient: "Scent Leaf (Efirin)"
         }
     },
@@ -178,7 +179,7 @@ export const menuItems = [
         originStory: "Efo Riro loosely translates to 'stirred vegetables'. It is a rich, savory spinach stew traditionally cooked with locust bean (Iru) and crayfish, demonstrating the depth of flavor possible with fermented indigenous ingredients.",
         origin: {
             region: "Osun State, Nigeria",
-            coordinates: { x: 53, y: 53 },
+            coordinates: { lat: 7.54, lng: 4.55 },
             ingredient: "Locust Bean (Iru)"
         }
     },
@@ -198,7 +199,7 @@ export const menuItems = [
         originStory: "Tigernuts (Ofio) are not nuts but ancient tubers cultivated in Egypt and West Africa for millennia. They produce a naturally sweet, creamy milk that is a popular street snack.",
         origin: {
             region: "Nile Valley / Ancient Egypt",
-            coordinates: { x: 62, y: 40 },
+            coordinates: { lat: 26.82, lng: 30.80 },
             ingredient: "Tigernut (Cyperus esculentus)"
         }
     },
@@ -216,7 +217,7 @@ export const menuItems = [
         originStory: "Puff Puff is the ubiquitous West African doughnut hole. Simple yeast dough, deep-fried until golden. It is impossible to attend a Nigerian party without seeing a mountain of these.",
         origin: {
             region: "Lagos Street Food",
-            coordinates: { x: 53, y: 55 },
+            coordinates: { lat: 6.45, lng: 3.40 },
             ingredient: "Yeast Dough"
         }
     },
@@ -234,7 +235,7 @@ export const menuItems = [
         originStory: "The Baobab tree is the 'Tree of Life' in the savannah. Its fruit dries naturally on the branch and is a superfruit powder with a sharp, citrusy flavor rich in Vitamin C.",
         origin: {
             region: "Senegal Savannah",
-            coordinates: { x: 48, y: 48 },
+            coordinates: { lat: 14.49, lng: -14.45 },
             ingredient: "Baobab Fruit"
         }
     },
@@ -252,7 +253,7 @@ export const menuItems = [
         originStory: "Millet is one of the oldest ancient grains of the Sahel region. Fura de Nunu is a popular drink made from fermented millet balls and yogurt, inspiring the earthy profile of this dessert.",
         origin: {
             region: "Mali / Sahel",
-            coordinates: { x: 50, y: 45 },
+            coordinates: { lat: 17.57, lng: -3.99 },
             ingredient: "Pearl Millet"
         }
     },
@@ -270,7 +271,7 @@ export const menuItems = [
         originStory: "Chin Chin is a crunchy fried dough snack, traditionally cut into small cubes. It graces every Christmas table in Nigeria and is dangerously addictive.",
         origin: {
             region: "Southern Nigeria",
-            coordinates: { x: 54, y: 56 },
+            coordinates: { lat: 5.00, lng: 6.00 },
             ingredient: "Nutmeg / Wheat"
         }
     }
