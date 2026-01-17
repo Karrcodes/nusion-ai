@@ -144,8 +144,8 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                                         style={{
                                             backgroundImage: "url('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_lights_2048.png')",
                                             backgroundSize: '100% 100%',
-                                            // CALIBRATION: -15% X Offset to align texture (Senegal vs Horn fix)
-                                            transform: `translate(-${(course.origin?.coordinates?.x || 50) - 15}%, -${course.origin?.coordinates?.y || 50}%)`
+                                            // CALIBRATION: Y-8% to shift coordinates North (Data had slight Southern bias)
+                                            transform: `translate(-${course.origin?.coordinates?.x || 50}%, -${(course.origin?.coordinates?.y || 50) - 8}%)`
                                         }}
                                     ></div>
 
