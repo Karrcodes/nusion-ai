@@ -27,9 +27,9 @@ export function Globe3D({ lat, lng }) {
             diffuse: 1.2,
             mapSamples: 16000,
             mapBrightness: 6,
-            baseColor: [0.1, 0.1, 0.15], // Dark Navigation Blue/Black
+            baseColor: [0.15, 0.12, 0.1], // Warm Black/Brown Base
             markerColor: [1, 0.8, 0], // Gold
-            glowColor: [0.2, 0.2, 0.3],
+            glowColor: [0.6, 0.5, 0.3], // Warm Gold/Brown Glow
             markers: [
                 { location: [lat, lng], size: 0.1 } // The target dish origin
             ],
