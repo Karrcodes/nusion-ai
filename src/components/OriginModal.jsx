@@ -1,6 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
 import { Globe3D } from './Globe3D';
-import { X } from 'lucide-react';
 
 const OriginModal = ({ isOpen, onClose, course }) => {
     const [isVisible, setIsVisible] = useState(false);
