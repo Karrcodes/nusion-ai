@@ -111,7 +111,7 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                                             <div className="absolute inset-0 flex items-center justify-center text-6xl opacity-30 group-hover:opacity-50 transition-opacity grayscale hover:grayscale-0 duration-700">
                                                 🌿
                                             </div>
-                                            <div className="absolute bottom-0 left-0 w-full p-4 bg-gradient-to-t from-black/40 to-transparent">
+                                            <div className="absolute bottom-0 left-0 w-full p-4">
                                                 <p className="text-xl text-white font-serif">{course.origin?.ingredient}</p>
                                             </div>
                                         </div>
