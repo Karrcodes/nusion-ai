@@ -144,7 +144,7 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                                         style={{
                                             backgroundImage: "url('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_lights_2048.png')",
                                             backgroundSize: '100% 100%',
-                                            transform: `translate(-${course.origin?.coordinates?.y || 50}%, -${course.origin?.coordinates?.x || 50}%)`
+                                            transform: `translate(-${course.origin?.coordinates?.x || 50}%, -${course.origin?.coordinates?.y || 50}%)`
                                         }}
                                     ></div>
 
