@@ -151,7 +151,7 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                                     </div>
 
                                     {/* ATMOSPHERE GLOW */}
-                                    <div className="absolute inset-0 rounded-full shadow-[inset_10px_10px_50px_rgba(255,255,255,0.05)] pointer-events-none"></div>
+                                    <div className="absolute inset-0 rounded-full shadow-[inset_10px_10px_50px_rgba(212,175,55,0.15)] pointer-events-none"></div>
                                 </div>
                             </div>
 
