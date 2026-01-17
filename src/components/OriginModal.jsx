@@ -144,7 +144,8 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                                         style={{
                                             backgroundImage: "url('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_lights_2048.png')",
                                             backgroundSize: '100% 100%',
-                                            transform: `translate(${250 - (((course.origin?.coordinates?.lng || 0) + 180) / 360) * 2000
+                                            // SCIENTIFIC MAPPING (Pixel Perfect) + PHASE CORRECTION (+60deg)
+                                            transform: `translate(${250 - (((course.origin?.coordinates?.lng || 0) + 180 + 60) / 360) * 2000
                                                 }px, ${250 - ((90 - (course.origin?.coordinates?.lat || 0)) / 180) * 1000
                                                 }px)`
                                         }}
