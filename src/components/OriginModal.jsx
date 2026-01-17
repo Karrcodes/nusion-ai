@@ -140,14 +140,15 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                                     {/* MAP LAYER: Spinning Background Image */}
                                     {/* RESTORED: Black Marble Texture (User Preference) + Faster Spin */}
                                     <div
-                                        className="absolute left-1/2 top-1/2 w-[200%] h-full bg-no-repeat opacity-100 brightness-150 grayscale transition-transform duration-1000 ease-out will-change-transform"
+                                        className="absolute left-0 top-0 w-[400%] h-[200%] bg-no-repeat opacity-100 brightness-150 grayscale transition-transform duration-1000 ease-out will-change-transform"
                                         style={{
                                             backgroundImage: "url('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_lights_2048.png')",
                                             backgroundSize: '100% 100%',
-                                            // SCIENTIFIC CENTERING: 
-                                            // X: Map% - 25% (View Center is 25% of 200% width)
-                                            // Y: Map% - 50% (View Center is 50% of 100% height)
-                                            transform: `translate(-${((course.origin?.coordinates?.lng || 0) + 180) / 3.6 - 25}%, -${((90 - (course.origin?.coordinates?.lat || 0)) / 1.8) - 50}%)`
+                                            // SCIENTIFIC CENTERING (Zoomed 2x):
+                                            // Container is 25% of Map Width (100/400) -> Center is 12.5%
+                                            // Container is 50% of Map Height (100/200) -> Center is 25%
+                                            // Formula: Translate(Center - Target)
+                                            transform: `translate(${12.5 - ((course.origin?.coordinates?.lng || 0) + 180) / 3.6}%, ${25 - ((90 - (course.origin?.coordinates?.lat || 0)) / 1.8)}%)`
                                         }}
                                     ></div>
 
