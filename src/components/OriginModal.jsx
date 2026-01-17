@@ -144,10 +144,10 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                                         style={{
                                             backgroundImage: "url('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_lights_2048.png')",
                                             backgroundSize: '100% 100%',
-                                            // SCIENTIFIC MAPPING: Equirectangular Projection
-                                            // X: (Longitude + 180) / 360 * 100%
-                                            // Y: (90 - Latitude) / 180 * 100%
-                                            transform: `translate(-${((course.origin?.coordinates?.lng || 0) + 180) / 3.6}%, -${(90 - (course.origin?.coordinates?.lat || 0)) / 1.8}%)`
+                                            // SCIENTIFIC CENTERING: 
+                                            // X: Map% - 25% (View Center is 25% of 200% width)
+                                            // Y: Map% - 50% (View Center is 50% of 100% height)
+                                            transform: `translate(-${((course.origin?.coordinates?.lng || 0) + 180) / 3.6 - 25}%, -${((90 - (course.origin?.coordinates?.lat || 0)) / 1.8) - 50}%)`
                                         }}
                                     ></div>
 
