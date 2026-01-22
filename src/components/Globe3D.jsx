@@ -63,11 +63,18 @@ export function Globe3D({ lat, lng, velocityRef }) {
     }, [lat, lng]);
 
     return (
-        <div className="w-full h-full flex items-center justify-center">
+        <div className="w-full h-full flex items-center justify-center relative">
             <canvas
                 ref={canvasRef}
                 style={{ width: '100%', height: '100%', maxWidth: '500px', maxHeight: '500px' }}
             />
+
+            {/* BEACON PULSE RINGS - Positioned at marker location (globe center) */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="absolute w-4 h-4 rounded-full bg-[var(--color-gold)] animate-[beaconPulse_2s_ease-out_infinite]"></div>
+                <div className="absolute w-4 h-4 rounded-full bg-[var(--color-gold)] animate-[beaconPulse_2s_ease-out_infinite_0.66s]"></div>
+                <div className="absolute w-4 h-4 rounded-full bg-[var(--color-gold)] animate-[beaconPulse_2s_ease-out_infinite_1.33s]"></div>
+            </div>
         </div>
     );
 }
