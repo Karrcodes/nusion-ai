@@ -36,21 +36,21 @@ export function Globe3D({ lat, lng, velocityRef }) {
                 state.phi = phi;
                 state.theta = currentBoost * 2; // Dynamic tilt based on speed
 
-                // Multi-ring Beacon Pulse Effect
+                // Multi-ring Beacon Pulse Effect - DRAMATIC for visibility
                 if (state.markers && state.markers.length >= 3) {
-                    const time = phi * 3; // Speed up animation
+                    const time = phi * 1.5; // Slower animation for visibility
 
-                    // Ring 1: Main pulse - MUCH larger size for visibility
+                    // Ring 1: Main pulse - EXTREMELY large size range
                     const pulse1 = (Math.sin(time) + 1) / 2; // 0 to 1
-                    state.markers[0].size = 0.08 + (pulse1 * 0.17);
+                    state.markers[0].size = 0.05 + (pulse1 * 0.3);
 
                     // Ring 2: Delayed pulse (offset by 1/3 cycle)
                     const pulse2 = (Math.sin(time - Math.PI * 2 / 3) + 1) / 2;
-                    state.markers[1].size = 0.08 + (pulse2 * 0.17);
+                    state.markers[1].size = 0.05 + (pulse2 * 0.3);
 
                     // Ring 3: Delayed pulse (offset by 2/3 cycle)
                     const pulse3 = (Math.sin(time - Math.PI * 4 / 3) + 1) / 2;
-                    state.markers[2].size = 0.08 + (pulse3 * 0.17);
+                    state.markers[2].size = 0.05 + (pulse3 * 0.3);
                 }
 
                 phi += 0.003 + currentBoost;
