@@ -5,14 +5,16 @@ export function Globe3D({ lat, lng, velocityRef }) {
     const canvasRef = useRef();
 
     useEffect(() => {
-        // Setup initial orientation to face the location
-        const initialPhi = -lng * (Math.PI / 180) + 1.2; // Adjust offset to center
+        if (!canvasRef.current) return;
+
+        // Convert lat/lng to radians
+        // Cobe's phi is longitude rotation
+        // Cobe's theta is latitude rotation
+        const initialPhi = -lng * (Math.PI / 180);
         const initialTheta = lat * (Math.PI / 180);
 
         let phi = initialPhi;
         let currentBoost = 0;
-
-        if (!canvasRef.current) return;
 
         const globe = createGlobe(canvasRef.current, {
             devicePixelRatio: 2,
@@ -24,22 +26,21 @@ export function Globe3D({ lat, lng, velocityRef }) {
             diffuse: 1.2,
             mapSamples: 16000,
             mapBrightness: 6,
-            baseColor: [0.15, 0.12, 0.1], // The "Brown" base
-            markerColor: [0.898, 0.753, 0.482], // Gold markers
+            baseColor: [0.15, 0.12, 0.1],
+            markerColor: [0.898, 0.753, 0.482],
             glowColor: [0.6, 0.5, 0.3],
-
-            // KEY: Centering the globe on the target location
             location: [lat, lng],
-
             markers: [
                 { location: [lat, lng], size: 0.1 }
             ],
             onRender: (state) => {
                 const targetBoost = velocityRef.current * 0.002;
-                currentBoost += (targetBoost - currentBoost) * 0.1; // Smooth easing
+                currentBoost += (targetBoost - currentBoost) * 0.1;
 
                 state.phi = phi;
-                state.theta = currentBoost * 2; // Dynamic tilt based on speed
+                // Add velocity tilt TO the initial latitude, don't replace it
+                state.theta = initialTheta + (currentBoost * 2);
+
                 phi += 0.003 + currentBoost;
             },
         });
