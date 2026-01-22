@@ -152,7 +152,7 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                         {/* Right Panel: CSS TEXTURE GLOBE */}
                         <div className="w-full md:w-[60%] h-[50vh] md:h-auto md:sticky md:top-0 md:self-start z-0 flex items-center justify-center md:-ml-40 mt-10 md:mt-0">
                             <div
-                                className="relative flex items-center justify-center md:top-0 mt-32"
+                                className="relative flex items-center justify-center md:top-0 mt-24"
                                 style={{ transform: `translateY(${parallaxOffset}px) scale(${zoomScale})` }}
                             >
                                 {/* THE GLOBE CONTAINER */}
