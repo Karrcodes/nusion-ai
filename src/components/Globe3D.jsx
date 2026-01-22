@@ -22,7 +22,7 @@ export function Globe3D({ lat, lng, velocityRef }) {
             mapSamples: 16000,
             mapBrightness: 6,
             baseColor: [0.15, 0.12, 0.1],
-            markerColor: [1, 0.8, 0],
+            markerColor: [0.898, 0.753, 0.482], // Modeled after --color-gold #e5c07b
             glowColor: [0.6, 0.5, 0.3],
             markers: [
                 { location: [lat, lng], size: 0.1 }
@@ -33,6 +33,11 @@ export function Globe3D({ lat, lng, velocityRef }) {
 
                 state.phi = phi;
                 state.theta = currentBoost * 2; // Dynamic tilt based on speed
+
+                // Pulse Marker
+                // We use phi as the timer. Use math.sin to oscillate size.
+                state.markers[0].size = 0.08 + Math.sin(phi * 10) * 0.02;
+
                 phi += 0.003 + currentBoost;
             },
         });
