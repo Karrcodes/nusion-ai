@@ -4,7 +4,9 @@ import { Globe3D } from './Globe3D';
 const OriginModal = ({ isOpen, onClose, course }) => {
     const [isVisible, setIsVisible] = useState(false);
     const scrollRef = useRef(null);
+    const globeContainerRef = useRef(null); // Ref restored for rAF Zoom
     const velocityValueRef = useRef(0);
+    const targetScaleRef = useRef(1); // Store target scale for rAF loop
     const lastScrollY = useRef(0);
     const scrollTimeout = useRef(null);
 
@@ -20,6 +22,28 @@ const OriginModal = ({ isOpen, onClose, course }) => {
             return () => clearTimeout(tm);
         }
     }, [isOpen]);
+
+    // Optimize Loop: Decouple Render from Scroll Event
+    useEffect(() => {
+        let rafId;
+        let currentScale = 1;
+        const updateLoop = () => {
+            // Lerp for extra smoothness (optional, but good for Mac inertia)
+            // But simple direct set is fine if rAF is used.
+            // Let's us direct set for responsiveness first.
+            if (globeContainerRef.current) {
+                const target = targetScaleRef.current;
+                // Simple threshold check to avoid DOM thrashing if unchanged
+                if (Math.abs(target - currentScale) > 0.001) {
+                    currentScale = target;
+                    globeContainerRef.current.style.transform = `scale(${currentScale})`;
+                }
+            }
+            rafId = requestAnimationFrame(updateLoop);
+        };
+        updateLoop();
+        return () => cancelAnimationFrame(rafId);
+    }, []);
 
     // Handle Scroll
     const handleScroll = (e) => {
@@ -38,6 +62,12 @@ const OriginModal = ({ isOpen, onClose, course }) => {
         scrollTimeout.current = setTimeout(() => {
             velocityValueRef.current = 0;
         }, 50);
+
+        // Update Target Scale (Read by rAF loop)
+        if (scrollHeight - clientHeight > 0) {
+            const progress = scrollTop / (scrollHeight - clientHeight);
+            targetScaleRef.current = 1 + (progress * 0.8);
+        }
     };
 
     if (!isVisible && !isOpen) return null;
@@ -134,7 +164,9 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                         {/* Right Panel: CSS TEXTURE GLOBE */}
                         <div className="w-full md:w-[60%] h-[50vh] md:h-auto md:sticky md:top-0 md:self-start z-0 flex items-start justify-center md:-ml-40 mt-10 md:mt-0">
                             <div
+                                ref={globeContainerRef}
                                 className="relative flex items-center justify-center md:top-0 mt-12"
+                                style={{ willChange: 'transform' }} // Optimization hint
                             >
                                 {/* THE GLOBE CONTAINER */}
                                 <div className="relative w-[500px] h-[500px] rounded-full overflow-hidden shadow-[inset_-60px_-20px_100px_rgba(0,0,0,0.95),_0_0_50px_rgba(0,0,0,0.5)] bg-black group flex items-center justify-center">
