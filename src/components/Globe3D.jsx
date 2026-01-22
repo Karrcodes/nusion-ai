@@ -7,10 +7,12 @@ export function Globe3D({ lat, lng, velocityRef }) {
     useEffect(() => {
         if (!canvasRef.current) return;
 
-        // Convert lat/lng to radians
-        // Cobe's phi is longitude rotation
-        // Cobe's theta is latitude rotation
-        const initialPhi = -lng * (Math.PI / 180);
+        // Debug: verify coordinates coming from menuData
+        console.log('Globe3D Target:', { lat, lng });
+
+        // Convert lat/lng to radians for Cobe
+        // 4.7 is a standard baseline offset to align with the Prime Meridian projection in some Cobe maps
+        const initialPhi = 4.7 - (lng * Math.PI / 180);
         const initialTheta = lat * (Math.PI / 180);
 
         let phi = initialPhi;
