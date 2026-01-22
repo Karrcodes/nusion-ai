@@ -4,7 +4,7 @@ import { Globe3D } from './Globe3D';
 const OriginModal = ({ isOpen, onClose, course }) => {
     const [isVisible, setIsVisible] = useState(false);
     const scrollRef = useRef(null);
-    const [scrollProgress, setScrollProgress] = useState(0);
+    const globeContainerRef = useRef(null); // Direct DOM ref for parallax
     const velocityValueRef = useRef(0);
     const lastScrollY = useRef(0);
     const scrollTimeout = useRef(null);
@@ -29,9 +29,8 @@ const OriginModal = ({ isOpen, onClose, course }) => {
         // Calculate Velocity for Globe Spin
         const currentScroll = scrollTop;
         const delta = Math.abs(currentScroll - lastScrollY.current);
-        // Cap velocity to prevent dizziness, but make it noticeable
         const newVelocity = Math.min(delta, 50);
-        velocityValueRef.current = newVelocity; // Update ref directly without re-render
+        velocityValueRef.current = newVelocity;
 
         lastScrollY.current = currentScroll;
 
@@ -39,17 +38,16 @@ const OriginModal = ({ isOpen, onClose, course }) => {
         if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
         scrollTimeout.current = setTimeout(() => {
             velocityValueRef.current = 0;
-        }, 50); // Quick reset to detect stop
+        }, 50);
 
-        if (scrollHeight - clientHeight > 0) {
+        // Direct DOM Update for Parallax (High Performance)
+        if (scrollHeight - clientHeight > 0 && globeContainerRef.current) {
             const progress = scrollTop / (scrollHeight - clientHeight);
-            setScrollProgress(progress);
+            const offset = progress * 150;
+            const scale = 1 + (progress * 0.8);
+            globeContainerRef.current.style.transform = `translateY(${offset}px) scale(${scale})`;
         }
     };
-
-    // Parallax: Move globe down slightly as we scroll
-    const parallaxOffset = scrollProgress * 150;
-    const zoomScale = 1 + (scrollProgress * 0.8); // FIXED: Stronger zoom (was 0.2)
 
     if (!isVisible && !isOpen) return null;
 
@@ -145,8 +143,8 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                         {/* Right Panel: CSS TEXTURE GLOBE */}
                         <div className="w-full md:w-[60%] h-[50vh] md:h-auto md:sticky md:top-0 md:self-start z-0 flex items-start justify-center md:-ml-40 mt-10 md:mt-0">
                             <div
+                                ref={globeContainerRef}
                                 className="relative flex items-center justify-center md:top-0 mt-12"
-                                style={{ transform: `translateY(${parallaxOffset}px) scale(${zoomScale})` }}
                             >
                                 {/* THE GLOBE CONTAINER */}
                                 <div className="relative w-[500px] h-[500px] rounded-full overflow-hidden shadow-[inset_-60px_-20px_100px_rgba(0,0,0,0.95),_0_0_50px_rgba(0,0,0,0.5)] bg-black group flex items-center justify-center">
