@@ -5,6 +5,10 @@ const OriginModal = ({ isOpen, onClose, course }) => {
     const [isVisible, setIsVisible] = useState(false);
     const scrollRef = useRef(null);
     const [scrollProgress, setScrollProgress] = useState(0);
+    const [scrollVelocity, setScrollVelocity] = useState(0);
+    const lastScrollY = useRef(0);
+    const scrollTimeout = useRef(null);
+
     const [calibration, setCalibration] = useState({ x: 0, y: 0 }); // Restored for manual Map Alignment
     // Derived Coordinates for 2D Map (Approximate)
     // Map is Equirectangular. 
@@ -28,6 +32,22 @@ const OriginModal = ({ isOpen, onClose, course }) => {
     // Handle Scroll
     const handleScroll = (e) => {
         const { scrollTop, scrollHeight, clientHeight } = e.target;
+
+        // Calculate Velocity for Globe Spin
+        const currentScroll = scrollTop;
+        const delta = Math.abs(currentScroll - lastScrollY.current);
+        // Cap velocity to prevent dizziness, but make it noticeable
+        const newVelocity = Math.min(delta, 50);
+        setScrollVelocity(newVelocity);
+
+        lastScrollY.current = currentScroll;
+
+        // Reset velocity when scrolling stops
+        if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+        scrollTimeout.current = setTimeout(() => {
+            setScrollVelocity(0);
+        }, 50); // Quick reset to detect stop
+
         if (scrollHeight - clientHeight > 0) {
             const progress = scrollTop / (scrollHeight - clientHeight);
             setScrollProgress(progress);
@@ -141,6 +161,7 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                                     <Globe3D
                                         lat={course.origin?.coordinates?.lat || 0}
                                         lng={course.origin?.coordinates?.lng || 0}
+                                        scrollVelocity={scrollVelocity}
                                     />
 
                                     {/* SCANNER UI: Minimalist Crosshair Overlaid */}

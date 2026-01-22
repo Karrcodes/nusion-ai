@@ -1,19 +1,18 @@
 import React, { useEffect, useRef } from 'react';
 import createGlobe from 'cobe';
 
-export function Globe3D({ lat, lng }) {
+export function Globe3D({ lat, lng, scrollVelocity = 0 }) {
     const canvasRef = useRef();
+    const velocityRef = useRef(0);
+
+    // Sync ref for access inside the render loop without re-triggering effect
+    useEffect(() => {
+        velocityRef.current = scrollVelocity;
+    }, [scrollVelocity]);
 
     useEffect(() => {
         let phi = 0;
-
-        // Convert Lat/Lng to Cobe rotation (radians)
-        // Cobe uses phi (vertical) and theta (horizontal)
-        // We need to target the camera to the lat/lng.
-        // Instead of moving the camera, we rotate the globe to center the point.
-        // Target Phi (H): -(Lng * PI / 180) 
-        // Target Theta (V): Lat * PI / 180
-        // Actually Cobe's `phi` is longitude rotation.
+        let currentBoost = 0;
 
         if (!canvasRef.current) return;
 
@@ -27,25 +26,18 @@ export function Globe3D({ lat, lng }) {
             diffuse: 1.2,
             mapSamples: 16000,
             mapBrightness: 6,
-            baseColor: [0.15, 0.12, 0.1], // Warm Black/Brown Base
-            markerColor: [1, 0.8, 0], // Gold
-            glowColor: [0.6, 0.5, 0.3], // Warm Gold/Brown Glow
+            baseColor: [0.15, 0.12, 0.1],
+            markerColor: [1, 0.8, 0],
+            glowColor: [0.6, 0.5, 0.3],
             markers: [
-                { location: [lat, lng], size: 0.1 } // The target dish origin
+                { location: [lat, lng], size: 0.1 }
             ],
             onRender: (state) => {
-                // ROTATION LOGIC:
-                // We want to center the marker [lat, lng]
-                // Cobe starts at 0,0 (Africa/Gulf of Guinea approximately)
-                // Adjust phi to rotate locally.
-
-                // Target Longitude Focus:
-                // We want the view to center on `lng`.
-                // state.phi = initial + rotation
-                // Let's just create a slow spin for now, but lock starting position?
+                const targetBoost = velocityRef.current * 0.05;
+                currentBoost += (targetBoost - currentBoost) * 0.1; // Smooth easing
 
                 state.phi = phi;
-                phi += 0.003; // Slow rotation
+                phi += 0.003 + currentBoost;
             },
         });
 
