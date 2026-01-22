@@ -11,6 +11,8 @@ export function Globe3D({ lat, lng, velocityRef }) {
 
         if (!canvasRef.current) return;
 
+        console.log('Globe3D mounting with lat:', lat, 'lng:', lng);
+
         const globe = createGlobe(canvasRef.current, {
             devicePixelRatio: 2,
             width: 1000,
