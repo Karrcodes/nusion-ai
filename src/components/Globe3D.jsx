@@ -32,6 +32,11 @@ export function Globe3D({ lat, lng, velocityRef }) {
                 { location: [lat, lng], size: 0.07 }
             ],
             onRender: (state) => {
+                // Debug: verify onRender is being called
+                if (Math.floor(phi) % 2 === 0 && phi > 0) {
+                    console.log('onRender called, phi:', phi.toFixed(2));
+                }
+
                 const targetBoost = velocityRef.current * 0.002;
                 currentBoost += (targetBoost - currentBoost) * 0.1; // Smooth easing
 
