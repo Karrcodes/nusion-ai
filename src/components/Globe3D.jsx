@@ -64,6 +64,8 @@ export function Globe3D({ lat, lng, velocityRef }) {
             },
         });
 
+        console.log('Globe created:', globe ? 'SUCCESS' : 'FAILED');
+
         return () => {
             globe.destroy();
         };
