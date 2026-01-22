@@ -25,7 +25,9 @@ export function Globe3D({ lat, lng, velocityRef }) {
             markerColor: [0.898, 0.753, 0.482], // Modeled after --color-gold #e5c07b
             glowColor: [0.6, 0.5, 0.3],
             markers: [
-                { location: [lat, lng], size: 0.1 }
+                { location: [lat, lng], size: 0.07 },
+                { location: [lat, lng], size: 0.07 },
+                { location: [lat, lng], size: 0.07 }
             ],
             onRender: (state) => {
                 const targetBoost = velocityRef.current * 0.002;
@@ -34,14 +36,21 @@ export function Globe3D({ lat, lng, velocityRef }) {
                 state.phi = phi;
                 state.theta = currentBoost * 2; // Dynamic tilt based on speed
 
-                // Beacon Pulse Effect - Fast and dramatic
-                if (state.markers && state.markers[0]) {
-                    // Use fast sine wave for visible pulsing (completes ~1 pulse per second)
-                    const pulseFrequency = 2;
-                    const pulse = Math.abs(Math.sin(phi * pulseFrequency));
+                // Multi-ring Beacon Pulse Effect
+                if (state.markers && state.markers.length >= 3) {
+                    const time = phi * 3; // Speed up animation
 
-                    // Dramatic size: 0.03 (tiny) to 0.2 (large beacon)
-                    state.markers[0].size = 0.03 + (pulse * 0.17);
+                    // Ring 1: Main pulse
+                    const pulse1 = (Math.sin(time) + 1) / 2; // 0 to 1
+                    state.markers[0].size = 0.04 + (pulse1 * 0.12);
+
+                    // Ring 2: Delayed pulse (offset by 1/3 cycle)
+                    const pulse2 = (Math.sin(time - Math.PI * 2 / 3) + 1) / 2;
+                    state.markers[1].size = 0.04 + (pulse2 * 0.12);
+
+                    // Ring 3: Delayed pulse (offset by 2/3 cycle)
+                    const pulse3 = (Math.sin(time - Math.PI * 4 / 3) + 1) / 2;
+                    state.markers[2].size = 0.04 + (pulse3 * 0.12);
                 }
 
                 phi += 0.003 + currentBoost;
