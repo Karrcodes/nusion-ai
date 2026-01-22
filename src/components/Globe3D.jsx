@@ -33,7 +33,7 @@ export function Globe3D({ lat, lng, scrollVelocity = 0 }) {
                 { location: [lat, lng], size: 0.1 }
             ],
             onRender: (state) => {
-                const targetBoost = velocityRef.current * 0.05;
+                const targetBoost = velocityRef.current * 0.002;
                 currentBoost += (targetBoost - currentBoost) * 0.1; // Smooth easing
 
                 state.phi = phi;
