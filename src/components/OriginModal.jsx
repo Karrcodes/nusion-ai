@@ -165,7 +165,10 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                                     />
 
                                     {/* SCANNER UI: Minimalist Crosshair Overlaid */}
-                                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                    <div
+                                        className="absolute inset-0 flex items-center justify-center pointer-events-none transition-transform duration-100 ease-out"
+                                        style={{ transform: `rotate(${scrollVelocity * 0.2}deg)` }}
+                                    >
                                         <div className="w-full h-[1px] bg-white/10 absolute top-[50%]"></div>
                                         <div className="h-full w-[1px] bg-white/10 absolute left-[50%]"></div>
                                         <div className="w-[300px] h-[300px] border border-[var(--color-gold)]/30 rounded-full animate-ping-slow opacity-50"></div>
