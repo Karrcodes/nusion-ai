@@ -5,16 +5,9 @@ const OriginModal = ({ isOpen, onClose, course }) => {
     const [isVisible, setIsVisible] = useState(false);
     const scrollRef = useRef(null);
     const [scrollProgress, setScrollProgress] = useState(0);
-    const [scrollVelocity, setScrollVelocity] = useState(0);
+    const velocityValueRef = useRef(0);
     const lastScrollY = useRef(0);
     const scrollTimeout = useRef(null);
-
-    const [calibration, setCalibration] = useState({ x: 0, y: 0 }); // Restored for manual Map Alignment
-    // Derived Coordinates for 2D Map (Approximate)
-    // Map is Equirectangular. 
-    // X (0-100) -> Left% (0-100)
-    // Y (0-100) -> Top% (0-100)
-    // Based on data analysis: y=Longitude(X), x=Latitude(Y)
 
     useEffect(() => {
         if (isOpen) {
@@ -38,14 +31,14 @@ const OriginModal = ({ isOpen, onClose, course }) => {
         const delta = Math.abs(currentScroll - lastScrollY.current);
         // Cap velocity to prevent dizziness, but make it noticeable
         const newVelocity = Math.min(delta, 50);
-        setScrollVelocity(newVelocity);
+        velocityValueRef.current = newVelocity; // Update ref directly without re-render
 
         lastScrollY.current = currentScroll;
 
         // Reset velocity when scrolling stops
         if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
         scrollTimeout.current = setTimeout(() => {
-            setScrollVelocity(0);
+            velocityValueRef.current = 0;
         }, 50); // Quick reset to detect stop
 
         if (scrollHeight - clientHeight > 0) {
@@ -161,7 +154,7 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                                     <Globe3D
                                         lat={course.origin?.coordinates?.lat || 0}
                                         lng={course.origin?.coordinates?.lng || 0}
-                                        scrollVelocity={scrollVelocity}
+                                        velocityRef={velocityValueRef}
                                     />
 
                                     {/* SCANNER UI: Minimalist Crosshair Overlaid */}

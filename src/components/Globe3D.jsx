@@ -1,14 +1,9 @@
 import React, { useEffect, useRef } from 'react';
 import createGlobe from 'cobe';
 
-export function Globe3D({ lat, lng, scrollVelocity = 0 }) {
+export function Globe3D({ lat, lng, velocityRef }) {
     const canvasRef = useRef();
-    const velocityRef = useRef(0);
-
-    // Sync ref for access inside the render loop without re-triggering effect
-    useEffect(() => {
-        velocityRef.current = scrollVelocity;
-    }, [scrollVelocity]);
+    // velocityRef is now passed from parent to avoid re-renders
 
     useEffect(() => {
         let phi = 0;
