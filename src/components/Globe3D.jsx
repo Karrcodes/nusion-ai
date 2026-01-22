@@ -57,17 +57,6 @@ export function Globe3D({ lat, lng, velocityRef }) {
                     cursor: 'grab'
                 }}
             />
-
-            {/* 
-                BEACON PULSE: 
-                Since cobe 'location' centers the lat/lng, 
-                this CSS pulse at container center will always align with the marker.
-            */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-                <div className="absolute w-6 h-6 rounded-full bg-[var(--color-gold)] opacity-40 animate-[beaconPulse_2s_ease-out_infinite]"></div>
-                <div className="absolute w-6 h-6 rounded-full bg-[var(--color-gold)] opacity-30 animate-[beaconPulse_2s_ease-out_infinite_0.66s]"></div>
-                <div className="absolute w-6 h-6 rounded-full bg-[var(--color-gold)] opacity-20 animate-[beaconPulse_2s_ease-out_infinite_1.33s]"></div>
-            </div>
         </div>
     );
 }
