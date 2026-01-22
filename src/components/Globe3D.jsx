@@ -37,6 +37,7 @@ export function Globe3D({ lat, lng, scrollVelocity = 0 }) {
                 currentBoost += (targetBoost - currentBoost) * 0.1; // Smooth easing
 
                 state.phi = phi;
+                state.theta = currentBoost * 2; // Dynamic tilt based on speed
                 phi += 0.003 + currentBoost;
             },
         });
