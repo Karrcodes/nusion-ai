@@ -40,17 +40,17 @@ export function Globe3D({ lat, lng, velocityRef }) {
                 if (state.markers && state.markers.length >= 3) {
                     const time = phi * 3; // Speed up animation
 
-                    // Ring 1: Main pulse
+                    // Ring 1: Main pulse - MUCH larger size for visibility
                     const pulse1 = (Math.sin(time) + 1) / 2; // 0 to 1
-                    state.markers[0].size = 0.04 + (pulse1 * 0.12);
+                    state.markers[0].size = 0.08 + (pulse1 * 0.17);
 
                     // Ring 2: Delayed pulse (offset by 1/3 cycle)
                     const pulse2 = (Math.sin(time - Math.PI * 2 / 3) + 1) / 2;
-                    state.markers[1].size = 0.04 + (pulse2 * 0.12);
+                    state.markers[1].size = 0.08 + (pulse2 * 0.17);
 
                     // Ring 3: Delayed pulse (offset by 2/3 cycle)
                     const pulse3 = (Math.sin(time - Math.PI * 4 / 3) + 1) / 2;
-                    state.markers[2].size = 0.04 + (pulse3 * 0.12);
+                    state.markers[2].size = 0.08 + (pulse3 * 0.17);
                 }
 
                 phi += 0.003 + currentBoost;
