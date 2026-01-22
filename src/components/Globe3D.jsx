@@ -1,92 +1,76 @@
-import React, { useEffect, useRef } from 'react';
-import createGlobe from 'cobe';
+import { useEffect, useRef, useState } from 'react';
+import Globe from 'react-globe.gl';
 
 export function Globe3D({ lat, lng, velocityRef }) {
-    const canvasRef = useRef();
-    // velocityRef is now passed from parent to avoid re-renders
+    const globeEl = useRef();
+    const [markerSize, setMarkerSize] = useState(0.5);
 
+    // Beacon pulse animation
     useEffect(() => {
-        let phi = 0;
-        let currentBoost = 0;
+        let animationId;
+        let time = 0;
 
-        if (!canvasRef.current) return;
-
-        console.log('Globe3D mounting with lat:', lat, 'lng:', lng);
-
-        const globe = createGlobe(canvasRef.current, {
-            devicePixelRatio: 2,
-            width: 1000,
-            height: 1000,
-            phi: 0,
-            theta: 0,
-            dark: 1,
-            diffuse: 1.2,
-            mapSamples: 16000,
-            mapBrightness: 6,
-            baseColor: [0.15, 0.12, 0.1],
-            markerColor: [0.898, 0.753, 0.482], // Modeled after --color-gold #e5c07b
-            glowColor: [0.6, 0.5, 0.3],
-            markers: [
-                { location: [lat, lng], size: 0.07 },
-                { location: [lat, lng], size: 0.07 },
-                { location: [lat, lng], size: 0.07 }
-            ],
-            onRender: (state) => {
-                // Debug: verify onRender is being called
-                if (Math.floor(phi) % 2 === 0 && phi > 0) {
-                    console.log('onRender called, phi:', phi.toFixed(2));
-                }
-
-                const targetBoost = velocityRef.current * 0.002;
-                currentBoost += (targetBoost - currentBoost) * 0.1; // Smooth easing
-
-                state.phi = phi;
-                state.theta = currentBoost * 2; // Dynamic tilt based on speed
-
-                // Debug: Check markers
-                if (Math.floor(phi) % 2 === 0 && phi > 0) {
-                    console.log('Markers in state:', state.markers ? state.markers.length : 'UNDEFINED');
-                }
-
-                // Multi-ring Beacon Pulse Effect - DRAMATIC for visibility
-                if (state.markers && state.markers.length >= 3) {
-                    const time = phi * 1.5; // Slower animation for visibility
-
-                    // Ring 1: Main pulse - EXTREMELY large size range
-                    const pulse1 = (Math.sin(time) + 1) / 2; // 0 to 1
-                    state.markers[0].size = 0.05 + (pulse1 * 0.3);
-
-                    // Ring 2: Delayed pulse (offset by 1/3 cycle)
-                    const pulse2 = (Math.sin(time - Math.PI * 2 / 3) + 1) / 2;
-                    state.markers[1].size = 0.05 + (pulse2 * 0.3);
-
-                    // Ring 3: Delayed pulse (offset by 2/3 cycle)
-                    const pulse3 = (Math.sin(time - Math.PI * 4 / 3) + 1) / 2;
-                    state.markers[2].size = 0.05 + (pulse3 * 0.3);
-
-                    // Debug logging (remove after testing)
-                    if (Math.floor(phi * 10) % 50 === 0) {
-                        console.log('Beacon pulse sizes:', state.markers[0].size.toFixed(2), state.markers[1].size.toFixed(2), state.markers[2].size.toFixed(2));
-                    }
-                }
-
-                phi += 0.003 + currentBoost;
-            },
-        });
-
-        console.log('Globe created:', globe ? 'SUCCESS' : 'FAILED');
-
-        return () => {
-            globe.destroy();
+        const animate = () => {
+            time += 0.05;
+            // Pulsing effect: oscillate between 0.3 and 0.8
+            const pulse = 0.3 + Math.abs(Math.sin(time)) * 0.5;
+            setMarkerSize(pulse);
+            animationId = requestAnimationFrame(animate);
         };
+
+        animate();
+        return () => cancelAnimationFrame(animationId);
+    }, []);
+
+    // Auto-rotate based on scroll velocity
+    useEffect(() => {
+        if (!globeEl.current) return;
+
+        const controls = globeEl.current.controls();
+        controls.autoRotate = true;
+        controls.autoRotateSpeed = 0.5;
+        controls.enableZoom = false;
+
+        // Point camera at the marker location
+        globeEl.current.pointOfView({ lat, lng, altitude: 2 }, 1000);
     }, [lat, lng]);
 
+    const markerData = [{
+        lat,
+        lng,
+        size: markerSize,
+        color: '#e5c07b' // Gold color
+    }];
+
     return (
-        <div className="w-full h-full flex items-center justify-center">
-            <canvas
-                ref={canvasRef}
-                style={{ width: '100%', height: '100%', maxWidth: '500px', maxHeight: '500px' }}
-            />
-        </div>
+        <Globe
+            ref={globeEl}
+            globeImageUrl="//unpkg.com/three-globe/example/img/earth-night.jpg"
+            backgroundColor="rgba(0,0,0,0)"
+
+            // Markers
+            htmlElementsData={markerData}
+            htmlElement={d => {
+                const el = document.createElement('div');
+                el.innerHTML = `
+                    <div style="
+                        width: ${d.size * 20}px;
+                        height: ${d.size * 20}px;
+                        border-radius: 50%;
+                        background: radial-gradient(circle, ${d.color} 0%, ${d.color}80 50%, transparent 100%);
+                        box-shadow: 0 0 ${d.size * 30}px ${d.color};
+                        animation: pulse 2s ease-in-out infinite;
+                    "></div>
+                `;
+                return el;
+            }}
+
+            // Atmosphere
+            atmosphereColor="#d4af37"
+            atmosphereAltitude={0.15}
+
+            // Performance
+            animateIn={false}
+        />
     );
 }
