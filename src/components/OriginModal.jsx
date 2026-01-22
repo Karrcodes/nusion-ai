@@ -4,7 +4,6 @@ import { Globe3D } from './Globe3D';
 const OriginModal = ({ isOpen, onClose, course }) => {
     const [isVisible, setIsVisible] = useState(false);
     const scrollRef = useRef(null);
-    const globeContainerRef = useRef(null); // Ref restored for Zoom effect
     const velocityValueRef = useRef(0);
     const lastScrollY = useRef(0);
     const scrollTimeout = useRef(null);
@@ -39,13 +38,6 @@ const OriginModal = ({ isOpen, onClose, course }) => {
         scrollTimeout.current = setTimeout(() => {
             velocityValueRef.current = 0;
         }, 50);
-
-        // Direct DOM Update for Zoom (Scale Only) - No TranslateY to prevent jitter
-        if (scrollHeight - clientHeight > 0 && globeContainerRef.current) {
-            const progress = scrollTop / (scrollHeight - clientHeight);
-            const scale = 1 + (progress * 0.8);
-            globeContainerRef.current.style.transform = `scale(${scale})`;
-        }
     };
 
     if (!isVisible && !isOpen) return null;
@@ -142,7 +134,6 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                         {/* Right Panel: CSS TEXTURE GLOBE */}
                         <div className="w-full md:w-[60%] h-[50vh] md:h-auto md:sticky md:top-0 md:self-start z-0 flex items-start justify-center md:-ml-40 mt-10 md:mt-0">
                             <div
-                                ref={globeContainerRef}
                                 className="relative flex items-center justify-center md:top-0 mt-12"
                             >
                                 {/* THE GLOBE CONTAINER */}
