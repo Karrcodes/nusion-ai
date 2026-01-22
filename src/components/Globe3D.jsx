@@ -34,18 +34,14 @@ export function Globe3D({ lat, lng, velocityRef }) {
                 state.phi = phi;
                 state.theta = currentBoost * 2; // Dynamic tilt based on speed
 
-                // Beacon Pulse Effect
+                // Beacon Pulse Effect - Fast and dramatic
                 if (state.markers && state.markers[0]) {
-                    // Use modulo to create repeating pulse cycles
-                    const pulseSpeed = 3; // Seconds per pulse
-                    const cycle = (phi * 0.5) % pulseSpeed;
-                    const progress = cycle / pulseSpeed;
+                    // Use fast sine wave for visible pulsing (completes ~1 pulse per second)
+                    const pulseFrequency = 2;
+                    const pulse = Math.abs(Math.sin(phi * pulseFrequency));
 
-                    // Exponential easing out for beacon effect (quick expand, slow fade)
-                    const eased = 1 - Math.pow(1 - progress, 3);
-
-                    // Size varies from 0.05 (small) to 0.15 (large)
-                    state.markers[0].size = 0.05 + (eased * 0.1);
+                    // Dramatic size: 0.03 (tiny) to 0.2 (large beacon)
+                    state.markers[0].size = 0.03 + (pulse * 0.17);
                 }
 
                 phi += 0.003 + currentBoost;
