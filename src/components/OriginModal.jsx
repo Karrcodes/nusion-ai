@@ -23,24 +23,27 @@ const OriginModal = ({ isOpen, onClose, course }) => {
         }
     }, [isOpen]);
 
-    // Optimize Loop: Decouple Render from Scroll Event
+    // Optimize Loop: Decouple Render from Scroll Event + Add Physics (Lerp)
     useEffect(() => {
         let rafId;
         let currentScale = 1;
+
         const updateLoop = () => {
-            // Lerp for extra smoothness (optional, but good for Mac inertia)
-            // But simple direct set is fine if rAF is used.
-            // Let's us direct set for responsiveness first.
             if (globeContainerRef.current) {
                 const target = targetScaleRef.current;
-                // Simple threshold check to avoid DOM thrashing if unchanged
-                if (Math.abs(target - currentScale) > 0.001) {
-                    currentScale = target;
+
+                // LERP: Smooths out the zoom by moving 10% towards target per frame.
+                // This creates a high-quality "inertia" effect that hides scroll jitter.
+                currentScale += (target - currentScale) * 0.1;
+
+                // Apply update if we are not "at rest"
+                if (Math.abs(target - currentScale) > 0.0001) {
                     globeContainerRef.current.style.transform = `scale(${currentScale})`;
                 }
             }
             rafId = requestAnimationFrame(updateLoop);
         };
+
         updateLoop();
         return () => cancelAnimationFrame(rafId);
     }, []);
