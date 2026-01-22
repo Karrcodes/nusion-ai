@@ -51,6 +51,11 @@ export function Globe3D({ lat, lng, velocityRef }) {
                     // Ring 3: Delayed pulse (offset by 2/3 cycle)
                     const pulse3 = (Math.sin(time - Math.PI * 4 / 3) + 1) / 2;
                     state.markers[2].size = 0.05 + (pulse3 * 0.3);
+
+                    // Debug logging (remove after testing)
+                    if (Math.floor(phi * 10) % 50 === 0) {
+                        console.log('Beacon pulse sizes:', state.markers[0].size.toFixed(2), state.markers[1].size.toFixed(2), state.markers[2].size.toFixed(2));
+                    }
                 }
 
                 phi += 0.003 + currentBoost;
