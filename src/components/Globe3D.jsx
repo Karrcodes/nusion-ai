@@ -34,9 +34,10 @@ export function Globe3D({ lat, lng, velocityRef }) {
                 state.phi = phi;
                 state.theta = currentBoost * 2; // Dynamic tilt based on speed
 
-                // Pulse Marker
-                // We use phi as the timer. Use math.sin to oscillate size.
-                state.markers[0].size = 0.08 + Math.sin(phi * 10) * 0.02;
+                // Pulse Marker (with safety check)
+                if (state.markers && state.markers[0]) {
+                    state.markers[0].size = 0.08 + Math.sin(phi * 10) * 0.02;
+                }
 
                 phi += 0.003 + currentBoost;
             },
