@@ -180,6 +180,13 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                                         velocityRef={velocityValueRef}
                                     />
 
+                                    {/* BEACON PULSE RINGS - CSS Animation */}
+                                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                        <div className="absolute w-4 h-4 rounded-full bg-[var(--color-gold)] animate-[beaconPulse_2s_ease-out_infinite]"></div>
+                                        <div className="absolute w-4 h-4 rounded-full bg-[var(--color-gold)] animate-[beaconPulse_2s_ease-out_infinite_0.66s]"></div>
+                                        <div className="absolute w-4 h-4 rounded-full bg-[var(--color-gold)] animate-[beaconPulse_2s_ease-out_infinite_1.33s]"></div>
+                                    </div>
+
                                     {/* SCANNER UI: Minimalist Crosshair Overlaid */}
                                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                                         <div className="w-full h-[1px] bg-white/10 absolute top-[50%]"></div>
