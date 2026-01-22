@@ -43,6 +43,11 @@ export function Globe3D({ lat, lng, velocityRef }) {
                 state.phi = phi;
                 state.theta = currentBoost * 2; // Dynamic tilt based on speed
 
+                // Debug: Check markers
+                if (Math.floor(phi) % 2 === 0 && phi > 0) {
+                    console.log('Markers in state:', state.markers ? state.markers.length : 'UNDEFINED');
+                }
+
                 // Multi-ring Beacon Pulse Effect - DRAMATIC for visibility
                 if (state.markers && state.markers.length >= 3) {
                     const time = phi * 1.5; // Slower animation for visibility
