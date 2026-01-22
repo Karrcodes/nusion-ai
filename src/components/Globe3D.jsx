@@ -1,91 +1,73 @@
-import { useEffect, useRef, useState } from 'react';
-import Globe from 'react-globe.gl';
+import React, { useEffect, useRef } from 'react';
+import createGlobe from 'cobe';
 
 export function Globe3D({ lat, lng, velocityRef }) {
-    const globeEl = useRef();
-    const [markerSize, setMarkerSize] = useState(0.5);
+    const canvasRef = useRef();
 
-    // Beacon pulse animation
     useEffect(() => {
-        let animationId;
-        let time = 0;
+        let phi = 0;
+        let currentBoost = 0;
 
-        const animate = () => {
-            time += 0.05;
-            // Pulsing effect: oscillate between 0.3 and 0.8
-            const pulse = 0.3 + Math.abs(Math.sin(time)) * 0.5;
-            setMarkerSize(pulse);
-            animationId = requestAnimationFrame(animate);
+        if (!canvasRef.current) return;
+
+        const globe = createGlobe(canvasRef.current, {
+            devicePixelRatio: 2,
+            width: 1000,
+            height: 1000,
+            phi: 0,
+            theta: 0,
+            dark: 1,
+            diffuse: 1.2,
+            mapSamples: 16000,
+            mapBrightness: 6,
+            baseColor: [0.15, 0.12, 0.1], // The "Brown" base
+            markerColor: [0.898, 0.753, 0.482], // Gold markers
+            glowColor: [0.6, 0.5, 0.3],
+
+            // KEY: Centering the globe on the target location
+            location: [lat, lng],
+
+            markers: [
+                { location: [lat, lng], size: 0.1 }
+            ],
+            onRender: (state) => {
+                const targetBoost = velocityRef.current * 0.002;
+                currentBoost += (targetBoost - currentBoost) * 0.1; // Smooth easing
+
+                state.phi = phi;
+                state.theta = currentBoost * 2; // Dynamic tilt based on speed
+                phi += 0.003 + currentBoost;
+            },
+        });
+
+        return () => {
+            globe.destroy();
         };
-
-        animate();
-        return () => cancelAnimationFrame(animationId);
-    }, []);
-
-    // Auto-rotate based on scroll velocity
-    useEffect(() => {
-        if (!globeEl.current) return;
-
-        const controls = globeEl.current.controls();
-        controls.autoRotate = true;
-        controls.autoRotateSpeed = 0.5;
-        controls.enableZoom = false;
-
-        // Point camera at the marker location
-        globeEl.current.pointOfView({ lat, lng, altitude: 2 }, 1000);
     }, [lat, lng]);
 
-    // Smoothly update rotation speed based on parent scroll velocity
-    useEffect(() => {
-        let frameId;
-        const updateRotation = () => {
-            if (globeEl.current) {
-                const controls = globeEl.current.controls();
-                const speed = 0.5 + Math.min(velocityRef.current * 0.2, 10);
-                controls.autoRotateSpeed = speed;
-            }
-            frameId = requestAnimationFrame(updateRotation);
-        };
-        updateRotation();
-        return () => cancelAnimationFrame(frameId);
-    }, []);
-
-    const markerData = [{
-        lat,
-        lng,
-        size: markerSize,
-        color: '#e5c07b' // Gold color
-    }];
-
     return (
-        <Globe
-            ref={globeEl}
-            globeImageUrl="//unpkg.com/three-globe/example/img/earth-night.jpg"
-            backgroundColor="rgba(0,0,0,0)"
+        <div className="w-full h-full flex items-center justify-center relative">
+            <canvas
+                ref={canvasRef}
+                style={{
+                    width: '100%',
+                    height: '100%',
+                    maxWidth: '500px',
+                    maxHeight: '500px',
+                    cursor: 'grab'
+                }}
+            />
 
-            // Markers
-            htmlElementsData={markerData}
-            htmlElement={d => {
-                const el = document.createElement('div');
-                el.innerHTML = `
-                    <div style="
-                        width: ${d.size * 20}px;
-                        height: ${d.size * 20}px;
-                        border-radius: 50%;
-                        background: radial-gradient(circle, ${d.color} 0%, ${d.color}80 50%, transparent 100%);
-                        box-shadow: 0 0 ${d.size * 30}px ${d.color};
-                        animation: pulse 2s ease-in-out infinite;
-                    "></div>
-                `;
-                return el;
-            }}
-
-            // Atmosphere
-            atmosphereColor="#d4af37"
-            atmosphereAltitude={0.15}
-
-            // Performance
-            animateIn={false}
-        />
+            {/* 
+                BEACON PULSE: 
+                Since cobe 'location' centers the lat/lng, 
+                this CSS pulse at container center will always align with the marker.
+            */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+                <div className="absolute w-6 h-6 rounded-full bg-[var(--color-gold)] opacity-40 animate-[beaconPulse_2s_ease-out_infinite]"></div>
+                <div className="absolute w-6 h-6 rounded-full bg-[var(--color-gold)] opacity-30 animate-[beaconPulse_2s_ease-out_infinite_0.66s]"></div>
+                <div className="absolute w-6 h-6 rounded-full bg-[var(--color-gold)] opacity-20 animate-[beaconPulse_2s_ease-out_infinite_1.33s]"></div>
+            </div>
+        </div>
     );
 }
