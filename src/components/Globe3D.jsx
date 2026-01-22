@@ -5,7 +5,11 @@ export function Globe3D({ lat, lng, velocityRef }) {
     const canvasRef = useRef();
 
     useEffect(() => {
-        let phi = 0;
+        // Setup initial orientation to face the location
+        const initialPhi = -lng * (Math.PI / 180) + 1.2; // Adjust offset to center
+        const initialTheta = lat * (Math.PI / 180);
+
+        let phi = initialPhi;
         let currentBoost = 0;
 
         if (!canvasRef.current) return;
@@ -14,8 +18,8 @@ export function Globe3D({ lat, lng, velocityRef }) {
             devicePixelRatio: 2,
             width: 1000,
             height: 1000,
-            phi: 0,
-            theta: 0,
+            phi: initialPhi,
+            theta: initialTheta,
             dark: 1,
             diffuse: 1.2,
             mapSamples: 16000,
