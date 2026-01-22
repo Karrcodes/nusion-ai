@@ -47,7 +47,7 @@ const OriginModal = ({ isOpen, onClose, course }) => {
             onClick={onClose}
         >
             <div
-                className={`relative w-full max-w-5xl h-[85vh] bg-[#050505] border border-white/10 rounded-none md:rounded-3xl shadow-[0_0_100px_rgba(212,175,55,0.1)] transition-all duration-700 transform ${isOpen ? 'scale-100 translate-y-0' : 'scale-95 translate-y-10'
+                className={`relative w-full max-w-7xl h-[85vh] bg-[#050505] border border-white/10 rounded-none md:rounded-3xl shadow-[0_0_100px_rgba(212,175,55,0.1)] transition-all duration-700 transform ${isOpen ? 'scale-100 translate-y-0' : 'scale-95 translate-y-10'
                     }`}
                 onClick={(e) => e.stopPropagation()}
             >
@@ -71,7 +71,7 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                     <div className="relative z-10 w-full min-h-full flex flex-col md:flex-row">
 
                         {/* Left Panel: Content */}
-                        <div className="w-full md:w-[60%] relative z-20 pointer-events-none pt-10 md:pt-16 pb-20 pl-10 md:pl-16 pr-10 md:pr-24 bg-black/20 backdrop-blur-md border-r border-white/5 rounded-r-3xl">
+                        <div className="w-full md:w-[50%] relative z-20 pointer-events-none pt-10 md:pt-16 pb-20 pl-10 md:pl-16 pr-10 md:pr-24 bg-black/20 backdrop-blur-md border-r border-white/5 rounded-r-3xl">
                             <div className="pointer-events-auto max-w-lg">
                                 <span className="text-[var(--color-gold)] font-cinzel text-[10px] tracking-[0.4em] mb-8 block animate-[fadeIn_0.8s_ease-out] border-b border-[var(--color-gold)]/30 pb-4 w-max">
                                     LOG NO. {course.id?.replace(/\D/g, '') || '01'}
