@@ -41,7 +41,8 @@ const RecommendationResult = ({ result, onReset }) => {
         );
     }
 
-    const { totalCost, narrative } = result;
+    const totalCost = result.totalCost || result.total_cost || 0;
+    const { narrative } = result;
 
     return (
         <div className="w-full animate-[fadeIn_1s] pb-32">
