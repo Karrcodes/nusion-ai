@@ -986,24 +986,23 @@ const RestaurantDashboard = ({ user }) => {
                                             localStorage.setItem('restaurant_profile', JSON.stringify(profile));
 
                                             // 2. Sync with Profiles table for global visibility (Landing Page / Discovery)
-                                            // Using UPSERT to handle cases where the row might not exist yet
+                                            // Simplified UPSERT to avoid potential schema mismatches or RLS complications
                                             const { error: profileError } = await supabase
                                                 .from('profiles')
                                                 .upsert({
-                                                    id: user.id, // Ensure we target the right row
+                                                    id: user.id,
                                                     name: profile.name,
-                                                    email: user.email, // Include email as it's used in Admin/Owner Portal
-                                                    city: profile.location,
-                                                    cuisine_type: profile.cuisine,
-                                                    logo_url: profile.logoUrl,
-                                                    cover_url: profile.coverUrl,
-                                                    status: 'approved', // Automatically keep approved for demo/MVP
-                                                    updated_at: new Date().toISOString()
-                                                }, { onConflict: 'id' });
+                                                    email: user.email,
+                                                    city: profile.location || '',
+                                                    cuisine_type: profile.cuisine || '',
+                                                    logo_url: profile.logoUrl || null,
+                                                    cover_url: profile.coverUrl || null,
+                                                    status: 'approved'
+                                                });
 
                                             if (profileError) {
                                                 console.error('Supabase Profiles Sync Error:', profileError);
-                                                throw profileError;
+                                                throw new Error(`Profile Sync: ${profileError.message}`);
                                             }
 
                                             // 3. Sync with Supabase Metadata for persistent cross-tab sessions
@@ -1015,7 +1014,7 @@ const RestaurantDashboard = ({ user }) => {
                                             alert('Profile & Branding synced successfully!');
                                         } catch (e) {
                                             console.error("Sync failed", e);
-                                            alert('Failed to sync changes to server, but saved locally.');
+                                            alert(`Failed to sync changes: ${e.message || 'Unknown error'}. Local data is preserved.`);
                                         } finally {
                                             setLoading(false);
                                         }
