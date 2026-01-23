@@ -195,7 +195,7 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                             <div className="absolute bottom-10 right-10 text-right pointer-events-none">
                                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
                                     <div className="w-1.5 h-1.5 bg-[var(--color-gold)] rounded-full animate-pulse"></div>
-                                    <span className="text-[9px] font-mono tracking-widest text-[var(--color-gold)]">LIVE SATELLITE</span>
+                                    <span className="text-[9px] font-mono tracking-widest text-[var(--color-gold)] uppercase">ORIGIN MAPPING</span>
                                 </div>
                             </div>
                         </div>
