@@ -183,7 +183,7 @@ function App() {
             <Dashboard user={currentUser} />
           } />
 
-          <Route path="/ikoyi" element={
+          <Route path="/:brandSlug" element={
             <ProtectedRoute user={currentUser}>
               <div className="animate-[fadeSlideIn_0.5s_ease-out] w-full min-h-screen bg-[var(--color-midnight)]">
                 <IkoyiInterface user={currentUser} />

@@ -95,7 +95,7 @@ const Dashboard = ({ user }) => {
                     brands.map(brand => (
                         <Link
                             key={brand.id}
-                            to="/ikoyi"
+                            to={`/${(brand.name || 'brand').toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '')}`}
                             /* Future: to={`/brand/${brand.id}`} */
                             className="group cursor-pointer relative h-64 md:h-[400px] rounded-3xl overflow-hidden shadow-xl transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl block"
                         >

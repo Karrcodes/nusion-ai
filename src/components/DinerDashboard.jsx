@@ -238,7 +238,7 @@ const DinerDashboard = ({ user }) => {
                                             return (
                                                 <Link
                                                     key={restaurant.id}
-                                                    to="/ikoyi"
+                                                    to={`/${(restaurant.name || 'brand').toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '')}`}
                                                     className="group relative h-72 rounded-2xl overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500 block"
                                                 >
                                                     {/* Cover Image */}
@@ -303,7 +303,7 @@ const DinerDashboard = ({ user }) => {
                                             return (
                                                 <Link
                                                     key={restaurant.id}
-                                                    to="/ikoyi"
+                                                    to={`/${(restaurant.name || 'brand').toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '')}`}
                                                     className="group relative h-72 rounded-2xl overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500 block"
                                                 >
                                                     {/* Cover Image */}
@@ -368,7 +368,10 @@ const DinerDashboard = ({ user }) => {
                                     {history.map((gen, idx) => (
                                         <div
                                             key={idx}
-                                            onClick={() => navigate('/ikoyi', { state: { historicalResult: gen } })}
+                                            onClick={() => {
+                                                const slug = (gen.courses?.[0]?.restaurant_name || 'ikoyi').toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
+                                                navigate(`/${slug}`, { state: { historicalResult: gen } });
+                                            }}
                                             className="glass-panel overflow-hidden group cursor-pointer hover:-translate-y-1 transition-transform duration-300 rounded-2xl"
                                             title="View this Menu"
                                         >

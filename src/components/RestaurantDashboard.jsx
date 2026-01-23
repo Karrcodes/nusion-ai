@@ -1047,8 +1047,13 @@ const RestaurantDashboard = ({ user }) => {
                                                     </span>
                                                 </h3>
                                                 <div className="flex flex-col gap-1 text-sm text-text-secondary font-mono">
-                                                    <a href="https://nusion.tech/ikoyi" target="_blank" rel="noreferrer" className="hover:text-text-primary hover:underline transition-colors flex items-center gap-1">
-                                                        nusion.tech/ikoyi
+                                                    <a
+                                                        href={`https://nusion.tech/${(profile.name || 'brand').toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '')}`}
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                        className="hover:text-text-primary hover:underline transition-colors flex items-center gap-1"
+                                                    >
+                                                        nusion.tech/{(profile.name || 'brand').toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '')}
                                                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
                                                     </a>
                                                     <span className="opacity-60 flex items-center gap-2">
@@ -1065,7 +1070,9 @@ const RestaurantDashboard = ({ user }) => {
                                                     // Ensure latest state is in localStorage before opening new tab
                                                     localStorage.setItem(`restaurant_profile_${user.id}`, JSON.stringify(profile));
                                                     localStorage.setItem('restaurant_profile', JSON.stringify(profile));
-                                                    window.open('/ikoyi', '_blank');
+
+                                                    const slug = (profile.name || 'ikoyi').toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
+                                                    window.open(`/${slug}`, '_blank');
                                                 }}
                                                 className="flex-1 md:flex-none px-4 py-2 bg-white text-black font-bold text-sm rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
                                             >
