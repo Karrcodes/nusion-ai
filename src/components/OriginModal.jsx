@@ -67,10 +67,11 @@ const OriginModal = ({ isOpen, onClose, course }) => {
         }, 50);
 
         // Update Target Scale (Read by rAF loop)
-        if (scrollHeight - clientHeight > 0) {
-            const progress = scrollTop / (scrollHeight - clientHeight);
-            targetScaleRef.current = 1 + (progress * 0.8);
-        }
+        // Fixed Pixel Sensitivity: 100% animation progress reached at 500px of scroll.
+        // This ensures the globe feels the same across different content lengths.
+        const animationRange = 500;
+        const progress = Math.min(scrollTop / animationRange, 1);
+        targetScaleRef.current = 1 + (progress * 0.8);
     };
 
     if (!isVisible && !isOpen) return null;
@@ -103,10 +104,10 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                         <span className="text-xl leading-none mb-1">×</span>
                     </button>
 
-                    <div className="relative z-10 w-full min-h-full flex flex-col md:flex-row">
+                    <div className="relative z-10 w-full flex flex-col md:flex-row">
 
                         {/* Left Panel: Content */}
-                        <div className="w-full md:w-[50%] relative z-20 pointer-events-none pt-10 md:pt-16 pb-20 pl-10 md:pl-16 pr-10 md:pr-24 bg-black/20 backdrop-blur-md border-r border-white/5 rounded-r-3xl">
+                        <div className="w-full md:w-[50%] relative z-20 pointer-events-none pt-10 md:pt-16 pb-[100px] pl-10 md:pl-16 pr-10 md:pr-24 bg-black/20 backdrop-blur-md border-r border-white/5 rounded-r-3xl">
                             <div className="pointer-events-auto max-w-lg">
                                 <span className="text-[var(--color-gold)] font-cinzel text-[10px] tracking-[0.4em] mb-8 block animate-[fadeIn_0.8s_ease-out] border-b border-[var(--color-gold)]/30 pb-4 w-max">
                                     LOG NO. {course.id?.replace(/\D/g, '') || '01'}
@@ -116,7 +117,7 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                                     {course.name}
                                 </h2>
 
-                                <div className="space-y-20 animate-[fadeIn_1s_delay-200ms]">
+                                <div className="space-y-12 animate-[fadeIn_1s_delay-200ms]">
                                     {/* Story */}
                                     <div>
                                         <p className="text-white/80 text-lg leading-relaxed font-light">
@@ -157,9 +158,7 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                                         <div className="absolute top-0 right-0 w-20 h-20 bg-[var(--color-gold)] opacity-5 blur-[50px]"></div>
                                         <h4 className="text-[var(--color-gold)] text-[9px] uppercase tracking-[0.2em] mb-4 font-cinzel">Sommelier's Note</h4>
                                         <p className="text-white font-serif text-xl italic mb-2">"{course.pairing}"</p>
-                                        <p className="text-white/40 text-xs">Best served in a chilled crystal tulip glass.</p>
                                     </div>
-                                    <div className="h-32"></div>
                                 </div>
                             </div>
                         </div>
