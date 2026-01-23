@@ -616,7 +616,7 @@ const RestaurantDashboard = ({ user }) => {
     return (
         <div className="min-h-screen w-full bg-bg-primary flex flex-col md:flex-row">
             {/* Sidebar */}
-            <aside className="w-full md:w-64 border-b md:border-b-0 md:border-r border-glass-border p-4 md:p-6 flex flex-col md:pt-8 bg-white/50 backdrop-blur-md md:bg-transparent">
+            <aside className="w-full md:w-64 border-b md:border-b-0 md:border-r border-glass-border p-4 md:p-6 flex flex-col md:pt-8 bg-white/50 backdrop-blur-md md:bg-transparent md:sticky md:top-0 md:h-screen transition-all">
                 <div className="flex justify-between items-center md:block mb-4 md:mb-12">
                     <Link to="/" className="flex items-center gap-2 md:px-2 cursor-pointer hover:opacity-80 transition-opacity" title="Back to Home">
                         <img src="/nusion-logo.png" alt="Logo" className="h-6 md:h-8 w-auto opacity-80" style={{ filter: 'brightness(0) saturate(100%) invert(23%) sepia(13%) saturate(928%) hue-rotate(338deg) brightness(96%) contrast(90%)' }} />

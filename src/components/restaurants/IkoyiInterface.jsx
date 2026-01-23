@@ -232,7 +232,9 @@ function IkoyiInterface({ user }) {
                             {userPhoto ? (
                                 <img src={userPhoto} alt="Profile" className="w-full h-full object-cover rounded-full grayscale hover:grayscale-0 transition-all" />
                             ) : (
-                                <span className="font-cinzel text-[var(--color-gold)]">{user.name ? user.name.charAt(0).toUpperCase() : 'U'}</span>
+                                <span className="font-cinzel text-[var(--color-gold)]">
+                                    {user.type === 'restaurant' ? brand.name.charAt(0).toUpperCase() : (user.name ? user.name.charAt(0).toUpperCase() : 'U')}
+                                </span>
                             )}
                         </div>
                     </Link>

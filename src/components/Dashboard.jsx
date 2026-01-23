@@ -42,24 +42,36 @@ const Dashboard = ({ user }) => {
                         <Link
                             to={user.type === 'restaurant' ? '/dashboard/restaurant' : '/dashboard/diner?view=profile'}
                             className={`w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition-all shadow-md ${(() => {
-                                if (!user) return 'bg-accent-wa/20 text-accent-wa font-bold hover:bg-accent-wa hover:text-white border border-accent-wa/50';
+                                if (!user) return 'key';
                                 try {
-                                    const stored = localStorage.getItem(`diner_preferences_${user.id}`);
-                                    return stored && JSON.parse(stored).photo ? 'border-2 border-accent-wa/50 p-0 overflow-hidden' : 'bg-accent-wa/20 text-accent-wa font-bold hover:bg-accent-wa hover:text-white border border-accent-wa/50';
+                                    const key = user.type === 'restaurant'
+                                        ? `restaurant_profile_${user.id}`
+                                        : `diner_preferences_${user.id}`;
+                                    const stored = localStorage.getItem(key);
+                                    if (stored) {
+                                        const parsed = JSON.parse(stored);
+                                        return parsed.photo || parsed.logoUrl ? 'border-2 border-accent-wa/50 p-0 overflow-hidden' : 'bg-accent-wa/20 text-accent-wa font-bold hover:bg-accent-wa hover:text-white border border-accent-wa/50';
+                                    }
+                                    return 'bg-accent-wa/20 text-accent-wa font-bold hover:bg-accent-wa hover:text-white border border-accent-wa/50';
                                 } catch (e) { return 'bg-accent-wa/20 text-accent-wa font-bold hover:bg-accent-wa hover:text-white border border-accent-wa/50'; }
-                            })()
-                                }`}
+                            })()}`}
                             title="Go to My Palate"
                         >
                             {(() => {
                                 if (!user) return 'key';
                                 try {
-                                    const stored = localStorage.getItem(`diner_preferences_${user.id}`);
-                                    const photo = stored ? JSON.parse(stored).photo : null;
+                                    const key = user.type === 'restaurant'
+                                        ? `restaurant_profile_${user.id}`
+                                        : `diner_preferences_${user.id}`;
+                                    const stored = localStorage.getItem(key);
+                                    const parsed = stored ? JSON.parse(stored) : null;
+                                    const photo = parsed ? (parsed.photo || parsed.logoUrl) : null;
+                                    const name = parsed?.name || user.name || 'U';
+
                                     return photo ? (
                                         <img src={photo} alt="Profile" className="w-full h-full object-cover" />
                                     ) : (
-                                        user.name ? user.name.charAt(0).toUpperCase() : 'U'
+                                        name.charAt(0).toUpperCase()
                                     );
                                 } catch (e) {
                                     return user.name ? user.name.charAt(0).toUpperCase() : 'U';
@@ -68,7 +80,7 @@ const Dashboard = ({ user }) => {
                         </Link>
                     )}
                 </div>
-            </nav>
+            </nav >
 
 
             <header className="text-center mb-10 md:mb-16 animate-[fadeIn_1s] flex flex-col items-center mt-8">
@@ -154,7 +166,7 @@ const Dashboard = ({ user }) => {
             <footer className="mt-auto pt-12 pb-4 text-xs text-text-secondary/40 font-mono">
                 Studio AikinKarr 2026 copyright
             </footer>
-        </div>
+        </div >
     );
 };
 

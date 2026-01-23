@@ -3,19 +3,25 @@ import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
 
 const Home = ({ user, onStart, onLogin, onSignup, onPartnerSignup }) => {
-    // Get user photo from local storage if available
-    const userPhoto = React.useMemo(() => {
-        if (!user) return null;
+    // Get user identity from local storage if available
+    const userProfile = React.useMemo(() => {
+        if (!user) return { name: '', photo: null };
         try {
-            const stored = localStorage.getItem(`diner_preferences_${user.id}`);
+            const key = user.type === 'restaurant'
+                ? `restaurant_profile_${user.id}`
+                : `diner_preferences_${user.id}`;
+            const stored = localStorage.getItem(key);
             if (stored) {
                 const parsed = JSON.parse(stored);
-                return parsed.photo;
+                return {
+                    name: parsed.name || user.name || '',
+                    photo: parsed.photo || parsed.logoUrl || null
+                };
             }
         } catch (e) {
-            console.error("Error loading user photo", e);
+            console.error("Error loading user profile", e);
         }
-        return null;
+        return { name: user.name || '', photo: null };
     }, [user]);
 
     // Fetch Approved Brands
@@ -65,13 +71,13 @@ const Home = ({ user, onStart, onLogin, onSignup, onPartnerSignup }) => {
                         <div className="flex items-center gap-4">
                             <Link
                                 to={dashboardPath}
-                                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-md group ${userPhoto ? 'border-2 border-accent-wa/50 p-0 overflow-hidden' : 'bg-accent-wa/20 text-accent-wa font-bold hover:bg-accent-wa hover:text-white border border-accent-wa/50'}`}
+                                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-md group ${userProfile.photo ? 'border-2 border-accent-wa/50 p-0 overflow-hidden' : 'bg-accent-wa/20 text-accent-wa font-bold hover:bg-accent-wa hover:text-white border border-accent-wa/50'}`}
                                 title="Go to Dashboard"
                             >
-                                {userPhoto ? (
-                                    <img src={userPhoto} alt="Profile" className="w-full h-full object-cover" />
+                                {userProfile.photo ? (
+                                    <img src={userProfile.photo} alt="Profile" className="w-full h-full object-cover" />
                                 ) : (
-                                    user.name ? user.name.charAt(0).toUpperCase() : 'U'
+                                    userProfile.name ? userProfile.name.charAt(0).toUpperCase() : 'U'
                                 )}
                             </Link>
                         </div>
