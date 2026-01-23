@@ -36,7 +36,7 @@ function IkoyiInterface({ user }) {
 
     // --- DYNAMIC BRANDING LOGIC ---
     const [brand, setBrand] = useState({
-        name: 'Nusion AI',
+        name: currentConfig.restaurantName,
         logoUrl: null, // If null, use default Nusion branding
         accentColor: '#d4af37', // Default Gold
         font: 'Modern Sans',

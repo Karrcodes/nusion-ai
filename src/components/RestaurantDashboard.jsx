@@ -653,7 +653,7 @@ const RestaurantDashboard = ({ user }) => {
             <main className="flex-1 p-4 md:p-12 bg-bg-secondary/30">
                 <header className="mb-6 md:mb-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
-                        <h1 className="text-3xl font-display font-bold text-text-primary mb-1">Welcome back, Ikoyi</h1>
+                        <h1 className="text-3xl font-display font-bold text-text-primary mb-1">Welcome back, {profile?.name || 'Partner'}</h1>
                         <p className="text-text-secondary text-sm">Manage your real-time generative parameters.</p>
                     </div>
                     <div className="flex gap-4">

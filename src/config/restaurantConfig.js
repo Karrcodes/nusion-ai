@@ -1,5 +1,5 @@
 export const currentConfig = {
-  restaurantName: "Nusion Dining",
+  restaurantName: "Ikoyi",
   currency: "£",
   defaultBudget: 50,
   theme: {
