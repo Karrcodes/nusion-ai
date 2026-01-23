@@ -177,7 +177,7 @@ const DinerDashboard = ({ user }) => {
                         {preferences.photo ? (
                             <img src={preferences.photo} alt="Profile" className="w-full h-full object-cover" />
                         ) : (
-                            user?.name ? user.name.charAt(0).toUpperCase() : 'G'
+                            (preferences.name || user?.name) ? (preferences.name || user?.name).charAt(0).toUpperCase() : 'G'
                         )}
                     </button>
                 </div>

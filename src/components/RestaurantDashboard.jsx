@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
 import { cities } from '../lib/cities';
 import { resizeImage } from '../utils/imageUtils';
@@ -8,7 +8,11 @@ import { resizeImage } from '../utils/imageUtils';
 
 const RestaurantDashboard = ({ user }) => {
     const navigate = useNavigate();
-    const [activeTab, setActiveTab] = useState('inventory'); // 'dashboard', 'inventory', 'insights'
+    const location = useLocation();
+    const [activeTab, setActiveTab] = useState(() => {
+        const params = new URLSearchParams(location.search);
+        return params.get('view') === 'profile' ? 'profile' : 'inventory';
+    }); // 'dashboard', 'inventory', 'insights'
 
     // Helper for safe parsing
     const safeParse = (key, fallback) => {

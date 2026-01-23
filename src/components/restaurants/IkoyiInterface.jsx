@@ -221,12 +221,12 @@ function IkoyiInterface({ user }) {
                 {/* Profile Button */}
                 {user && (
                     <Link
-                        to="/dashboard/diner?view=profile"
+                        to={user.type === 'restaurant' ? '/dashboard/restaurant?view=profile' : '/dashboard/diner?view=profile'}
                         className={`pointer-events-auto group flex items-center gap-3 transition-all opacity-70 hover:opacity-100`}
                         title="Go to Profile"
                     >
                         <span className="text-[10px] font-cinzel uppercase text-white tracking-widest group-hover:text-[var(--color-gold)] transition-colors pr-2">
-                            {user.name || 'LIST'}
+                            {user.type === 'restaurant' ? brand.name : (user.name || 'LIST')}
                         </span>
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all bg-[var(--color-charcoal)] border border-[var(--color-gold-dim)]`}>
                             {userPhoto ? (
