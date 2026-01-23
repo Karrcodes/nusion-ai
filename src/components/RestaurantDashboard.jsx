@@ -60,8 +60,10 @@ const RestaurantDashboard = ({ user }) => {
         };
 
         if (user?.id) {
-            const saved = safeParse(`restaurant_profile_${user.id}`, null);
-            if (saved) return { ...defaultProfile, ...saved }; // Merge to ensure new fields exist
+            // Check for new key first, then legacy preferences key
+            const saved = safeParse(`restaurant_profile_${user.id}`, null) ||
+                safeParse(`restaurant_preferences_${user.id}`, null);
+            if (saved) return { ...defaultProfile, ...saved };
         }
         return defaultProfile;
     });
@@ -1067,12 +1069,13 @@ const RestaurantDashboard = ({ user }) => {
                                         <div className="flex gap-3 w-full md:w-auto">
                                             <button
                                                 onClick={() => {
-                                                    // Ensure latest state is in localStorage before opening new tab
+                                                    // Ensure latest state is in localStorage before navigating
                                                     localStorage.setItem(`restaurant_profile_${user.id}`, JSON.stringify(profile));
                                                     localStorage.setItem('restaurant_profile', JSON.stringify(profile));
 
                                                     const slug = (profile.name || 'ikoyi').toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
-                                                    window.open(`/${slug}`, '_blank');
+                                                    // Navigate in the same tab to ensure state/context consistency
+                                                    navigate(`/${slug}`);
                                                 }}
                                                 className="flex-1 md:flex-none px-4 py-2 bg-white text-black font-bold text-sm rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
                                             >

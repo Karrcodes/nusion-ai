@@ -148,7 +148,8 @@ const OnboardingWizard = ({ user }) => {
                     contactEmail: '',
                     dietaryTags: ''
                 };
-                localStorage.setItem(`restaurant_preferences_${user.id}`, JSON.stringify(profile));
+                localStorage.setItem(`restaurant_profile_${user.id}`, JSON.stringify(profile));
+                localStorage.setItem('restaurant_profile', JSON.stringify(profile));
 
                 // Save Inventory if scanned (use manual override if provided to bypass stale state)
                 const finalScannedData = manualScannedData || scannedData;
