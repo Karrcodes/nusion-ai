@@ -91,13 +91,13 @@ const RecommendationResult = ({ result, onReset }) => {
                                         <img
                                             src={course.image}
                                             alt={course.name}
-                                            className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110"
+                                            className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110 group-hover:blur-xl group-hover:opacity-40 will-change-[filter,transform]"
                                             onError={(e) => {
                                                 e.target.style.display = 'none';
                                             }}
                                         />
                                     ) : (
-                                        <div className="w-full h-full bg-gradient-to-br from-gray-800 to-black" />
+                                        <div className="w-full h-full bg-gradient-to-br from-gray-800 to-black transition-all duration-700 group-hover:blur-xl group-hover:opacity-40" />
                                     )}
                                     {/* Primary Gradient Overlay (Static) */}
                                     <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-90 transition-opacity duration-300 group-hover:opacity-100 z-[1]" />
@@ -106,8 +106,6 @@ const RecommendationResult = ({ result, onReset }) => {
                                     <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 z-[2] pointer-events-none will-change-[opacity]">
                                         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.8)_100%)]"></div>
                                         <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.02),rgba(0,255,0,0.01),rgba(0,0,255,0.02))] bg-[length:100%_2px,3px_100%] opacity-20"></div>
-                                        {/* Backdrop Blur: Constant filter, transitioned via parent opacity */}
-                                        <div className="absolute inset-0 backdrop-blur-[16px]"></div>
                                     </div>
                                 </div>
 
