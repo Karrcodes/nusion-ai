@@ -986,19 +986,25 @@ const RestaurantDashboard = ({ user }) => {
                                             localStorage.setItem('restaurant_profile', JSON.stringify(profile));
 
                                             // 2. Sync with Profiles table for global visibility (Landing Page / Discovery)
+                                            // Using UPSERT to handle cases where the row might not exist yet
                                             const { error: profileError } = await supabase
                                                 .from('profiles')
-                                                .update({
+                                                .upsert({
+                                                    id: user.id, // Ensure we target the right row
                                                     name: profile.name,
+                                                    email: user.email, // Include email as it's used in Admin/Owner Portal
                                                     city: profile.location,
                                                     cuisine_type: profile.cuisine,
                                                     logo_url: profile.logoUrl,
                                                     cover_url: profile.coverUrl,
-                                                    status: 'approved' // Automatically keep approved if they were already approved (or for demo)
-                                                })
-                                                .eq('id', user.id);
+                                                    status: 'approved', // Automatically keep approved for demo/MVP
+                                                    updated_at: new Date().toISOString()
+                                                }, { onConflict: 'id' });
 
-                                            if (profileError) throw profileError;
+                                            if (profileError) {
+                                                console.error('Supabase Profiles Sync Error:', profileError);
+                                                throw profileError;
+                                            }
 
                                             // 3. Sync with Supabase Metadata for persistent cross-tab sessions
                                             const { error } = await supabase.auth.updateUser({
