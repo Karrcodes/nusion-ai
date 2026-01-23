@@ -36,7 +36,8 @@ export function Globe3D({ lat, lng, velocityRef }) {
                 { location: [lat, lng], size: 0.1 }
             ],
             onRender: (state) => {
-                const targetBoost = velocityRef.current * 0.002;
+                const velocity = velocityRef?.current || 0;
+                const targetBoost = velocity * 0.002;
                 currentBoost += (targetBoost - currentBoost) * 0.1;
 
                 state.phi = phi;

@@ -2,6 +2,7 @@ import { useRef, useState, useEffect } from 'react';
 import html2canvas from 'html2canvas';
 import { currentConfig } from '../config/restaurantConfig';
 import OriginModal from './OriginModal';
+import { Globe3D } from './Globe3D';
 
 const RecommendationResult = ({ result, onReset }) => {
     const cardRef = useRef(null);
@@ -103,10 +104,11 @@ const RecommendationResult = ({ result, onReset }) => {
 
                                     {/* Technical Vignette & Scan-line Overlay */}
                                     <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-all duration-700 z-[2] pointer-events-none">
-                                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.6)_100%)]"></div>
+                                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.8)_100%)]"></div>
                                         <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.02),rgba(0,255,0,0.01),rgba(0,0,255,0.02))] bg-[length:100%_2px,3px_100%] opacity-20"></div>
+                                        {/* Backdrop Blur on Hover */}
+                                        <div className="absolute inset-0 backdrop-blur-[6px] transition-all duration-700"></div>
                                     </div>
-
                                 </div>
 
                                 {/* TOP CONTENT: Always Aligned */}
@@ -119,30 +121,35 @@ const RecommendationResult = ({ result, onReset }) => {
                                     </span>
                                 </div>
 
-                                {/* Hover Hint: Technical Satellite Targeting */}
-                                <div className="absolute top-[40%] left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-500 z-20 pointer-events-none">
-                                    <div className="relative w-24 h-24 flex items-center justify-center">
-                                        {/* Backdrop for Contrast */}
-                                        <div className="absolute inset-[-10%] bg-black/20 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+                                {/* Hover Hint: Technical Globe Origin Trace */}
+                                <div className="absolute top-[40%] left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-700 z-20 pointer-events-none w-full h-full flex items-center justify-center">
+                                    <div className="relative w-64 h-64 flex flex-col items-center justify-center">
+                                        {/* Glow Backdrop */}
+                                        <div className="absolute inset-0 bg-[var(--color-gold)]/5 blur-[80px] rounded-full"></div>
 
-                                        {/* Rotating Outer Ring */}
-                                        <div className="absolute inset-0 border border-dashed border-[var(--color-gold)]/60 rounded-full animate-spin-slow shadow-[0_0_15px_rgba(229,192,123,0.1)]"></div>
-                                        <div className="absolute inset-2 border border-white/5 rounded-full backdrop-blur-[1px]"></div>
+                                        {/* Origin Label */}
+                                        <div className="absolute top-0 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1">
+                                            <span className="text-[8px] font-mono text-[var(--color-gold)] tracking-[0.4em] uppercase opacity-80">Origin Trace</span>
+                                            <div className="w-8 h-[1px] bg-[var(--color-gold)]/40"></div>
+                                        </div>
 
-                                        {/* Pulsing Crosshair */}
-                                        <div className="absolute w-12 h-[1px] bg-[var(--color-gold)]/60"></div>
-                                        <div className="absolute h-12 w-[1px] bg-[var(--color-gold)]/60"></div>
-
-                                        {/* Center Point */}
-                                        <div className="w-2 h-2 bg-[var(--color-gold)] rounded-full shadow-[0_0_10px_var(--color-gold)]"></div>
+                                        {/* 3D Globe - Smaller scale for card */}
+                                        <div className="w-48 h-48 scale-90">
+                                            <Globe3D
+                                                lat={course.origin?.coordinates?.lat || 0}
+                                                lng={course.origin?.coordinates?.lng || 0}
+                                                velocityRef={{ current: 0 }}
+                                            />
+                                        </div>
 
                                         {/* Coordinates Text: Minimalist mono display */}
-                                        <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center opacity-0 group-hover:opacity-100 transition-opacity duration-700 delay-200">
-                                            <span className="text-[7px] font-mono text-[var(--color-gold)] tracking-tighter whitespace-nowrap uppercase drop-shadow-md">
-                                                TRGT: {course.origin?.coordinates?.lat?.toFixed(2) || '0.00'}N
+                                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex flex-col items-center opacity-0 group-hover:opacity-100 transition-all duration-700 delay-300">
+                                            <div className="w-8 h-[1px] bg-[var(--color-gold)]/40 mb-2"></div>
+                                            <span className="text-[7px] font-mono text-white/90 tracking-tighter whitespace-nowrap uppercase">
+                                                {course.origin?.name || 'Unknown Region'}
                                             </span>
-                                            <span className="text-[7px] font-mono text-[var(--color-gold)] tracking-tighter whitespace-nowrap uppercase drop-shadow-md">
-                                                POS: {course.origin?.coordinates?.lng?.toFixed(2) || '0.00'}E
+                                            <span className="text-[7px] font-mono text-[var(--color-gold)] tracking-tighter whitespace-nowrap uppercase mt-1">
+                                                {course.origin?.coordinates?.lat?.toFixed(2) || '0.00'}N / {course.origin?.coordinates?.lng?.toFixed(2) || '0.00'}E
                                             </span>
                                         </div>
                                     </div>
