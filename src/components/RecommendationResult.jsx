@@ -107,24 +107,6 @@ const RecommendationResult = ({ result, onReset }) => {
                                         <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.02),rgba(0,255,0,0.01),rgba(0,0,255,0.02))] bg-[length:100%_2px,3px_100%] opacity-20"></div>
                                     </div>
 
-                                    {/* FORENSIC DRONE LOCK ELEMENTS */}
-                                    <div className="absolute inset-0 z-20 pointer-events-none overflow-hidden text-white">
-                                        {/* Corner Brackets */}
-                                        <div className="absolute top-4 left-4 w-4 h-4 border-t border-l border-[var(--color-gold)]/60 opacity-0 group-hover:opacity-100 -translate-x-2 -translate-y-2 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-500 delay-75"></div>
-                                        <div className="absolute top-4 right-4 w-4 h-4 border-t border-r border-[var(--color-gold)]/60 opacity-0 group-hover:opacity-100 translate-x-2 -translate-y-2 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-500 delay-75"></div>
-                                        <div className="absolute bottom-4 left-4 w-4 h-4 border-b border-l border-[var(--color-gold)]/60 opacity-0 group-hover:opacity-100 -translate-x-2 translate-y-2 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-500 delay-75"></div>
-                                        <div className="absolute bottom-4 right-4 w-4 h-4 border-b border-r border-[var(--color-gold)]/60 opacity-0 group-hover:opacity-100 translate-x-2 translate-y-2 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-500 delay-75"></div>
-
-                                        {/* Scanning Data Bits */}
-                                        <div className="absolute top-10 left-4 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-700 delay-150">
-                                            <span className="text-[6px] font-mono text-[var(--color-gold)]/40 tracking-widest uppercase">OBJ: IDENTIFIED</span>
-                                            <span className="text-[6px] font-mono text-[var(--color-gold)]/40 tracking-widest uppercase">SIG: STABLE</span>
-                                        </div>
-                                        <div className="absolute bottom-32 right-4 flex flex-col items-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-700 delay-150">
-                                            <span className="text-[6px] font-mono text-[var(--color-gold)]/40 tracking-widest uppercase">REC_LIVE</span>
-                                            <div className="w-1 h-1 bg-red-500/60 rounded-full animate-pulse"></div>
-                                        </div>
-                                    </div>
                                 </div>
 
                                 {/* TOP CONTENT: Always Aligned */}
