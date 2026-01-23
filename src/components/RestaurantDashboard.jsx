@@ -985,7 +985,22 @@ const RestaurantDashboard = ({ user }) => {
                                             localStorage.setItem(`restaurant_profile_${user.id}`, JSON.stringify(profile));
                                             localStorage.setItem('restaurant_profile', JSON.stringify(profile));
 
-                                            // 2. Sync with Supabase Metadata for persistent cross-tab sessions
+                                            // 2. Sync with Profiles table for global visibility (Landing Page / Discovery)
+                                            const { error: profileError } = await supabase
+                                                .from('profiles')
+                                                .update({
+                                                    name: profile.name,
+                                                    city: profile.location,
+                                                    cuisine_type: profile.cuisine,
+                                                    logo_url: profile.logoUrl,
+                                                    cover_url: profile.coverUrl,
+                                                    status: 'approved' // Automatically keep approved if they were already approved (or for demo)
+                                                })
+                                                .eq('id', user.id);
+
+                                            if (profileError) throw profileError;
+
+                                            // 3. Sync with Supabase Metadata for persistent cross-tab sessions
                                             const { error } = await supabase.auth.updateUser({
                                                 data: { name: profile.name }
                                             });
@@ -1256,7 +1271,7 @@ const RestaurantDashboard = ({ user }) => {
                                                             <span className="text-2xl opacity-20">🖼️</span>
                                                         )}
                                                         <label className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center cursor-pointer transition-opacity text-xs text-white font-bold">
-                                                            Upload
+                                                            {uploading === 'logoUrl' ? '...' : 'Upload'}
                                                             <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e.target.files[0], 'logoUrl')} />
                                                         </label>
                                                     </div>
@@ -1269,6 +1284,33 @@ const RestaurantDashboard = ({ user }) => {
                                                             className="w-full bg-bg-primary/50 border border-glass-border rounded p-2 text-text-primary focus:border-accent-jp focus:outline-none text-xs"
                                                         />
                                                         <p className="text-[10px] text-text-secondary">Supported: JPG, PNG, WebP (Max 1MB)</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <label className="text-xs font-mono text-text-secondary uppercase">Card Cover Image (Landing Page & Discovery)</label>
+                                                <div className="flex gap-4 items-start">
+                                                    <div className="w-32 h-20 rounded bg-bg-primary border border-glass-border flex items-center justify-center overflow-hidden flex-shrink-0 relative group">
+                                                        {profile.coverUrl ? (
+                                                            <img src={profile.coverUrl} alt="Cover" className="w-full h-full object-cover" onError={(e) => e.target.style.display = 'none'} />
+                                                        ) : (
+                                                            <span className="text-2xl opacity-20">📸</span>
+                                                        )}
+                                                        <label className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center cursor-pointer transition-opacity text-xs text-white font-bold">
+                                                            {uploading === 'coverUrl' ? '...' : 'Upload'}
+                                                            <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e.target.files[0], 'coverUrl')} />
+                                                        </label>
+                                                    </div>
+                                                    <div className="flex-1 space-y-2">
+                                                        <input
+                                                            type="text"
+                                                            placeholder="Or paste Cover Image URL..."
+                                                            value={profile.coverUrl || ''}
+                                                            onChange={(e) => setProfile({ ...profile, coverUrl: e.target.value })}
+                                                            className="w-full bg-bg-primary/50 border border-glass-border rounded p-2 text-text-primary focus:border-accent-jp focus:outline-none text-xs"
+                                                        />
+                                                        <p className="text-[10px] text-text-secondary">This image represents you on the main Discovery board.</p>
                                                     </div>
                                                 </div>
                                             </div>
