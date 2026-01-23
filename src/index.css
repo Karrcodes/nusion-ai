@@ -150,9 +150,9 @@
 
 .moving-border-outer {
   position: absolute;
-  inset: -6px;
-  border-radius: 1.8rem;
-  padding: 4px;
+  inset: -3px;
+  border-radius: 1.6rem;
+  padding: 3px;
   overflow: hidden;
   mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -171,5 +171,4 @@
       #5c4d2d 180deg,
       var(--color-gold) 270deg,
       var(--color-gold-dim) 360deg);
-  filter: blur(2px);
 }

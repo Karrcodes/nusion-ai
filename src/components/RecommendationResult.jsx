@@ -75,15 +75,15 @@ const RecommendationResult = ({ result, onReset }) => {
                         <div
                             key={course.id}
                             onClick={() => setSelectedCourse(course)}
-                            className="group relative h-[520px] transition-all duration-500 hover:scale-[1.02] hover:shadow-[0_20px_40px_rgba(0,0,0,0.5)] cursor-pointer"
+                            className="group relative h-[520px] transition-all duration-500 hover:scale-[1.02] hover:shadow-[0_20px_40px_rgba(0,0,0,0.5)] cursor-pointer will-change-transform"
                         >
                             {/* Moving Gradient Border (Outside Frame) */}
-                            <div className="moving-border-outer opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                            <div className="moving-border-outer opacity-0 group-hover:opacity-100 transition-opacity duration-500 will-change-transform">
                                 <div className="moving-border-inner animate-spin-border"></div>
                             </div>
 
                             {/* Inner Content Wrapper (Clipped) */}
-                            <div className="absolute inset-0 rounded-3xl overflow-hidden bg-black z-10">
+                            <div className="absolute inset-0 rounded-3xl overflow-hidden bg-black border border-black z-10 will-change-transform">
                                 {/* Full Background Image Section */}
                                 <div className="absolute inset-0 w-full h-full">
                                     {course.image ? (
