@@ -9,6 +9,7 @@ import { resizeImage } from '../utils/imageUtils';
 const RestaurantDashboard = ({ user }) => {
     const navigate = useNavigate();
     const location = useLocation();
+    const [loading, setLoading] = useState(false);
     const [activeTab, setActiveTab] = useState(() => {
         const params = new URLSearchParams(location.search);
         return params.get('view') === 'profile' ? 'profile' : 'inventory';
