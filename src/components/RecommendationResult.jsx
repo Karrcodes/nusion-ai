@@ -106,25 +106,28 @@ const RecommendationResult = ({ result, onReset }) => {
                             </div>
 
                             {/* Hover Hint: Technical Satellite Targeting */}
-                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-20 pointer-events-none">
+                            <div className="absolute top-[35%] left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-500 z-20 pointer-events-none">
                                 <div className="relative w-24 h-24 flex items-center justify-center">
+                                    {/* Backdrop for Contrast */}
+                                    <div className="absolute inset-[-20%] bg-black/40 blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+
                                     {/* Rotating Outer Ring */}
-                                    <div className="absolute inset-0 border border-dashed border-[var(--color-gold)]/40 rounded-full animate-spin-slow"></div>
-                                    <div className="absolute inset-2 border border-white/5 rounded-full"></div>
+                                    <div className="absolute inset-0 border border-dashed border-[var(--color-gold)]/60 rounded-full animate-spin-slow shadow-[0_0_15px_rgba(229,192,123,0.1)]"></div>
+                                    <div className="absolute inset-2 border border-white/5 rounded-full backdrop-blur-[2px]"></div>
 
                                     {/* Pulsing Crosshair */}
-                                    <div className="absolute w-12 h-[1px] bg-[var(--color-gold)]/50"></div>
-                                    <div className="absolute h-12 w-[1px] bg-[var(--color-gold)]/50"></div>
+                                    <div className="absolute w-12 h-[1px] bg-[var(--color-gold)]/60"></div>
+                                    <div className="absolute h-12 w-[1px] bg-[var(--color-gold)]/60"></div>
 
                                     {/* Center Point */}
                                     <div className="w-1 h-1 bg-[var(--color-gold)] rounded-full shadow-[0_0_10px_var(--color-gold)]"></div>
 
                                     {/* Coordinates Text: Minimalist mono display */}
                                     <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center opacity-0 group-hover:opacity-100 transition-opacity duration-700 delay-100">
-                                        <span className="text-[7px] font-mono text-[var(--color-gold)] tracking-tighter whitespace-nowrap uppercase">
+                                        <span className="text-[7px] font-mono text-[var(--color-gold)] tracking-tighter whitespace-nowrap uppercase drop-shadow-md">
                                             TRGT: {course.origin?.coordinates?.lat?.toFixed(2) || '0.00'}N
                                         </span>
-                                        <span className="text-[7px] font-mono text-[var(--color-gold)] tracking-tighter whitespace-nowrap uppercase">
+                                        <span className="text-[7px] font-mono text-[var(--color-gold)] tracking-tighter whitespace-nowrap uppercase drop-shadow-md">
                                             POS: {course.origin?.coordinates?.lng?.toFixed(2) || '0.00'}E
                                         </span>
                                     </div>
