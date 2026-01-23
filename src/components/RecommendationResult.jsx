@@ -75,119 +75,122 @@ const RecommendationResult = ({ result, onReset }) => {
                         <div
                             key={course.id}
                             onClick={() => setSelectedCourse(course)}
-                            className="group relative h-[520px] rounded-3xl overflow-hidden bg-black transition-all duration-500 hover:scale-[1.02] hover:shadow-[0_20px_40px_rgba(0,0,0,0.5)] cursor-pointer"
+                            className="group relative h-[520px] transition-all duration-500 hover:scale-[1.02] hover:shadow-[0_20px_40px_rgba(0,0,0,0.5)] cursor-pointer"
                         >
-                            {/* Moving Gradient Border (Tracing Light) */}
+                            {/* Moving Gradient Border (Outside Frame) */}
                             <div className="moving-border-outer opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                                 <div className="moving-border-inner animate-spin-border"></div>
                             </div>
 
-                            {/* Full Background Image */}
-                            <div className="absolute inset-0 w-full h-full">
-                                {course.image ? (
-                                    <img
-                                        src={course.image}
-                                        alt={course.name}
-                                        className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110"
-                                        onError={(e) => {
-                                            e.target.style.display = 'none';
-                                        }}
-                                    />
-                                ) : (
-                                    <div className="w-full h-full bg-gradient-to-br from-gray-800 to-black" />
-                                )}
-                                {/* Primary Gradient Overlay (Static) */}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-90 transition-opacity duration-300 group-hover:opacity-100 z-[1]" />
+                            {/* Inner Content Wrapper (Clipped) */}
+                            <div className="absolute inset-0 rounded-3xl overflow-hidden bg-black z-10">
+                                {/* Full Background Image Section */}
+                                <div className="absolute inset-0 w-full h-full">
+                                    {course.image ? (
+                                        <img
+                                            src={course.image}
+                                            alt={course.name}
+                                            className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110"
+                                            onError={(e) => {
+                                                e.target.style.display = 'none';
+                                            }}
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full bg-gradient-to-br from-gray-800 to-black" />
+                                    )}
+                                    {/* Primary Gradient Overlay (Static) */}
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-90 transition-opacity duration-300 group-hover:opacity-100 z-[1]" />
 
-                                {/* Technical Vignette & Scan-line Overlay */}
-                                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-all duration-700 z-[2] pointer-events-none">
-                                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.6)_100%)]"></div>
-                                    <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.02),rgba(0,255,0,0.01),rgba(0,0,255,0.02))] bg-[length:100%_2px,3px_100%] opacity-20"></div>
-                                </div>
-
-                                {/* FORENSIC DRONE LOCK ELEMENTS */}
-                                <div className="absolute inset-0 z-20 pointer-events-none overflow-hidden text-white">
-                                    {/* Corner Brackets */}
-                                    <div className="absolute top-4 left-4 w-4 h-4 border-t border-l border-[var(--color-gold)]/60 opacity-0 group-hover:opacity-100 -translate-x-2 -translate-y-2 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-500 delay-75"></div>
-                                    <div className="absolute top-4 right-4 w-4 h-4 border-t border-r border-[var(--color-gold)]/60 opacity-0 group-hover:opacity-100 translate-x-2 -translate-y-2 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-500 delay-75"></div>
-                                    <div className="absolute bottom-4 left-4 w-4 h-4 border-b border-l border-[var(--color-gold)]/60 opacity-0 group-hover:opacity-100 -translate-x-2 translate-y-2 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-500 delay-75"></div>
-                                    <div className="absolute bottom-4 right-4 w-4 h-4 border-b border-r border-[var(--color-gold)]/60 opacity-0 group-hover:opacity-100 translate-x-2 translate-y-2 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-500 delay-75"></div>
-
-                                    {/* Scanning Data Bits */}
-                                    <div className="absolute top-10 left-4 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-700 delay-150">
-                                        <span className="text-[6px] font-mono text-[var(--color-gold)]/40 tracking-widest uppercase">OBJ: IDENTIFIED</span>
-                                        <span className="text-[6px] font-mono text-[var(--color-gold)]/40 tracking-widest uppercase">SIG: STABLE</span>
+                                    {/* Technical Vignette & Scan-line Overlay */}
+                                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-all duration-700 z-[2] pointer-events-none">
+                                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.6)_100%)]"></div>
+                                        <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.02),rgba(0,255,0,0.01),rgba(0,0,255,0.02))] bg-[length:100%_2px,3px_100%] opacity-20"></div>
                                     </div>
-                                    <div className="absolute bottom-32 right-4 flex flex-col items-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-700 delay-150">
-                                        <span className="text-[6px] font-mono text-[var(--color-gold)]/40 tracking-widest uppercase">REC_LIVE</span>
-                                        <div className="w-1 h-1 bg-red-500/60 rounded-full animate-pulse"></div>
-                                    </div>
-                                </div>
-                            </div>
 
-                            {/* TOP CONTENT: Always Aligned */}
-                            <div className="absolute top-0 left-0 w-full p-6 flex justify-between items-start z-30">
-                                <span className="text-[9px] uppercase tracking-[0.3em] text-[var(--color-gold)] font-cinzel drop-shadow-md">
-                                    0{index + 1} // {index === 0 ? 'Start' : index === 1 ? 'Main' : 'Sweet'}
-                                </span>
-                                <span className="px-3 py-1.5 rounded-full bg-black/80 border border-white/20 text-xs font-bold text-white tracking-widest shadow-lg min-w-[44px] text-center">
-                                    {currentConfig.currency}{course.cost}
-                                </span>
-                            </div>
+                                    {/* FORENSIC DRONE LOCK ELEMENTS */}
+                                    <div className="absolute inset-0 z-20 pointer-events-none overflow-hidden text-white">
+                                        {/* Corner Brackets */}
+                                        <div className="absolute top-4 left-4 w-4 h-4 border-t border-l border-[var(--color-gold)]/60 opacity-0 group-hover:opacity-100 -translate-x-2 -translate-y-2 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-500 delay-75"></div>
+                                        <div className="absolute top-4 right-4 w-4 h-4 border-t border-r border-[var(--color-gold)]/60 opacity-0 group-hover:opacity-100 translate-x-2 -translate-y-2 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-500 delay-75"></div>
+                                        <div className="absolute bottom-4 left-4 w-4 h-4 border-b border-l border-[var(--color-gold)]/60 opacity-0 group-hover:opacity-100 -translate-x-2 translate-y-2 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-500 delay-75"></div>
+                                        <div className="absolute bottom-4 right-4 w-4 h-4 border-b border-r border-[var(--color-gold)]/60 opacity-0 group-hover:opacity-100 translate-x-2 translate-y-2 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-500 delay-75"></div>
 
-                            {/* Hover Hint: Technical Satellite Targeting */}
-                            <div className="absolute top-[40%] left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-500 z-20 pointer-events-none">
-                                <div className="relative w-24 h-24 flex items-center justify-center">
-                                    {/* Backdrop for Contrast */}
-                                    <div className="absolute inset-[-10%] bg-black/20 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
-
-                                    {/* Rotating Outer Ring */}
-                                    <div className="absolute inset-0 border border-dashed border-[var(--color-gold)]/60 rounded-full animate-spin-slow shadow-[0_0_15px_rgba(229,192,123,0.1)]"></div>
-                                    <div className="absolute inset-2 border border-white/5 rounded-full backdrop-blur-[1px]"></div>
-
-                                    {/* Pulsing Crosshair */}
-                                    <div className="absolute w-12 h-[1px] bg-[var(--color-gold)]/60"></div>
-                                    <div className="absolute h-12 w-[1px] bg-[var(--color-gold)]/60"></div>
-
-                                    {/* Center Point */}
-                                    <div className="w-2 h-2 bg-[var(--color-gold)] rounded-full shadow-[0_0_10px_var(--color-gold)]"></div>
-
-                                    {/* Coordinates Text: Minimalist mono display */}
-                                    <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center opacity-0 group-hover:opacity-100 transition-opacity duration-700 delay-200">
-                                        <span className="text-[7px] font-mono text-[var(--color-gold)] tracking-tighter whitespace-nowrap uppercase drop-shadow-md">
-                                            TRGT: {course.origin?.coordinates?.lat?.toFixed(2) || '0.00'}N
-                                        </span>
-                                        <span className="text-[7px] font-mono text-[var(--color-gold)] tracking-tighter whitespace-nowrap uppercase drop-shadow-md">
-                                            POS: {course.origin?.coordinates?.lng?.toFixed(2) || '0.00'}E
-                                        </span>
+                                        {/* Scanning Data Bits */}
+                                        <div className="absolute top-10 left-4 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-700 delay-150">
+                                            <span className="text-[6px] font-mono text-[var(--color-gold)]/40 tracking-widest uppercase">OBJ: IDENTIFIED</span>
+                                            <span className="text-[6px] font-mono text-[var(--color-gold)]/40 tracking-widest uppercase">SIG: STABLE</span>
+                                        </div>
+                                        <div className="absolute bottom-32 right-4 flex flex-col items-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-700 delay-150">
+                                            <span className="text-[6px] font-mono text-[var(--color-gold)]/40 tracking-widest uppercase">REC_LIVE</span>
+                                            <div className="w-1 h-1 bg-red-500/60 rounded-full animate-pulse"></div>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            {/* BOTTOM CONTENT: Narrative - Strict Fixed Heights for Alignment */}
-                            <div className="absolute bottom-0 left-0 w-full p-8 translate-y-4 transition-transform duration-300 group-hover:translate-y-0 bg-gradient-to-t from-black via-black/80 to-transparent pt-20 z-20">
-                                {/* Title: Fixed height for exact 2 lines */}
-                                <div className="h-[4.5rem] flex items-end mb-2">
-                                    <h3 className="text-2xl font-serif font-bold text-white leading-tight group-hover:text-[var(--color-gold)] transition-colors line-clamp-2 drop-shadow-lg w-full">
-                                        {course.name}
-                                    </h3>
+                                {/* TOP CONTENT: Always Aligned */}
+                                <div className="absolute top-0 left-0 w-full p-6 flex justify-between items-start z-30">
+                                    <span className="text-[9px] uppercase tracking-[0.3em] text-[var(--color-gold)] font-cinzel drop-shadow-md">
+                                        0{index + 1} // {index === 0 ? 'Start' : index === 1 ? 'Main' : 'Sweet'}
+                                    </span>
+                                    <span className="px-3 py-1.5 rounded-full bg-black/80 border border-white/20 text-xs font-bold text-white tracking-widest shadow-lg min-w-[44px] text-center">
+                                        {currentConfig.currency}{course.cost}
+                                    </span>
                                 </div>
 
-                                {/* Description: Fixed height for exact 3 lines */}
-                                <div className="h-[4.5em] mb-4 overflow-hidden">
-                                    <p className="text-white/80 font-light text-sm leading-relaxed line-clamp-3 group-hover:text-white transition-colors drop-shadow-md">
-                                        {course.description}
-                                    </p>
-                                </div>
+                                {/* Hover Hint: Technical Satellite Targeting */}
+                                <div className="absolute top-[40%] left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-500 z-20 pointer-events-none">
+                                    <div className="relative w-24 h-24 flex items-center justify-center">
+                                        {/* Backdrop for Contrast */}
+                                        <div className="absolute inset-[-10%] bg-black/20 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
 
-                                {/* Tags: Fixed height container */}
-                                <div className="h-[2rem] flex items-center overflow-hidden">
-                                    <div className="flex flex-wrap gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100 transform translate-y-2 group-hover:translate-y-0">
-                                        {course.flavorProfile.split(',').map((tag, i) => (
-                                            <span key={i} className="text-[9px] uppercase tracking-wider text-white/70 border border-white/20 px-2 py-1 rounded-sm bg-black/40 backdrop-blur-md">
-                                                {tag.trim()}
+                                        {/* Rotating Outer Ring */}
+                                        <div className="absolute inset-0 border border-dashed border-[var(--color-gold)]/60 rounded-full animate-spin-slow shadow-[0_0_15px_rgba(229,192,123,0.1)]"></div>
+                                        <div className="absolute inset-2 border border-white/5 rounded-full backdrop-blur-[1px]"></div>
+
+                                        {/* Pulsing Crosshair */}
+                                        <div className="absolute w-12 h-[1px] bg-[var(--color-gold)]/60"></div>
+                                        <div className="absolute h-12 w-[1px] bg-[var(--color-gold)]/60"></div>
+
+                                        {/* Center Point */}
+                                        <div className="w-2 h-2 bg-[var(--color-gold)] rounded-full shadow-[0_0_10px_var(--color-gold)]"></div>
+
+                                        {/* Coordinates Text: Minimalist mono display */}
+                                        <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center opacity-0 group-hover:opacity-100 transition-opacity duration-700 delay-200">
+                                            <span className="text-[7px] font-mono text-[var(--color-gold)] tracking-tighter whitespace-nowrap uppercase drop-shadow-md">
+                                                TRGT: {course.origin?.coordinates?.lat?.toFixed(2) || '0.00'}N
                                             </span>
-                                        ))}
+                                            <span className="text-[7px] font-mono text-[var(--color-gold)] tracking-tighter whitespace-nowrap uppercase drop-shadow-md">
+                                                POS: {course.origin?.coordinates?.lng?.toFixed(2) || '0.00'}E
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* BOTTOM CONTENT: Narrative - Strict Fixed Heights for Alignment */}
+                                <div className="absolute bottom-0 left-0 w-full p-8 translate-y-4 transition-transform duration-300 group-hover:translate-y-0 bg-gradient-to-t from-black via-black/80 to-transparent pt-20 z-20">
+                                    {/* Title: Fixed height for exact 2 lines */}
+                                    <div className="h-[4.5rem] flex items-end mb-2">
+                                        <h3 className="text-2xl font-serif font-bold text-white leading-tight group-hover:text-[var(--color-gold)] transition-colors line-clamp-2 drop-shadow-lg w-full">
+                                            {course.name}
+                                        </h3>
+                                    </div>
+
+                                    {/* Description: Fixed height for exact 3 lines */}
+                                    <div className="h-[4.5em] mb-4 overflow-hidden">
+                                        <p className="text-white/80 font-light text-sm leading-relaxed line-clamp-3 group-hover:text-white transition-colors drop-shadow-md">
+                                            {course.description}
+                                        </p>
+                                    </div>
+
+                                    {/* Tags: Fixed height container */}
+                                    <div className="h-[2rem] flex items-center overflow-hidden">
+                                        <div className="flex flex-wrap gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100 transform translate-y-2 group-hover:translate-y-0">
+                                            {course.flavorProfile.split(',').map((tag, i) => (
+                                                <span key={i} className="text-[9px] uppercase tracking-wider text-white/70 border border-white/20 px-2 py-1 rounded-sm bg-black/40 backdrop-blur-md">
+                                                    {tag.trim()}
+                                                </span>
+                                            ))}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -254,7 +257,6 @@ const RecommendationResult = ({ result, onReset }) => {
                         <span className="text-3xl font-cinzel text-[var(--color-gold)]">Total: {currentConfig.currency}{totalCost}</span>
                     </div>
                 </div>
-
             </div>
         </div>
     );

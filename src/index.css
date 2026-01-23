@@ -150,8 +150,8 @@
 
 .moving-border-outer {
   position: absolute;
-  inset: -3px;
-  border-radius: 1.5rem;
+  inset: -6px;
+  border-radius: 1.8rem;
   padding: 4px;
   overflow: hidden;
   mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -164,11 +164,12 @@
 
 .moving-border-inner {
   position: absolute;
-  inset: -250%;
+  inset: -300%;
   background: conic-gradient(from 0deg,
       var(--color-gold-dim) 0deg,
       var(--color-gold) 90deg,
       #5c4d2d 180deg,
       var(--color-gold) 270deg,
       var(--color-gold-dim) 360deg);
+  filter: blur(2px);
 }
