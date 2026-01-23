@@ -45,7 +45,7 @@ const RecommendationResult = ({ result, onReset }) => {
     const { narrative } = result;
 
     return (
-        <div className="w-full animate-[fadeIn_1s] pb-32">
+        <div className="w-full animate-[fadeIn_1s] pb-12">
 
             <OriginModal
                 isOpen={!!selectedCourse}
