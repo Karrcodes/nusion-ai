@@ -164,7 +164,7 @@ const OriginModal = ({ isOpen, onClose, course }) => {
                         </div>
 
                         {/* Right Panel: CSS TEXTURE GLOBE */}
-                        <div className="w-full md:w-[60%] h-[50vh] md:h-[85vh] md:sticky md:top-0 z-0 flex items-center justify-center md:-ml-40 mt-10 md:mt-0">
+                        <div className="w-full md:w-[60%] h-[50vh] md:h-[85vh] md:sticky md:top-0 md:self-start z-0 flex flex-col items-center justify-center md:-ml-40 mt-10 md:mt-0">
                             <div
                                 ref={globeContainerRef}
                                 className="relative flex items-center justify-center"
