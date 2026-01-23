@@ -99,7 +99,7 @@ const RecommendationResult = ({ result, onReset }) => {
                                 <span className="text-[9px] uppercase tracking-[0.3em] text-[var(--color-gold)] font-cinzel drop-shadow-md">
                                     0{index + 1} // {index === 0 ? 'Start' : index === 1 ? 'Main' : 'Sweet'}
                                 </span>
-                                <span className="px-3 py-1 rounded-full bg-black/30 backdrop-blur-md border border-white/10 text-[10px] font-bold text-white tracking-widest shadow-lg">
+                                <span className="px-3 py-1.5 rounded-full bg-black/80 border border-white/20 text-xs font-bold text-white tracking-widest shadow-lg min-w-[44px] text-center">
                                     {currentConfig.currency}{course.cost}
                                 </span>
                             </div>

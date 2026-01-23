@@ -404,9 +404,9 @@ const DinerDashboard = ({ user }) => {
                                                 <p className="text-xs text-text-secondary uppercase tracking-widest mb-4">
                                                     Ikoyi London • {new Date(gen.created_at || gen.date || Date.now()).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                                                 </p>
-                                                <div className="flex justify-between items-center text-sm font-mono text-text-secondary/80">
-                                                    <span>{currentConfig.currency}{gen.totalCost}</span>
-                                                    <span>{gen.courses?.length || 3} Courses</span>
+                                                <div className="flex justify-between items-center text-sm font-mono tracking-tight">
+                                                    <span className="text-text-primary font-bold">{currentConfig.currency}{gen.totalCost}</span>
+                                                    <span className="text-text-secondary/60">{gen.courses?.length || 3} Courses</span>
                                                 </div>
                                             </div>
                                         </div>
