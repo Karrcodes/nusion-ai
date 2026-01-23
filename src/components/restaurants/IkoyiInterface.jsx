@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useParams, Link, useLocation } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
 import { currentConfig } from '../../config/restaurantConfig';
 import InputForm from '../InputForm';
@@ -8,6 +8,7 @@ import { getRecommendation } from '../../utils/recommendationLogic';
 import { generateDishImage } from '../../utils/imageGenerator';
 
 function IkoyiInterface({ user }) {
+    const { brandSlug } = useParams();
     const location = useLocation();
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState(null);
@@ -45,15 +46,48 @@ function IkoyiInterface({ user }) {
 
     const [liveMenu, setLiveMenu] = useState([]);
 
+    // --- DYNAMIC BRANDING LOGIC ---
     useEffect(() => {
-        // "Connect" to the Restaurant Dashboard by reading the shared profile state
-        try {
-            // Priority: User-specific profile > Global profile > Config default
-            const userKey = user?.id ? `restaurant_profile_${user.id}` : 'restaurant_profile';
-            const savedProfile = localStorage.getItem(userKey) || localStorage.getItem('restaurant_profile');
+        const loadBrandData = async () => {
+            try {
+                // 1. If we have a brandSlug, fetch directly from DB
+                if (brandSlug && brandSlug !== 'ikoyi') {
+                    const { data, error } = await supabase
+                        .from('profiles')
+                        .select('*')
+                        .eq('status', 'approved'); // Fetch all approved brands
 
-            if (savedProfile) {
-                try {
+                    if (data && !error) {
+                        // Find the brand that matches the slug
+                        const matchedBrand = data.find(b =>
+                            (b.name || '').toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '') === brandSlug
+                        );
+
+                        if (matchedBrand) {
+                            setBrand({
+                                name: matchedBrand.name,
+                                logoUrl: matchedBrand.logo_url,
+                                accentColor: matchedBrand.accent_color || '#d4af37',
+                                font: matchedBrand.font || 'Modern Sans',
+                                uiStyle: matchedBrand.ui_style || 'soft'
+                            });
+
+                            // Try to load menu from DB (simulated or real key if we had one)
+                            // For now, if we match a brand from DB, we also want their specific menu
+                            const menuKey = `restaurant_menu_${matchedBrand.id}`;
+                            const savedMenu = localStorage.getItem(menuKey);
+                            if (savedMenu) setLiveMenu(JSON.parse(savedMenu));
+
+                            return; // Stop here if we found a DB match
+                        }
+                    }
+                }
+
+                // 2. FALLBACK: Connect to local session if no slug match
+                const userKey = user?.id ? `restaurant_profile_${user.id}` : 'restaurant_profile';
+                const savedProfile = localStorage.getItem(userKey) || localStorage.getItem('restaurant_profile');
+
+                if (savedProfile) {
                     const parsed = JSON.parse(savedProfile);
                     setBrand(prev => ({
                         ...prev,
@@ -63,28 +97,22 @@ function IkoyiInterface({ user }) {
                         font: parsed.font || 'Modern Sans',
                         uiStyle: parsed.uiStyle || 'soft'
                     }));
-                } catch (e) {
-                    console.warn("Corrupt profile data", e);
+                } else if (user?.name) {
+                    setBrand(prev => ({ ...prev, name: user.name }));
                 }
-            } else if (user?.name) {
-                // Fallback to user metadata name if no profile saved yet
-                setBrand(prev => ({ ...prev, name: user.name }));
-            }
 
-            // Load Live Menu
-            const menuKey = user?.id ? `restaurant_menu_${user.id}` : 'restaurant_live_menu';
-            const savedMenu = localStorage.getItem(menuKey) || localStorage.getItem('restaurant_live_menu');
-            if (savedMenu) {
-                try {
-                    setLiveMenu(JSON.parse(savedMenu));
-                } catch (e) {
-                    console.warn("Corrupt menu data", e);
-                }
+                // Load Menu Fallback
+                const menuKey = user?.id ? `restaurant_menu_${user.id}` : 'restaurant_live_menu';
+                const savedMenu = localStorage.getItem(menuKey) || localStorage.getItem('restaurant_live_menu');
+                if (savedMenu) setLiveMenu(JSON.parse(savedMenu));
+
+            } catch (e) {
+                console.error("Failed to sync brand settings", e);
             }
-        } catch (e) {
-            console.error("Failed to sync brand settings", e);
-        }
-    }, [user?.id]); // Watch for user ID to re-sync if session changes
+        };
+
+        loadBrandData();
+    }, [user?.id, brandSlug]);
 
     // Derived Styles
     const fontClass = {

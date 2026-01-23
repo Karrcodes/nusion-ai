@@ -113,7 +113,31 @@ const RestaurantDashboard = ({ user }) => {
     // --- DATA SYNC FIX (v4.3.5) ---
     useEffect(() => {
         if (user?.id) {
-            // Re-check Inventory if empty
+            // 1. Fetch Latest Profile from DB (Source of Truth)
+            const fetchProfile = async () => {
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', user.id)
+                    .single();
+
+                if (data && !error) {
+                    setProfile(prev => ({
+                        ...prev,
+                        name: data.name || prev.name,
+                        location: data.city || prev.location,
+                        cuisine: data.cuisine_type || prev.cuisine,
+                        logoUrl: data.logo_url || prev.logoUrl,
+                        coverUrl: data.cover_url || prev.coverUrl,
+                        accentColor: data.accent_color || prev.accentColor,
+                        font: data.font || prev.font,
+                        uiStyle: data.ui_style || prev.uiStyle
+                    }));
+                }
+            };
+            fetchProfile();
+
+            // 2. Re-check Inventory if empty
             if (inventory.length === 0) {
                 const wizardKey = `restaurant_inventory_${user.id}`;
                 const saved = safeParse(wizardKey, null);
@@ -997,6 +1021,9 @@ const RestaurantDashboard = ({ user }) => {
                                                     cuisine_type: profile.cuisine || '',
                                                     logo_url: profile.logoUrl || null,
                                                     cover_url: profile.coverUrl || null,
+                                                    accent_color: profile.accentColor || null,
+                                                    font: profile.font || null,
+                                                    ui_style: profile.uiStyle || null,
                                                     status: 'approved'
                                                 });
 
