@@ -120,7 +120,7 @@ const RecommendationResult = ({ result, onReset }) => {
                                 </div>
 
                                 {/* Hover Hint: Technical Globe Origin Trace */}
-                                <div className="absolute top-[35%] left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-700 z-20 pointer-events-none w-full h-full flex items-center justify-center">
+                                <div className="absolute top-[30%] left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-700 z-20 pointer-events-none w-full h-full flex items-center justify-center">
                                     <div className="relative w-64 h-64 flex flex-col items-center justify-center">
                                         {/* Glow Backdrop */}
                                         <div className="absolute inset-0 bg-[var(--color-gold)]/10 blur-[80px] rounded-full"></div>
