@@ -47,15 +47,17 @@ function IkoyiInterface({ user }) {
 
     useEffect(() => {
         // "Connect" to the Restaurant Dashboard by reading the shared profile state
-        // In a real app, this would fetch from Supabase based on the URL slug (e.g. /ikoyi)
         try {
-            const savedProfile = localStorage.getItem('restaurant_profile');
+            // Priority: User-specific profile > Global profile > Config default
+            const userKey = user?.id ? `restaurant_profile_${user.id}` : 'restaurant_profile';
+            const savedProfile = localStorage.getItem(userKey) || localStorage.getItem('restaurant_profile');
+
             if (savedProfile) {
                 try {
                     const parsed = JSON.parse(savedProfile);
                     setBrand(prev => ({
                         ...prev,
-                        name: parsed.name || 'Nusion AI',
+                        name: parsed.name || (user?.id ? user.name : 'Nusion AI'),
                         logoUrl: parsed.logoUrl,
                         accentColor: parsed.accentColor || '#d4af37',
                         font: parsed.font || 'Modern Sans',
@@ -64,10 +66,14 @@ function IkoyiInterface({ user }) {
                 } catch (e) {
                     console.warn("Corrupt profile data", e);
                 }
+            } else if (user?.name) {
+                // Fallback to user metadata name if no profile saved yet
+                setBrand(prev => ({ ...prev, name: user.name }));
             }
 
             // Load Live Menu
-            const savedMenu = localStorage.getItem('restaurant_live_menu');
+            const menuKey = user?.id ? `restaurant_menu_${user.id}` : 'restaurant_live_menu';
+            const savedMenu = localStorage.getItem(menuKey) || localStorage.getItem('restaurant_live_menu');
             if (savedMenu) {
                 try {
                     setLiveMenu(JSON.parse(savedMenu));
@@ -78,7 +84,7 @@ function IkoyiInterface({ user }) {
         } catch (e) {
             console.error("Failed to sync brand settings", e);
         }
-    }, []);
+    }, [user?.id]); // Watch for user ID to re-sync if session changes
 
     // Derived Styles
     const fontClass = {
@@ -286,7 +292,7 @@ function IkoyiInterface({ user }) {
                             </p>
                         </div>
                     ) : result ? (
-                        <RecommendationResult result={result} onReset={reset} />
+                        <RecommendationResult result={result} onReset={reset} brandName={brand.name} />
                     ) : (
                         <div className="w-full max-w-4xl animate-[fadeIn_1.2s]">
                             <InputForm onCalculate={handleCalculate} />

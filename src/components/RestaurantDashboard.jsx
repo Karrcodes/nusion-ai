@@ -975,13 +975,31 @@ const RestaurantDashboard = ({ user }) => {
                             <div className="flex justify-between items-center mb-8">
                                 <h2 className="text-xl font-bold text-text-primary">Restaurant Profile</h2>
                                 <button
-                                    onClick={() => {
-                                        localStorage.setItem(`restaurant_preferences_${user.id}`, JSON.stringify(profile));
-                                        alert('Profile saved!');
+                                    onClick={async () => {
+                                        setLoading(true);
+                                        try {
+                                            // 1. Flush to LocalStorage immediately
+                                            localStorage.setItem(`restaurant_profile_${user.id}`, JSON.stringify(profile));
+                                            localStorage.setItem('restaurant_profile', JSON.stringify(profile));
+
+                                            // 2. Sync with Supabase Metadata for persistent cross-tab sessions
+                                            const { error } = await supabase.auth.updateUser({
+                                                data: { name: profile.name }
+                                            });
+
+                                            if (error) throw error;
+                                            alert('Profile & Branding synced successfully!');
+                                        } catch (e) {
+                                            console.error("Sync failed", e);
+                                            alert('Failed to sync changes to server, but saved locally.');
+                                        } finally {
+                                            setLoading(false);
+                                        }
                                     }}
-                                    className="px-6 py-2 bg-text-primary text-bg-primary rounded-lg text-sm font-bold hover:opacity-90 transition-opacity"
+                                    className="px-6 py-2 bg-text-primary text-bg-primary rounded-lg text-sm font-bold hover:opacity-90 transition-opacity disabled:opacity-50"
+                                    disabled={loading}
                                 >
-                                    Save Changes
+                                    {loading ? 'Syncing...' : 'Save & Sync Changes'}
                                 </button>
                             </div>
 
@@ -1041,14 +1059,18 @@ const RestaurantDashboard = ({ user }) => {
                                         </div>
 
                                         <div className="flex gap-3 w-full md:w-auto">
-                                            <Link
-                                                to="/ikoyi"
-                                                target="_blank"
+                                            <button
+                                                onClick={() => {
+                                                    // Ensure latest state is in localStorage before opening new tab
+                                                    localStorage.setItem(`restaurant_profile_${user.id}`, JSON.stringify(profile));
+                                                    localStorage.setItem('restaurant_profile', JSON.stringify(profile));
+                                                    window.open('/ikoyi', '_blank');
+                                                }}
                                                 className="flex-1 md:flex-none px-4 py-2 bg-white text-black font-bold text-sm rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
                                             >
                                                 Visit Brand Page
                                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-                                            </Link>
+                                            </button>
                                         </div>
                                     </div>
                                     {/* Operational Footer */}

@@ -4,7 +4,8 @@ import { currentConfig } from '../config/restaurantConfig';
 import OriginModal from './OriginModal';
 import { Globe3D } from './Globe3D';
 
-const RecommendationResult = ({ result, onReset }) => {
+const RecommendationResult = ({ result, onReset, brandName }) => {
+    const restaurantName = brandName || currentConfig.restaurantName;
     const cardRef = useRef(null);
     const [selectedCourse, setSelectedCourse] = useState(null);
     // Use courses directly without processing - Pollinations URLs work fine
@@ -24,7 +25,7 @@ const RecommendationResult = ({ result, onReset }) => {
                 logging: false
             });
             const link = document.createElement('a');
-            link.download = `Nusion-${currentConfig.restaurantName}-Studio-Menu.png`;
+            link.download = `Nusion-${restaurantName}-Studio-Menu.png`;
             link.href = canvas.toDataURL();
             link.click();
         }
@@ -60,7 +61,7 @@ const RecommendationResult = ({ result, onReset }) => {
                 {/* Header Section */}
                 <div className="text-center mb-16 relative">
                     <span className="text-[10px] tracking-[0.5em] uppercase text-[var(--color-gold)] font-cinzel block mb-4 opacity-80">
-                        {currentConfig.restaurantName} Studio
+                        {restaurantName} Studio
                     </span>
                     <h2 className="text-5xl md:text-7xl font-cinzel text-white mb-6 tracking-tight">
                         The Collection
@@ -226,7 +227,7 @@ const RecommendationResult = ({ result, onReset }) => {
                 {/* Hidden Ref for High-Res Download (Off-screen but renderable) */}
                 <div ref={downloadRef} className="fixed top-0 left-[-9999px] w-[1200px] p-20 bg-[#0f0f13] text-white z-[-50]">
                     <div className="text-center mb-16">
-                        <h1 className="text-6xl font-cinzel text-[var(--color-gold)] mb-6">NUSION x {currentConfig.restaurantName.toUpperCase()}</h1>
+                        <h1 className="text-6xl font-cinzel text-[var(--color-gold)] mb-6">NUSION x {restaurantName.toUpperCase()}</h1>
                         <p className="font-serif italic text-2xl text-white/60">{narrative}</p>
                     </div>
                     <div className="grid grid-cols-3 gap-8">
