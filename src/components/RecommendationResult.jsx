@@ -77,6 +77,14 @@ const RecommendationResult = ({ result, onReset }) => {
                             onClick={() => setSelectedCourse(course)}
                             className="group relative h-[520px] rounded-3xl overflow-hidden bg-white/5 border border-white/5 transition-all duration-500 hover:scale-[1.02] hover:shadow-[0_20px_40px_rgba(0,0,0,0.5)] cursor-pointer"
                         >
+                            {/* Moving Gradient Border (Tracing Light) */}
+                            <div className="moving-border-outer opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                                <div className="moving-border-inner animate-spin-border"></div>
+                            </div>
+
+                            {/* Base Anchor Border (Static) */}
+                            <div className="absolute inset-0 rounded-3xl border border-white/5 group-hover:border-[var(--color-gold)]/20 transition-colors duration-500 z-50 pointer-events-none"></div>
+
                             {/* Full Background Image */}
                             <div className="absolute inset-0 w-full h-full">
                                 {course.image ? (

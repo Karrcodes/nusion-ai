@@ -133,3 +133,41 @@
 .animate-spin-slow {
   animation: spin-slow 10s linear infinite;
 }
+
+@keyframes spin-border {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-border {
+  animation: spin-border 4s linear infinite;
+}
+
+.moving-border-outer {
+  position: absolute;
+  inset: -1px;
+  border-radius: 1.5rem;
+  padding: 1.5px;
+  overflow: hidden;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask-composite: destination-out;
+  pointer-events: none;
+  z-index: 50;
+}
+
+.moving-border-inner {
+  position: absolute;
+  inset: -200%;
+  background: conic-gradient(from 0deg,
+      transparent 280deg,
+      var(--color-gold) 340deg,
+      var(--color-gold-dim) 355deg,
+      transparent 360deg);
+}
