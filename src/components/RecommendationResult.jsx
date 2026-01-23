@@ -46,7 +46,7 @@ const RecommendationResult = ({ result, onReset }) => {
     const { narrative } = result;
 
     return (
-        <div className="w-full animate-[fadeIn_1s] pb-12">
+        <div className="w-full animate-[fadeIn_1s] pb-6">
 
             <OriginModal
                 isOpen={!!selectedCourse}
@@ -187,7 +187,7 @@ const RecommendationResult = ({ result, onReset }) => {
                 </div>
 
                 {/* Footer / Total */}
-                <div className="flex flex-col items-center mb-12">
+                <div className="flex flex-col items-center mb-6">
                     <div className="flex items-baseline gap-4 font-cinzel text-white mb-8 border-b border-white/10 pb-4">
                         <span className="text-sm tracking-widest opacity-80">Total Estimation</span>
                         <span className="text-4xl text-[var(--color-gold)] drop-shadow-[0_0_15px_rgba(229,192,123,0.3)]">
