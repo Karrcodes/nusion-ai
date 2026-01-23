@@ -83,7 +83,7 @@ const RecommendationResult = ({ result, onReset }) => {
                                     <img
                                         src={course.image}
                                         alt={course.name}
-                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                        className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110 group-hover:blur-[2px]"
                                         onError={(e) => {
                                             e.target.style.display = 'none';
                                         }}
@@ -91,8 +91,11 @@ const RecommendationResult = ({ result, onReset }) => {
                                 ) : (
                                     <div className="w-full h-full bg-gradient-to-br from-gray-800 to-black" />
                                 )}
-                                {/* Gradient Overlay */}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-90 transition-opacity duration-300 group-hover:opacity-80" />
+                                {/* Primary Gradient Overlay (Static) */}
+                                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-90 transition-opacity duration-300 group-hover:opacity-80 z-[1]" />
+
+                                {/* Hover Darken & Blur Layer */}
+                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-[2]" />
                             </div>
 
                             {/* TOP CONTENT: Always Aligned */}
