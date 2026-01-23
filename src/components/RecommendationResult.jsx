@@ -103,11 +103,11 @@ const RecommendationResult = ({ result, onReset }) => {
                                     <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-90 transition-opacity duration-300 group-hover:opacity-100 z-[1]" />
 
                                     {/* Technical Vignette & Scan-line Overlay */}
-                                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-all duration-700 z-[2] pointer-events-none">
+                                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 z-[2] pointer-events-none will-change-[opacity]">
                                         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.8)_100%)]"></div>
                                         <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.02),rgba(0,255,0,0.01),rgba(0,0,255,0.02))] bg-[length:100%_2px,3px_100%] opacity-20"></div>
-                                        {/* Backdrop Blur on Hover */}
-                                        <div className="absolute inset-0 backdrop-blur-[6px] transition-all duration-700"></div>
+                                        {/* Backdrop Blur: Constant filter, transitioned via parent opacity */}
+                                        <div className="absolute inset-0 backdrop-blur-[8px]"></div>
                                     </div>
                                 </div>
 
@@ -133,12 +133,13 @@ const RecommendationResult = ({ result, onReset }) => {
                                             <div className="w-8 h-[1px] bg-[var(--color-gold)]/40"></div>
                                         </div>
 
-                                        {/* 3D Globe - Smaller scale for card */}
-                                        <div className="w-48 h-48 scale-90">
+                                        {/* 3D Globe - Responsively scaled */}
+                                        <div className="w-56 h-56 mt-4">
                                             <Globe3D
                                                 lat={course.origin?.coordinates?.lat || 0}
                                                 lng={course.origin?.coordinates?.lng || 0}
                                                 velocityRef={{ current: 0 }}
+                                                size={224}
                                             />
                                         </div>
 
