@@ -107,7 +107,7 @@ const RecommendationResult = ({ result, onReset }) => {
                                         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.8)_100%)]"></div>
                                         <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.02),rgba(0,255,0,0.01),rgba(0,0,255,0.02))] bg-[length:100%_2px,3px_100%] opacity-20"></div>
                                         {/* Backdrop Blur: Constant filter, transitioned via parent opacity */}
-                                        <div className="absolute inset-0 backdrop-blur-[8px]"></div>
+                                        <div className="absolute inset-0 backdrop-blur-[16px]"></div>
                                     </div>
                                 </div>
 
@@ -122,10 +122,10 @@ const RecommendationResult = ({ result, onReset }) => {
                                 </div>
 
                                 {/* Hover Hint: Technical Globe Origin Trace */}
-                                <div className="absolute top-[40%] left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-700 z-20 pointer-events-none w-full h-full flex items-center justify-center">
+                                <div className="absolute top-[35%] left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-700 z-20 pointer-events-none w-full h-full flex items-center justify-center">
                                     <div className="relative w-64 h-64 flex flex-col items-center justify-center">
                                         {/* Glow Backdrop */}
-                                        <div className="absolute inset-0 bg-[var(--color-gold)]/5 blur-[80px] rounded-full"></div>
+                                        <div className="absolute inset-0 bg-[var(--color-gold)]/10 blur-[80px] rounded-full"></div>
 
                                         {/* Origin Label */}
                                         <div className="absolute top-0 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1">
@@ -134,12 +134,12 @@ const RecommendationResult = ({ result, onReset }) => {
                                         </div>
 
                                         {/* 3D Globe - Responsively scaled */}
-                                        <div className="w-56 h-56 mt-4">
+                                        <div className="w-40 h-40 mt-6">
                                             <Globe3D
                                                 lat={course.origin?.coordinates?.lat || 0}
                                                 lng={course.origin?.coordinates?.lng || 0}
                                                 velocityRef={{ current: 0 }}
-                                                size={224}
+                                                size={160}
                                             />
                                         </div>
 
