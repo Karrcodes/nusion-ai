@@ -72,6 +72,33 @@ function App() {
           // console.log("Healing Google Auth User: Setting default diner type...");
           type = 'diner';
           await supabase.auth.updateUser({ data: { type: 'diner' } });
+
+          // SEND WELCOME EMAIL (Only for new/unhealed users)
+          try {
+            // Determine name for email
+            const emailName = session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split('@')[0];
+
+            // Call Serverless Function (requires Vercel hosting)
+            fetch('/api/send-email', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                to: session.user.email,
+                subject: 'Welcome to Nusion!',
+                html: `
+                            <div style="font-family: sans-serif; padding: 20px; background: #0f1623; color: #fff;">
+                                <h1 style="color: #92e6e6;">Welcome to Nusion, ${emailName}!</h1>
+                                <p>We're thrilled to have you onboard.</p>
+                                <p>Nusion is your personalized dining companion, powered by advanced AI.</p>
+                                <br/>
+                                <a href="${window.location.origin}/dashboard" style="display: inline-block; padding: 12px 24px; background: #fff; color: #000; text-decoration: none; border-radius: 4px; font-weight: bold;">Go to Dashboard</a>
+                            </div>
+                        `
+              })
+            }).catch(e => console.warn("Email API unreachable (Localhost?):", e));
+          } catch (emailErr) {
+            console.warn("Welcome email skipped:", emailErr);
+          }
         }
 
         // 2. ALWAYS Sync/Ensure Profile Exists
