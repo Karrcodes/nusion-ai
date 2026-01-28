@@ -133,7 +133,7 @@ const InputForm = ({ onCalculate }) => {
                 </div>
             </section>
 
-            <div className="flex justify-center mt-12 animate-[fadeIn_1.2s]">
+            <div className="flex justify-center mt-8 animate-[fadeIn_1.2s]">
                 <button
                     type="submit"
                     className="btn-gold group rounded-full"
