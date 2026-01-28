@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
+import { supabaseAdmin } from '../../lib/supabaseAdmin';
 import { useImpersonation } from '../../contexts/ImpersonationContext';
 
 const OwnerPortal = () => {
@@ -27,13 +28,21 @@ const OwnerPortal = () => {
             navigate('/portal/owner', { replace: true });
         }
 
+        // Ensure admin client is available
+        if (!supabaseAdmin) {
+            console.error("Supabase Admin client not initialized. Check VITE_SUPABASE_SERVICE_ROLE_KEY.");
+            alert("Configuration Error: Admin Service Key missing. Please check your .env file.");
+            setLoading(false);
+            return;
+        }
+
         fetchRestaurants();
         fetchUsers();
     }, [location.search]);
 
     const fetchRestaurants = async () => {
         try {
-            const { data, error } = await supabase
+            const { data, error } = await supabaseAdmin
                 .from('profiles')
                 .select('*')
                 .eq('type', 'restaurant')
@@ -51,7 +60,7 @@ const OwnerPortal = () => {
 
     const fetchUsers = async () => {
         try {
-            const { data, error } = await supabase
+            const { data, error } = await supabaseAdmin
                 .from('profiles')
                 .select('*')
                 .eq('type', 'diner')
@@ -68,7 +77,7 @@ const OwnerPortal = () => {
         if (!window.confirm(`Are you sure you want to set ${currentName} to ${newStatus.toUpperCase()}?`)) return;
 
         try {
-            const { error } = await supabase
+            const { error } = await supabaseAdmin
                 .from('profiles')
                 .update({ status: newStatus })
                 .eq('id', id);
@@ -76,7 +85,8 @@ const OwnerPortal = () => {
             if (error) throw error;
 
             setRestaurants(prev => prev.map(r => r.id === id ? { ...r, status: newStatus } : r));
-            console.log(`[Notification] Sent ${newStatus} email to restaurant ${id}`);
+            setUsers(prev => prev.map(u => u.id === id ? { ...u, status: newStatus } : u));
+            console.log(`[Notification] Sent ${newStatus} email to entity ${id}`);
             alert(`Updated ${currentName} to ${newStatus}`);
 
         } catch (err) {
@@ -95,7 +105,7 @@ const OwnerPortal = () => {
 
         setBulkActionLoading(true);
         try {
-            const { error } = await supabase
+            const { error } = await supabaseAdmin
                 .from('profiles')
                 .update({ status: action })
                 .in('id', selectedIds);
