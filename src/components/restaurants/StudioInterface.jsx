@@ -257,6 +257,28 @@ function StudioInterface({ user }) {
                     </Link>
                 )}
             </div>
+            {/* Invisible SVG Filter for Logo Transparency (Corrected: A = A - R) */}
+            <svg style={{ position: 'absolute', width: 0, height: 0 }}>
+                <filter id="logo-transparency" colorInterpolationFilters="sRGB">
+                    <feColorMatrix
+                        type="matrix"
+                        values="0 0 0 0 1 
+                                0 0 0 0 1 
+                                0 0 0 0 1 
+                                -1 0 0 1 0"
+                    />
+                    {/* 
+                        Logic:
+                        R, G, B = 1 (Force pure white color)
+                        A = A - R
+                        
+                        If Source is White (1,1,1,1): A = 1 - 1 = 0 (Transparent)
+                        If Source is Black (0,0,0,1): A = 1 - 0 = 1 (Opaque White)
+                        If Source is Transp (0,0,0,0): A = 0 - 0 = 0 (Transparent)
+                        Safe for all PNG types.
+                    */}
+                </filter>
+            </svg>
 
 
 
