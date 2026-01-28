@@ -250,7 +250,7 @@ function IkoyiInterface({ user }) {
                 )}
             </div>
 
-            <div className="container mx-auto px-6 h-full flex-grow flex flex-col justify-center relative z-10 pt-[100px] mb-20 min-h-screen">
+            <div className="container mx-auto px-6 h-full flex-grow flex flex-col justify-center relative z-10 pt-[150px] mb-20 min-h-screen">
 
                 {!loading && !result ? (
                     // --- SPLIT LAYOUT (Input Mode) ---
