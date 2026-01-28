@@ -175,12 +175,12 @@ const RestaurantDashboard = ({ user }) => {
         return () => clearTimeout(timeoutId);
     }, [profile, user, isImpersonating, impersonatedRestaurant]);
 
-    // Save to localStorage whenever inventory changes
+    // Save to localStorage whenever inventory changes (skip when impersonating - data is in Supabase)
     useEffect(() => {
-        if (user?.id) {
-            localStorage.setItem(`restaurant_inventory_${user.id}`, JSON.stringify(inventory));
+        if (!isImpersonating && effectiveUser?.id) {
+            localStorage.setItem(`restaurant_inventory_${effectiveUser.id}`, JSON.stringify(inventory));
         }
-    }, [inventory, user]);
+    }, [inventory, effectiveUser, isImpersonating]);
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
@@ -238,31 +238,31 @@ const RestaurantDashboard = ({ user }) => {
 
             // 2. Re-check Inventory if empty
             if (inventory.length === 0) {
-                const wizardKey = `restaurant_inventory_${user.id}`;
+                const wizardKey = `restaurant_inventory_${effectiveUser.id}`;
                 const saved = safeParse(wizardKey, null);
                 if (saved) setInventory(saved);
             }
 
             // Re-check Menu if empty
             if (menuItems.length === 0) {
-                const wizardKey = `restaurant_meals_${user.id}`;
+                const wizardKey = `restaurant_meals_${effectiveUser.id}`;
                 const saved = safeParse(wizardKey, null);
                 if (saved) setMenuItems(saved);
             }
         }
-    }, [user?.id]); // Only run when user ID changes
+    }, [effectiveUser?.id]); // Only run when user ID changes
 
     useEffect(() => {
-        if (user?.id) {
-            localStorage.setItem(`restaurant_menu_${user.id}`, JSON.stringify(menuItems));
+        if (!isImpersonating && effectiveUser?.id) {
+            localStorage.setItem(`restaurant_menu_${effectiveUser.id}`, JSON.stringify(menuItems));
             localStorage.setItem('restaurant_live_menu', JSON.stringify(menuItems));
         }
-    }, [menuItems, user]);
+    }, [menuItems, effectiveUser, isImpersonating]);
 
     // --- APPROVAL & INSIGHTS (v4.4) ---
     const [approvalStatus, setApprovalStatus] = useState(() => {
-        if (user?.id) {
-            return localStorage.getItem(`restaurant_approval_${user.id}`) || 'pending';
+        if (effectiveUser?.id) {
+            return localStorage.getItem(`restaurant_approval_${effectiveUser.id}`) || 'pending';
         }
         return 'pending';
     });
