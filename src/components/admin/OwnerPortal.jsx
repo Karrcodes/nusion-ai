@@ -36,6 +36,7 @@ const OwnerPortal = () => {
             const { data, error } = await supabase
                 .from('profiles')
                 .select('*')
+                .eq('type', 'restaurant')
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
