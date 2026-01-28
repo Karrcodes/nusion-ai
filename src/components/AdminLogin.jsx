@@ -25,7 +25,7 @@ const AdminLogin = () => {
             sessionStorage.setItem('nusion_admin_timestamp', Date.now().toString());
 
             // Redirect to Owner Portal
-            navigate('/owner-portal');
+            navigate('/portal/owner');
         } else {
             const newAttempts = attempts + 1;
             setAttempts(newAttempts);
