@@ -1,7 +1,14 @@
 import { Navigate, useLocation } from 'react-router-dom';
+import { useImpersonation } from '../contexts/ImpersonationContext';
 
 const ProtectedRoute = ({ user, children, requiredType = null }) => {
     const location = useLocation();
+    const { isImpersonating } = useImpersonation();
+
+    // Allow access if admin is impersonating
+    if (isImpersonating) {
+        return children;
+    }
 
     if (!user) {
         // Redirect to auth if not logged in, but save the location they were trying to go to
