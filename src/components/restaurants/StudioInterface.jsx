@@ -258,39 +258,7 @@ function StudioInterface({ user }) {
                 )}
             </div>
 
-            {/* Invisible SVG Filter for Logo Transparency */}
-            <svg style={{ position: 'absolute', width: 0, height: 0 }}>
-                <filter id="remove-white-bg" colorInterpolationFilters="sRGB">
-                    <feColorMatrix
-                        type="matrix"
-                        values="-1 0 0 0 1 
-                                0 -1 0 0 1 
-                                0 0 -1 0 1 
-                                1 1 1 0 0"
-                    />
-                    {/* The above inverts colors (Black->White, White->Black).
-                        But we want Transparent BG. 
-                        Let's try a Luminance to Alpha map. 
-                        Target: White(1,1,1) -> Alpha 0. Black(0,0,0) -> Alpha 1, Color White.
-                    */}
-                </filter>
-                <filter id="logo-magic" colorInterpolationFilters="sRGB">
-                    <feColorMatrix
-                        type="matrix"
-                        values="0 0 0 0 1 
-                                0 0 0 0 1 
-                                0 0 0 0 1 
-                                -1 -1 -1 0 3"
-                        result="alphaops"
-                    />
-                    {/* 
-                       R=1, G=1, B=1 (Forces White Color)
-                       A = 3 - (R+G+B). 
-                       If White (1,1,1): A = 3 - 3 = 0.
-                       If Black (0,0,0): A = 3 - 0 = 3 (Clamped to 1).
-                    */}
-                </filter>
-            </svg>
+
 
             <div className={`container mx-auto px-6 h-full flex-grow flex flex-col justify-center relative z-10 pt-[120px] ${result ? 'pb-[100px]' : 'pb-[150px]'} min-h-screen`}>
 
@@ -304,8 +272,12 @@ function StudioInterface({ user }) {
                                 <img
                                     src={brand.logoUrl}
                                     alt={brand.name}
-                                    className="h-16 md:h-24 w-auto object-contain mb-6 contrast-125"
-                                    style={{ filter: 'url(#logo-magic)' }}
+                                    className="h-16 md:h-24 w-auto object-contain mb-6"
+                                    style={{
+                                        filter: 'grayscale(100%) contrast(5) invert(1)',
+                                        mixBlendMode: 'screen',
+                                        opacity: 0.9
+                                    }}
                                 />
                             ) : (
                                 <h1 className="text-4xl md:text-6xl font-cinzel text-[var(--color-cream)] mb-6 tracking-[0.1em] drop-shadow-lg leading-tight">
