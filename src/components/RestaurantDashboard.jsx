@@ -1297,9 +1297,11 @@ const RestaurantDashboard = ({ user }) => {
                                             <label className="text-xs font-mono text-text-secondary uppercase">Restaurant Name</label>
                                             <input
                                                 type="text"
+                                                placeholder="e.g. Ikoyi, The Clove Club"
                                                 value={profile.name}
                                                 onChange={(e) => setProfile({ ...profile, name: e.target.value })}
-                                                className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none"
+                                                disabled={isImpersonating}
+                                                className={`w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none ${isImpersonating ? 'opacity-60 cursor-not-allowed' : ''}`}
                                             />
                                         </div>
                                         <div className="space-y-2 relative">
