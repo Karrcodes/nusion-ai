@@ -7,9 +7,7 @@ const OwnerPortal = () => {
     const navigate = useNavigate();
     const [restaurants, setRestaurants] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [filter, setFilter] = useState('all'); // 'all', 'pending', 'approved', 'rejected', 'disabled', 'suspended'
-    const [searchTerm, setSearchTerm] = useState('');
-    const [selectedItems, setSelectedItems] = useState([]);
+    const [filter, setFilter] = useState('all'); // 'all', 'pending', 'approved', 'rejected'
 
     useEffect(() => {
         fetchRestaurants();
@@ -68,75 +66,18 @@ const OwnerPortal = () => {
         navigate('/admin');
     };
 
-    const handleImpersonate = (restaurantId, restaurantName) => {
-        if (!window.confirm(`Impersonate ${restaurantName}? You'll access their dashboard as if you were logged in as them.`)) return;
-
-        // Set impersonation session
-        sessionStorage.setItem('nusion_impersonate_id', restaurantId);
-        sessionStorage.setItem('nusion_impersonate_name', restaurantName);
-
-        // Navigate to their dashboard
-        navigate('/dashboard/restaurant');
-    };
-
-    const handleBulkAction = async (action) => {
-        if (selectedItems.length === 0) {
-            alert('Please select at least one restaurant');
-            return;
-        }
-
-        if (!window.confirm(`${action.toUpperCase()} ${selectedItems.length} restaurant(s)?`)) return;
-
-        try {
-            const { error } = await supabase
-                .from('profiles')
-                .update({ status: action })
-                .in('id', selectedItems);
-
-            if (error) throw error;
-
-            setRestaurants(prev => prev.map(r =>
-                selectedItems.includes(r.id) ? { ...r, status: action } : r
-            ));
-            setSelectedItems([]);
-            alert(`Successfully updated ${selectedItems.length} restaurant(s)`);
-        } catch (err) {
-            console.error('Bulk action failed:', err);
-            alert('Bulk action failed.');
-        }
-    };
-
     const filteredList = restaurants.filter(r => {
-        // Filter by status
-        const statusMatch = filter === 'all' || (r.status || 'pending') === filter;
-
-        // Filter by search term
-        const searchMatch = !searchTerm ||
-            r.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            r.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            r.city?.toLowerCase().includes(searchTerm.toLowerCase());
-
-        return statusMatch && searchMatch;
+        if (filter === 'all') return true;
+        return (r.status || 'pending') === filter; // Handle undefined as pending
     });
 
     const getStatusColor = (status) => {
         switch (status) {
             case 'approved': return 'bg-green-500/20 text-green-400 border-green-500/50';
             case 'rejected': return 'bg-red-500/20 text-red-400 border-red-500/50';
-            case 'disabled': return 'bg-gray-500/20 text-gray-400 border-gray-500/50';
-            case 'suspended': return 'bg-orange-500/20 text-orange-400 border-orange-500/50';
             case 'pending':
             default: return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50';
         }
-    };
-
-    const stats = {
-        total: restaurants.length,
-        pending: restaurants.filter(r => (r.status || 'pending') === 'pending').length,
-        approved: restaurants.filter(r => r.status === 'approved').length,
-        rejected: restaurants.filter(r => r.status === 'rejected').length,
-        disabled: restaurants.filter(r => r.status === 'disabled').length,
-        suspended: restaurants.filter(r => r.status === 'suspended').length
     };
 
     if (loading) return <div className="p-10 text-center text-text-primary">Loading Shadow Portal...</div>;

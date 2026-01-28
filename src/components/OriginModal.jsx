@@ -67,10 +67,11 @@ const OriginModal = ({ isOpen, onClose, course }) => {
         }, 50);
 
         // Update Target Scale (Read by rAF loop)
-        // TEST: More dramatic zoom for debugging (2x scale, 300px range)
-        const animationRange = 300;
+        // Fixed Pixel Sensitivity: 100% animation progress reached at 500px of scroll.
+        // This ensures the globe feels the same across different content lengths.
+        const animationRange = 500;
         const progress = Math.min(scrollTop / animationRange, 1);
-        targetScaleRef.current = 1 + (progress * 2.0);
+        targetScaleRef.current = 1 + (progress * 0.8);
     };
 
     if (!isVisible && !isOpen) return null;
