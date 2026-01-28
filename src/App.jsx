@@ -79,6 +79,9 @@ function App() {
         // This handles cases where metadata exists but profile is missing, OR type mismatch.
         const name = session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split('@')[0];
 
+        // DEBUG LOGGING - REMOVE AFTER FIXING
+        // console.log("Debug: Syncing Profile for", session.user.email);
+
         const { error: profileError } = await supabase
           .from('profiles')
           .upsert({
@@ -92,10 +95,14 @@ function App() {
 
         if (profileError) {
           console.error("Profile Sync Error:", profileError);
+          alert(`DEBUG ERROR: Failed to create/sync profile.\n\nError: ${profileError.message}\n\nHint: Potentially an RLS (Policy) issue. Try running the 'supabase_fix_rls.sql' script.`);
+        } else {
+          // alert("DEBUG SUCCESS: Profile Synced!");
         }
 
       } catch (err) {
         console.error("Auto-healing/Sync failed:", err);
+        alert(`DEBUG CRITICAL ERROR: ${err.message}`);
       }
 
       const appUser = {
@@ -116,12 +123,8 @@ function App() {
         return;
       }
 
-
-
     } else {
       setCurrentUser(null);
-      // ProtectedRoute component will handle redirects now, so we can remove strict session checking here
-      // But we can keep a "bounce" for better UX if needed, though simpler is better.
     }
   };
 
