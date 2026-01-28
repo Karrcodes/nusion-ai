@@ -306,7 +306,7 @@ function StudioInterface({ user }) {
                             {/* Globe Widget */}
                             <div className="w-full max-w-[200px] aspect-square relative opacity-80 mix-blend-screen md:self-start">
                                 <Globe3D lat={coords.lat} lng={coords.lng} size={200} />
-                                <div className="absolute bottom-0 w-full text-center text-[9px] uppercase tracking-[0.3em] text-[var(--color-gold)] opacity-80">
+                                <div className="absolute -bottom-6 w-full text-center text-[9px] uppercase tracking-[0.3em] text-[var(--color-gold)] opacity-80">
                                     {brandLocation}
                                 </div>
                             </div>
