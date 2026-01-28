@@ -88,13 +88,92 @@ const RestaurantDashboard = ({ user }) => {
         return defaultProfile;
     });
 
-    // Persist Profile Changes
+    // Fetch restaurant data from Supabase when impersonating
     useEffect(() => {
-        if (user?.id) {
-            localStorage.setItem(`restaurant_profile_${user.id}`, JSON.stringify(profile));
-            localStorage.setItem('restaurant_profile', JSON.stringify(profile));
-        }
-    }, [profile, user]);
+        const fetchRestaurantData = async () => {
+            if (isImpersonating && impersonatedRestaurant?.id) {
+                try {
+                    // Fetch profile from Supabase
+                    const { data: profileData, error: profileError } = await supabase
+                        .from('profiles')
+                        .select('*')
+                        .eq('id', impersonatedRestaurant.id)
+                        .single();
+
+                    if (profileError) throw profileError;
+
+                    if (profileData) {
+                        // Map Supabase profile data to component state
+                        setProfile({
+                            name: profileData.name || '',
+                            location: profileData.city || '',
+                            description: profileData.description || '',
+                            cuisine: profileData.cuisine || '',
+                            philosophy: profileData.philosophy || '',
+                            logoUrl: profileData.logo_url || null,
+                            coverUrl: profileData.cover_url || '',
+                            accentColor: profileData.accent_color || '#10b981',
+                            font: profileData.font || 'Modern Sans',
+                            uiStyle: profileData.ui_style || 'soft',
+                            hours: profileData.hours || '',
+                            priceTier: profileData.price_tier || '$$',
+                            contactEmail: profileData.email || '',
+                            dietaryTags: profileData.dietary_tags || '',
+                            currency: profileData.currency || 'GBP'
+                        });
+                    }
+
+                } catch (error) {
+                    console.error('Error fetching restaurant data:', error);
+                }
+            }
+        };
+
+        fetchRestaurantData();
+    }, [isImpersonating, impersonatedRestaurant]);
+
+    // Persist Profile Changes - Save to Supabase when impersonating, localStorage otherwise
+    useEffect(() => {
+        const saveProfile = async () => {
+            if (isImpersonating && impersonatedRestaurant?.id) {
+                // Save to Supabase when impersonating
+                try {
+                    const { error } = await supabase
+                        .from('profiles')
+                        .update({
+                            name: profile.name,
+                            city: profile.location,
+                            description: profile.description,
+                            cuisine: profile.cuisine,
+                            philosophy: profile.philosophy,
+                            logo_url: profile.logoUrl,
+                            cover_url: profile.coverUrl,
+                            accent_color: profile.accentColor,
+                            font: profile.font,
+                            ui_style: profile.uiStyle,
+                            hours: profile.hours,
+                            price_tier: profile.priceTier,
+                            dietary_tags: profile.dietaryTags,
+                            currency: profile.currency
+                        })
+                        .eq('id', impersonatedRestaurant.id);
+
+                    if (error) throw error;
+                    console.log('✅ Profile saved to Supabase for', impersonatedRestaurant.name);
+                } catch (error) {
+                    console.error('Error saving profile to Supabase:', error);
+                }
+            } else if (user?.id) {
+                // Save to localStorage for normal users
+                localStorage.setItem(`restaurant_profile_${user.id}`, JSON.stringify(profile));
+                localStorage.setItem('restaurant_profile', JSON.stringify(profile));
+            }
+        };
+
+        // Debounce the save to avoid too many updates
+        const timeoutId = setTimeout(saveProfile, 1000);
+        return () => clearTimeout(timeoutId);
+    }, [profile, user, isImpersonating, impersonatedRestaurant]);
 
     // Save to localStorage whenever inventory changes
     useEffect(() => {
