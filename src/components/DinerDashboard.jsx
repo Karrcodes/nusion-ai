@@ -364,9 +364,23 @@ const DinerDashboard = ({ user }) => {
 
                         {/* --- SAVED GENERATIONS --- */}
                         <section>
-                            <h2 className="text-lg font-bold text-text-primary mb-6 flex items-center gap-2">
-                                <span className="text-xl">🕰️</span> Generative History
-                            </h2>
+                            <div className="flex justify-between items-center mb-6">
+                                <h2 className="text-lg font-bold text-text-primary flex items-center gap-2">
+                                    <span className="text-xl">🕰️</span> Generative History
+                                </h2>
+                                {history.length > 0 && (
+                                    <button
+                                        onClick={async () => {
+                                            if (!window.confirm("Are you sure you want to clear ALL your dining history? This cannot be undone.")) return;
+                                            const { error } = await supabase.from('generations').delete().eq('user_id', user.id);
+                                            if (!error) setHistory([]);
+                                        }}
+                                        className="text-xs text-red-500 hover:text-red-700 font-bold border border-red-500/30 hover:border-red-500 px-3 py-1 rounded-full transition-all"
+                                    >
+                                        Clear All
+                                    </button>
+                                )}
+                            </div>
 
                             {history.length === 0 ? (
                                 <div className="text-center py-12 glass-panel">
@@ -382,7 +396,7 @@ const DinerDashboard = ({ user }) => {
                                                 const slug = (gen.courses?.[0]?.restaurant_name || 'ikoyi').toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
                                                 navigate(`/${slug}`, { state: { historicalResult: gen } });
                                             }}
-                                            className="glass-panel overflow-hidden group cursor-pointer hover:-translate-y-1 transition-transform duration-300 rounded-2xl"
+                                            className="glass-panel overflow-hidden group cursor-pointer hover:-translate-y-1 transition-transform duration-300 rounded-2xl relative"
                                             title="View this Menu"
                                         >
                                             {/* Collage Image Section */}
@@ -408,6 +422,22 @@ const DinerDashboard = ({ user }) => {
                                                 <div className="absolute top-3 right-3 bg-white/90 backdrop-blur px-2 py-1 rounded text-[10px] font-bold text-text-primary shadow-sm uppercase tracking-wider">
                                                     Generated
                                                 </div>
+
+                                                {/* Delete Button */}
+                                                <button
+                                                    onClick={async (e) => {
+                                                        e.stopPropagation();
+                                                        if (!window.confirm("Delete this menu?")) return;
+                                                        const { error } = await supabase.from('generations').delete().eq('id', gen.id);
+                                                        if (!error) {
+                                                            setHistory(prev => prev.filter(h => h.id !== gen.id));
+                                                        }
+                                                    }}
+                                                    className="absolute top-3 left-3 w-6 h-6 bg-white/90 rounded-full flex items-center justify-center text-red-500 hover:bg-red-500 hover:text-white transition-all shadow-sm z-20 opacity-0 group-hover:opacity-100"
+                                                    title="Delete Menu"
+                                                >
+                                                    <span className="text-lg leading-none mb-[2px]">×</span>
+                                                </button>
                                             </div>
 
                                             <div className="p-6">
