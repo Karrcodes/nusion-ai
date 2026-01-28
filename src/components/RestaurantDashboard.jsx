@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
+import { supabaseAdmin } from '../lib/supabaseAdmin';
 import { cities } from '../lib/cities';
 import { resizeImage } from '../utils/imageUtils';
 import { useImpersonation } from '../contexts/ImpersonationContext';
@@ -93,8 +94,11 @@ const RestaurantDashboard = ({ user }) => {
         const fetchRestaurantData = async () => {
             if (isImpersonating && impersonatedRestaurant?.id) {
                 try {
+                    // Use admin client to bypass RLS when impersonating
+                    const dbClient = supabaseAdmin || supabase;
+
                     // Fetch profile from Supabase
-                    const { data: profileData, error: profileError } = await supabase
+                    const { data: profileData, error: profileError } = await dbClient
                         .from('profiles')
                         .select('*')
                         .eq('id', impersonatedRestaurant.id)
@@ -1140,8 +1144,10 @@ const RestaurantDashboard = ({ user }) => {
                                             }
 
                                             // 2. Sync with Profiles table for global visibility (Landing Page / Discovery)
-                                            // Simplified UPSERT to avoid potential schema mismatches or RLS complications
-                                            const { error: profileError } = await supabase
+                                            // Use admin client when impersonating to bypass RLS
+                                            const dbClient = isImpersonating && supabaseAdmin ? supabaseAdmin : supabase;
+
+                                            const { error: profileError } = await dbClient
                                                 .from('profiles')
                                                 .upsert({
                                                     id: userId,
