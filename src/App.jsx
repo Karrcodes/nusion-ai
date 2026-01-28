@@ -62,23 +62,21 @@ function App() {
 
   const handleSession = async (session) => {
     if (session?.user) {
-      // --- HEAL GOOGLE AUTH USERS ---
-      // If authenticating via OAuth, metadata might be missing. We default to 'diner' and ensure profile exists.
+      // --- HEAL & SYNC USER TYPE ---
+      // 1. If metadata type is missing (e.g. Google Auth), default to 'diner'.
+      // 2. If metadata type exists, we must ensure the DB profile matches it 
+      //    (because the DB trigger might have defaulted to 'diner').
+
       let type = session.user.user_metadata?.type;
 
-      if (!type) {
-        console.log("Healing Google Auth User: Setting default diner type...");
-        type = 'diner';
-        try {
-          // 1. Update Auth Metadata (persists for future sessions)
-          await supabase.auth.updateUser({
-            data: { type: 'diner' }
-          });
+      try {
+        if (!type) {
+          console.log("Healing Google Auth User: Setting default diner type...");
+          type = 'diner';
+          await supabase.auth.updateUser({ data: { type: 'diner' } });
 
-          // 2. Create/Update Public Profile
-          // Google usually provides 'full_name' or 'name' in metadata
+          // Create/Heal Profile for Google User
           const name = session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split('@')[0];
-
           const { error: profileError } = await supabase
             .from('profiles')
             .upsert({
@@ -86,14 +84,27 @@ function App() {
               email: session.user.email,
               name: name,
               type: 'diner',
-              status: 'active', // Auto-activate
+              status: 'active',
               updated_at: new Date().toISOString()
-            }, { onConflict: 'id' }); // Don't overwrite if exists, but we are fixing missing data so upsert is safe
+            }, { onConflict: 'id' });
 
-          if (profileError) console.error("Error creating profile for Google user:", profileError);
-        } catch (healError) {
-          console.error("Healing failed:", healError);
+          if (profileError) console.error("Profile Heal Error:", profileError);
+
+        } else if (type === 'restaurant') {
+          // Sync Profile Type for Restaurants
+          // If the signup trigger used the default 'diner' value, we force update it here.
+          // We use upsert to be safe, but a specific update is fine too if profile exists.
+          // Let's use update with a check to avoid unnecessary writes.
+          const { error } = await supabase
+            .from('profiles')
+            .update({ type: 'restaurant' })
+            .eq('id', session.user.id)
+            .neq('type', 'restaurant'); // Only write if it's currently WRONG (e.g. diner or null)
+
+          if (error) console.error("Profile Sync Error (Restaurant):", error);
         }
+      } catch (err) {
+        console.error("Auto-healing/Sync failed:", err);
       }
 
       const appUser = {
