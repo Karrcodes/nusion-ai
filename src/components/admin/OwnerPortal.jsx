@@ -169,6 +169,52 @@ const OwnerPortal = () => {
         }
     };
 
+    const handleDelete = async (id, name, type) => {
+        if (!window.confirm(`⚠️ DANGER: Are you sure you want to PERMANENTLY DELETE ${type} "${name}"?\n\nThis action cannot be undone. All data will be lost.`)) return;
+
+        // Double confirm
+        if (!window.confirm(`Final Confirmation: Delete ${name}?`)) return;
+
+        try {
+            // Delete from Auth (cascades to public profiles usually, but we use admin client)
+            const { error } = await supabaseAdmin.auth.admin.deleteUser(id);
+
+            if (error) throw error;
+
+            // Update local state
+            if (type === 'restaurant') {
+                setRestaurants(prev => prev.filter(r => r.id !== id));
+            } else {
+                setUsers(prev => prev.filter(u => u.id !== id));
+            }
+
+            alert(`Successfully deleted ${name}`);
+
+        } catch (err) {
+            console.error("Delete failed:", err);
+            // Fallback: try deleting profile directly if auth delete fails/is not needed
+            try {
+                const { error: profileError } = await supabaseAdmin
+                    .from('profiles')
+                    .delete()
+                    .eq('id', id);
+
+                if (profileError) throw profileError;
+
+                // Update local state (same as above)
+                if (type === 'restaurant') {
+                    setRestaurants(prev => prev.filter(r => r.id !== id));
+                } else {
+                    setUsers(prev => prev.filter(u => u.id !== id));
+                }
+                alert(`Successfully deleted ${name} (Profile only)`);
+
+            } catch (fallbackErr) {
+                alert("Delete failed: " + err.message);
+            }
+        }
+    };
+
     const toggleSelectAll = () => {
         if (selectedIds.length === filteredList.length) {
             setSelectedIds([]);
@@ -475,6 +521,13 @@ const OwnerPortal = () => {
                                                             Suspend
                                                         </button>
                                                     )}
+                                                    <button
+                                                        onClick={() => handleDelete(r.id, r.name, 'restaurant')}
+                                                        className="px-3 py-1 bg-red-600/20 hover:bg-red-600/40 text-red-500 rounded text-xs font-bold border border-red-500/30 ml-2"
+                                                        title="Permanently Delete"
+                                                    >
+                                                        🗑️
+                                                    </button>
                                                 </div>
                                             </td>
                                         </tr>
@@ -538,6 +591,13 @@ const OwnerPortal = () => {
                                                 title="Convert to Restaurant Account"
                                             >
                                                 To Restaurant
+                                            </button>
+                                            <button
+                                                onClick={() => handleDelete(user.id, user.name || user.email, 'diner')}
+                                                className="px-3 py-1 bg-red-600/20 hover:bg-red-600/40 text-red-500 rounded text-xs font-bold border border-red-500/30 ml-2"
+                                                title="Permanently Delete"
+                                            >
+                                                🗑️
                                             </button>
                                         </td>
                                     </tr>
