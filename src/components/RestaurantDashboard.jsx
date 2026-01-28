@@ -1125,18 +1125,28 @@ const RestaurantDashboard = ({ user }) => {
                                     onClick={async () => {
                                         setLoading(true);
                                         try {
-                                            // 1. Flush to LocalStorage immediately
-                                            localStorage.setItem(`restaurant_profile_${user.id}`, JSON.stringify(profile));
-                                            localStorage.setItem('restaurant_profile', JSON.stringify(profile));
+                                            const userId = effectiveUser?.id;
+                                            const userEmail = effectiveUser?.email || impersonatedRestaurant?.email;
+
+                                            if (!userId) {
+                                                throw new Error('User ID not found');
+                                            }
+
+                                            // When impersonating, skip localStorage and only update Supabase
+                                            if (!isImpersonating) {
+                                                // 1. Flush to LocalStorage immediately (only for normal users)
+                                                localStorage.setItem(`restaurant_profile_${userId}`, JSON.stringify(profile));
+                                                localStorage.setItem('restaurant_profile', JSON.stringify(profile));
+                                            }
 
                                             // 2. Sync with Profiles table for global visibility (Landing Page / Discovery)
                                             // Simplified UPSERT to avoid potential schema mismatches or RLS complications
                                             const { error: profileError } = await supabase
                                                 .from('profiles')
                                                 .upsert({
-                                                    id: user.id,
+                                                    id: userId,
                                                     name: profile.name,
-                                                    email: user.email,
+                                                    email: userEmail,
                                                     city: profile.location || '',
                                                     cuisine_type: profile.cuisine || '',
                                                     logo_url: profile.logoUrl || null,
@@ -1152,12 +1162,15 @@ const RestaurantDashboard = ({ user }) => {
                                                 throw new Error(`Profile Sync: ${profileError.message}`);
                                             }
 
-                                            // 3. Sync with Supabase Metadata for persistent cross-tab sessions
-                                            const { error } = await supabase.auth.updateUser({
-                                                data: { name: profile.name }
-                                            });
+                                            // 3. Sync with Supabase Metadata for persistent cross-tab sessions (skip when impersonating)
+                                            if (!isImpersonating) {
+                                                const { error } = await supabase.auth.updateUser({
+                                                    data: { name: profile.name }
+                                                });
 
-                                            if (error) throw error;
+                                                if (error) throw error;
+                                            }
+
                                             alert('Profile & Branding synced successfully!');
                                         } catch (e) {
                                             console.error("Sync failed", e);
