@@ -286,62 +286,75 @@ function IkoyiInterface({ user }) {
                 )}
             </div>
 
-            <div className="container mx-auto px-6 flex flex-col items-center gap-12 max-w-6xl flex-grow pt-[120px] relative z-10">
+            <div className="container mx-auto px-6 h-full flex-grow flex flex-col justify-center relative z-10 pt-[100px] mb-20">
 
-                {/* Header Section */}
-                <header className="text-center max-w-2xl flex flex-col items-center animate-[fadeIn_0.8s] mt-12 mb-16">
-                    <h1 className="text-5xl md:text-7xl font-cinzel text-[var(--color-cream)] mb-4 tracking-[0.1em] drop-shadow-lg">
-                        {brand.name === 'Nusion AI' ? 'THE STUDIO' : brand.name}
-                    </h1>
-                    <div className="w-16 h-[1px] bg-[var(--color-gold)] mb-6 opacity-60"></div>
-                    <p className="text-[var(--color-cream)]/60 text-lg font-serif italic tracking-wide">
-                        Speculative Gastronomy
-                    </p>
-                </header>
+                {!loading && !result ? (
+                    // --- SPLIT LAYOUT (Input Mode) ---
+                    <div className="flex flex-col md:flex-row w-full max-w-7xl mx-auto items-center md:items-start justify-center gap-12 md:gap-24 animate-[fadeIn_0.5s]">
 
-                {/* Main Interface Section */}
-                <main className={`w-full max-w-5xl relative min-h-[500px] flex flex-col justify-center items-center transition-all duration-500`}>
+                        {/* LEFT COLUMN: Branding & Description */}
+                        <div className="flex-1 flex flex-col items-center md:items-start text-center md:text-left mt-0 md:mt-10">
+                            <h1 className="text-5xl md:text-7xl lg:text-8xl font-cinzel text-[var(--color-cream)] mb-6 tracking-[0.1em] drop-shadow-lg leading-tight">
+                                {brand.name === 'Nusion AI' ? 'THE STUDIO' : brand.name}
+                            </h1>
+                            <div className="w-24 h-[1px] bg-[var(--color-gold)] mb-8 opacity-60"></div>
 
-                    {loading ? (
-                        <div className="flex flex-col items-center w-full max-w-md animate-[fadeIn_0.5s]">
-                            {/* Sleek Minimal Loader - No Emojis */}
-                            <div className="w-16 h-16 mb-8 relative">
-                                <div className="absolute inset-0 border-[1px] border-[var(--color-gold)] opacity-20 rounded-full"></div>
-                                <div className="absolute inset-0 border-t-[1px] border-[var(--color-gold)] rounded-full animate-spin"></div>
-                                <div className="absolute inset-4 border-[1px] border-[var(--color-gold)] opacity-10 rounded-full"></div>
-                            </div>
-
-                            <h3 className="text-2xl font-cinzel text-white mb-2 tracking-[0.2em] uppercase">
-                                {loadingPhase === 'consulting' && 'Analysing Palate'}
-                                {loadingPhase === 'visualising' && 'Curating Visuals'}
-                                {loadingPhase === 'plating' && 'Finalising Service'}
-                            </h3>
-
-                            <div className="w-64 h-[2px] bg-white/5 mt-8 mb-4 relative overflow-hidden rounded-full">
-                                <div
-                                    className="h-full bg-[var(--color-gold)] shadow-[0_0_10px_var(--color-gold)] transition-all duration-700 ease-out"
-                                    style={{ width: `${progress}%` }}
-                                ></div>
-                            </div>
-
-                            <p className="text-[9px] text-[var(--color-gold)] font-mono tracking-[0.4em] opacity-80 animate-pulse">
-                                {loadingPhase === 'consulting' && 'AI_CHEF_INIT_SEQ_01'}
-                                {loadingPhase === 'visualising' && 'RENDERING_TEXTURES_HQ'}
-                                {loadingPhase === 'plating' && 'PLATING_COMPLETE'}
+                            <p className="text-[var(--color-cream)]/80 text-xl font-serif italic tracking-wide mb-6">
+                                Speculative Gastronomy
                             </p>
+
+                            <p className="text-white/60 text-sm md:text-base leading-relaxed max-w-md font-light">
+                                Welcome to the Generative Engine. Define your preferences, set your budget, and allow our AI to curate a bespoke tasting menu tailored precisely to your palate.
+                            </p>
+
+                            <div className="mt-12 hidden md:block opacity-40 text-[10px] uppercase tracking-[0.3em] font-cinzel">
+                                Aikin Karr • Nusion AI 2026
+                            </div>
                         </div>
-                    ) : result ? (
-                        <RecommendationResult result={result} onReset={reset} brandName={brand.name} />
-                    ) : (
-                        <div className="w-full max-w-4xl animate-[fadeIn_1.2s]">
+
+                        {/* RIGHT COLUMN: Input Form */}
+                        <div className="flex-1 w-full max-w-md bg-black/20 backdrop-blur-sm p-8 rounded-3xl border border-white/5 shadow-2xl">
                             <InputForm onCalculate={handleCalculate} />
                         </div>
-                    )}
-                </main>
-                {/* Footer */}
-                <footer className="w-full py-8 text-white/20 flex justify-center text-[10px] uppercase tracking-[0.3em] font-cinzel mt-20">
-                    <span>Nusion AI &copy; 2024</span>
-                </footer>
+
+                    </div>
+                ) : (
+                    // --- CENTERED LAYOUT (Loading / Result) ---
+                    <main className={`w-full max-w-5xl mx-auto relative min-h-[500px] flex flex-col justify-center items-center transition-all duration-500`}>
+                        {loading ? (
+                            <div className="flex flex-col items-center w-full max-w-md animate-[fadeIn_0.5s]">
+                                {/* Sleek Minimal Loader - No Emojis */}
+                                <div className="w-16 h-16 mb-8 relative">
+                                    <div className="absolute inset-0 border-[1px] border-[var(--color-gold)] opacity-20 rounded-full"></div>
+                                    <div className="absolute inset-0 border-t-[1px] border-[var(--color-gold)] rounded-full animate-spin"></div>
+                                    <div className="absolute inset-4 border-[1px] border-[var(--color-gold)] opacity-10 rounded-full"></div>
+                                </div>
+
+                                <h3 className="text-2xl font-cinzel text-white mb-2 tracking-[0.2em] uppercase">
+                                    {loadingPhase === 'consulting' && 'Analysing Palate'}
+                                    {loadingPhase === 'visualising' && 'Curating Visuals'}
+                                    {loadingPhase === 'plating' && 'Finalising Service'}
+                                </h3>
+
+                                <div className="w-64 h-[2px] bg-white/5 mt-8 mb-4 relative overflow-hidden rounded-full">
+                                    <div
+                                        className="h-full bg-[var(--color-gold)] shadow-[0_0_10px_var(--color-gold)] transition-all duration-700 ease-out"
+                                        style={{ width: `${progress}%` }}
+                                    ></div>
+                                </div>
+
+                                <p className="text-[9px] text-[var(--color-gold)] font-mono tracking-[0.4em] opacity-80 animate-pulse">
+                                    {loadingPhase === 'consulting' && 'AI_CHEF_INIT_SEQ_01'}
+                                    {loadingPhase === 'visualising' && 'RENDERING_TEXTURES_HQ'}
+                                    {loadingPhase === 'plating' && 'PLATING_COMPLETE'}
+                                </p>
+                            </div>
+                        ) : (
+                            <RecommendationResult result={result} onReset={reset} brandName={brand.name} />
+                        )}
+                    </main>
+                )}
+
             </div>
         </div>
     );
