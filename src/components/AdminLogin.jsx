@@ -42,10 +42,10 @@ const AdminLogin = () => {
     };
 
     return (
-        <div className="min-h-screen w-full flex items-center justify-center bg-bg-primary p-4 relative overflow-hidden">
+        <div className="min-h-screen w-full flex items-center justify-center bg-white p-4 relative overflow-hidden">
             {/* Background Effects */}
-            <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_#1a1a1a_0%,_#000_100%)] opacity-50" />
+            <div className="absolute inset-0 opacity-[0.02] pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_#f5f5f5_0%,_#ffffff_100%)]" />
 
             {/* Animated Background Orbs */}
             <div className="absolute top-20 left-20 w-96 h-96 bg-accent-jp/5 rounded-full blur-3xl animate-pulse" />
