@@ -158,18 +158,23 @@ function IkoyiInterface({ user }) {
             setProgress(40);
             setLoadingPhase('visualising');
 
-            const coursesWithImages = [];
+            // PARALLEL GENERATION (Faster)
+            // We use Promise.all to generate all images simultaneously.
 
-            for (let i = 0; i < recommendation.courses.length; i++) {
-                const course = recommendation.courses[i];
+            const imagePromises = recommendation.courses.map(async (course) => {
                 try {
                     const imageUrl = await generateDishImage(course.description);
-                    coursesWithImages.push({ ...course, image: imageUrl });
+                    // Update progress incrementally as each finishes
                     setProgress(prev => Math.min(prev + (60 / recommendation.courses.length), 95));
+                    return { ...course, image: imageUrl };
                 } catch (err) {
-                    coursesWithImages.push({ ...course, image: null });
+                    console.error(`❌ Failed to generate image for ${course.name}`, err);
+                    return { ...course, image: null };
                 }
-            }
+            });
+
+            const coursesWithImages = await Promise.all(imagePromises);
+            console.log('🎨 Image generation complete. Courses with images:', coursesWithImages);
 
             setLoadingPhase('plating');
             setProgress(100);
