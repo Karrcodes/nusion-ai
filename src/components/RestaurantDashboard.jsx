@@ -1125,71 +1125,73 @@ const RestaurantDashboard = ({ user }) => {
                         <div className="animate-[fadeIn_0.3s] max-w-3xl">
                             <div className="flex justify-between items-center mb-8">
                                 <h2 className="text-xl font-bold text-text-primary">Restaurant Profile</h2>
-                                <button
-                                    onClick={async () => {
-                                        setLoading(true);
-                                        try {
-                                            const userId = effectiveUser?.id;
-                                            const userEmail = effectiveUser?.email || impersonatedRestaurant?.email;
+                                {!isImpersonating && (
+                                    <button
+                                        onClick={async () => {
+                                            setLoading(true);
+                                            try {
+                                                const userId = effectiveUser?.id;
+                                                const userEmail = effectiveUser?.email || impersonatedRestaurant?.email;
 
-                                            if (!userId) {
-                                                throw new Error('User ID not found');
+                                                if (!userId) {
+                                                    throw new Error('User ID not found');
+                                                }
+
+                                                // When impersonating, skip localStorage and only update Supabase
+                                                if (!isImpersonating) {
+                                                    // 1. Flush to LocalStorage immediately (only for normal users)
+                                                    localStorage.setItem(`restaurant_profile_${userId}`, JSON.stringify(profile));
+                                                    localStorage.setItem('restaurant_profile', JSON.stringify(profile));
+                                                }
+
+                                                // 2. Sync with Profiles table for global visibility (Landing Page / Discovery)
+                                                // Use admin client when impersonating to bypass RLS
+                                                const dbClient = isImpersonating && supabaseAdmin ? supabaseAdmin : supabase;
+
+                                                const { error: profileError } = await dbClient
+                                                    .from('profiles')
+                                                    .upsert({
+                                                        id: userId,
+                                                        name: profile.name,
+                                                        email: userEmail,
+                                                        city: profile.location || '',
+                                                        cuisine_type: profile.cuisine || '',
+                                                        logo_url: profile.logoUrl || null,
+                                                        cover_url: profile.coverUrl || null,
+                                                        accent_color: profile.accentColor || null,
+                                                        font: profile.font || null,
+                                                        ui_style: profile.uiStyle || null,
+                                                        status: 'approved'
+                                                    });
+
+                                                if (profileError) {
+                                                    console.error('Supabase Profiles Sync Error:', profileError);
+                                                    throw new Error(`Profile Sync: ${profileError.message}`);
+                                                }
+
+                                                // 3. Sync with Supabase Metadata for persistent cross-tab sessions (skip when impersonating)
+                                                if (!isImpersonating) {
+                                                    const { error } = await supabase.auth.updateUser({
+                                                        data: { name: profile.name }
+                                                    });
+
+                                                    if (error) throw error;
+                                                }
+
+                                                alert('Profile & Branding synced successfully!');
+                                            } catch (e) {
+                                                console.error("Sync failed", e);
+                                                alert(`Failed to sync changes: ${e.message || 'Unknown error'}. Local data is preserved.`);
+                                            } finally {
+                                                setLoading(false);
                                             }
-
-                                            // When impersonating, skip localStorage and only update Supabase
-                                            if (!isImpersonating) {
-                                                // 1. Flush to LocalStorage immediately (only for normal users)
-                                                localStorage.setItem(`restaurant_profile_${userId}`, JSON.stringify(profile));
-                                                localStorage.setItem('restaurant_profile', JSON.stringify(profile));
-                                            }
-
-                                            // 2. Sync with Profiles table for global visibility (Landing Page / Discovery)
-                                            // Use admin client when impersonating to bypass RLS
-                                            const dbClient = isImpersonating && supabaseAdmin ? supabaseAdmin : supabase;
-
-                                            const { error: profileError } = await dbClient
-                                                .from('profiles')
-                                                .upsert({
-                                                    id: userId,
-                                                    name: profile.name,
-                                                    email: userEmail,
-                                                    city: profile.location || '',
-                                                    cuisine_type: profile.cuisine || '',
-                                                    logo_url: profile.logoUrl || null,
-                                                    cover_url: profile.coverUrl || null,
-                                                    accent_color: profile.accentColor || null,
-                                                    font: profile.font || null,
-                                                    ui_style: profile.uiStyle || null,
-                                                    status: 'approved'
-                                                });
-
-                                            if (profileError) {
-                                                console.error('Supabase Profiles Sync Error:', profileError);
-                                                throw new Error(`Profile Sync: ${profileError.message}`);
-                                            }
-
-                                            // 3. Sync with Supabase Metadata for persistent cross-tab sessions (skip when impersonating)
-                                            if (!isImpersonating) {
-                                                const { error } = await supabase.auth.updateUser({
-                                                    data: { name: profile.name }
-                                                });
-
-                                                if (error) throw error;
-                                            }
-
-                                            alert('Profile & Branding synced successfully!');
-                                        } catch (e) {
-                                            console.error("Sync failed", e);
-                                            alert(`Failed to sync changes: ${e.message || 'Unknown error'}. Local data is preserved.`);
-                                        } finally {
-                                            setLoading(false);
-                                        }
-                                    }}
-                                    className="px-6 py-2 bg-text-primary text-bg-primary rounded-lg text-sm font-bold hover:opacity-90 transition-opacity disabled:opacity-50"
-                                    disabled={loading}
-                                >
-                                    {loading ? 'Syncing...' : 'Save & Sync Changes'}
-                                </button>
+                                        }}
+                                        className="px-6 py-2 bg-text-primary text-bg-primary rounded-lg text-sm font-bold hover:opacity-90 transition-opacity disabled:opacity-50"
+                                        disabled={loading}
+                                    >
+                                        {loading ? 'Syncing...' : 'Save & Sync Changes'}
+                                    </button>
+                                )}
                             </div>
 
                             <div className="space-y-8">

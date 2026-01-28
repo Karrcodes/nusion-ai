@@ -8,7 +8,9 @@ const OwnerPortal = () => {
     const navigate = useNavigate();
     const { startImpersonation } = useImpersonation();
     const [restaurants, setRestaurants] = useState([]);
+    const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [activeTab, setActiveTab] = useState('restaurants'); // 'restaurants' or 'users'
     const [filter, setFilter] = useState('all');
     const [searchQuery, setSearchQuery] = useState('');
     const [sortBy, setSortBy] = useState('date'); // 'date', 'name', 'status'
@@ -17,6 +19,7 @@ const OwnerPortal = () => {
 
     useEffect(() => {
         fetchRestaurants();
+        fetchUsers();
     }, []);
 
     const fetchRestaurants = async () => {
@@ -33,6 +36,21 @@ const OwnerPortal = () => {
             alert("Failed to load data. Ensure RLS policies allow admin access.");
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchUsers = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('type', 'diner')
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+            setUsers(data || []);
+        } catch (err) {
+            console.error("Error fetching users:", err);
         }
     };
 
@@ -191,209 +209,291 @@ const OwnerPortal = () => {
                     </div>
                 </div>
 
-                {/* Quick Stats */}
-                <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-8">
-                    <div className="bg-bg-secondary border border-glass-border rounded-lg p-4 text-center">
-                        <div className="text-2xl font-bold text-text-primary">{stats.total}</div>
-                        <div className="text-xs text-text-secondary uppercase tracking-wider">Total</div>
-                    </div>
-                    <div className="bg-bg-secondary border border-yellow-500/30 rounded-lg p-4 text-center">
-                        <div className="text-2xl font-bold text-yellow-400">{stats.pending}</div>
-                        <div className="text-xs text-text-secondary uppercase tracking-wider">Pending</div>
-                    </div>
-                    <div className="bg-bg-secondary border border-green-500/30 rounded-lg p-4 text-center">
-                        <div className="text-2xl font-bold text-green-400">{stats.approved}</div>
-                        <div className="text-xs text-text-secondary uppercase tracking-wider">Approved</div>
-                    </div>
-                    <div className="bg-bg-secondary border border-red-500/30 rounded-lg p-4 text-center">
-                        <div className="text-2xl font-bold text-red-400">{stats.rejected}</div>
-                        <div className="text-xs text-text-secondary uppercase tracking-wider">Rejected</div>
-                    </div>
-                    <div className="bg-bg-secondary border border-gray-500/30 rounded-lg p-4 text-center">
-                        <div className="text-2xl font-bold text-gray-400">{stats.disabled}</div>
-                        <div className="text-xs text-text-secondary uppercase tracking-wider">Disabled</div>
-                    </div>
-                    <div className="bg-bg-secondary border border-orange-500/30 rounded-lg p-4 text-center">
-                        <div className="text-2xl font-bold text-orange-400">{stats.suspended}</div>
-                        <div className="text-xs text-text-secondary uppercase tracking-wider">Suspended</div>
-                    </div>
-                </div>
-
-                {/* Search and Controls */}
-                <div className="flex flex-col md:flex-row gap-4 mb-6">
-                    <input
-                        type="text"
-                        placeholder="Search by name, email, or city..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="flex-1 bg-bg-secondary border border-glass-border rounded-lg px-4 py-2 text-sm text-text-primary placeholder-text-secondary/50 focus:border-accent-jp focus:outline-none transition-colors"
-                    />
-                    <select
-                        value={sortBy}
-                        onChange={(e) => setSortBy(e.target.value)}
-                        className="bg-bg-secondary border border-glass-border rounded-lg px-4 py-2 text-sm text-text-primary focus:border-accent-jp focus:outline-none transition-colors"
+                {/* Tabs */}
+                <div className="flex gap-2 mb-8 border-b border-glass-border">
+                    <button
+                        onClick={() => setActiveTab('restaurants')}
+                        className={`px-6 py-3 font-sans font-medium transition-all ${activeTab === 'restaurants'
+                            ? 'text-text-primary border-b-2 border-text-primary'
+                            : 'text-text-secondary hover:text-text-primary'
+                            }`}
                     >
-                        <option value="date">Sort by Date</option>
-                        <option value="name">Sort by Name</option>
-                        <option value="status">Sort by Status</option>
-                    </select>
+                        Restaurants
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('users')}
+                        className={`px-6 py-3 font-sans font-medium transition-all ${activeTab === 'users'
+                            ? 'text-text-primary border-b-2 border-text-primary'
+                            : 'text-text-secondary hover:text-text-primary'
+                            }`}
+                    >
+                        Users ({users.length})
+                    </button>
                 </div>
 
-                {/* Filters */}
-                <div className="flex gap-2 mb-6">
-                    {['all', 'pending', 'approved', 'rejected', 'disabled', 'suspended'].map(f => (
-                        <button
-                            key={f}
-                            onClick={() => setFilter(f)}
-                            className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider border transition-all ${filter === f
-                                ? 'bg-text-primary text-bg-primary border-text-primary'
-                                : 'bg-transparent text-text-secondary border-glass-border hover:border-text-secondary'
-                                }`}
-                        >
-                            {f}
-                        </button>
-                    ))}
-                </div>
+                {/* Restaurants Tab */}
+                {activeTab === 'restaurants' && (
+                    <>
+                        {/* Quick Stats */}
+                        <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-8">
+                            <div className="bg-bg-secondary border border-glass-border rounded-lg p-4 text-center">
+                                <div className="text-2xl font-bold text-text-primary">{stats.total}</div>
+                                <div className="text-xs text-text-secondary uppercase tracking-wider">Total</div>
+                            </div>
+                            <div className="bg-bg-secondary border border-yellow-500/30 rounded-lg p-4 text-center">
+                                <div className="text-2xl font-bold text-yellow-400">{stats.pending}</div>
+                                <div className="text-xs text-text-secondary uppercase tracking-wider">Pending</div>
+                            </div>
+                            <div className="bg-bg-secondary border border-green-500/30 rounded-lg p-4 text-center">
+                                <div className="text-2xl font-bold text-green-400">{stats.approved}</div>
+                                <div className="text-xs text-text-secondary uppercase tracking-wider">Approved</div>
+                            </div>
+                            <div className="bg-bg-secondary border border-red-500/30 rounded-lg p-4 text-center">
+                                <div className="text-2xl font-bold text-red-400">{stats.rejected}</div>
+                                <div className="text-xs text-text-secondary uppercase tracking-wider">Rejected</div>
+                            </div>
+                            <div className="bg-bg-secondary border border-gray-500/30 rounded-lg p-4 text-center">
+                                <div className="text-2xl font-bold text-gray-400">{stats.disabled}</div>
+                                <div className="text-xs text-text-secondary uppercase tracking-wider">Disabled</div>
+                            </div>
+                            <div className="bg-bg-secondary border border-orange-500/30 rounded-lg p-4 text-center">
+                                <div className="text-2xl font-bold text-orange-400">{stats.suspended}</div>
+                                <div className="text-xs text-text-secondary uppercase tracking-wider">Suspended</div>
+                            </div>
+                        </div>
 
-                {/* Bulk Actions */}
-                {selectedIds.length > 0 && (
-                    <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-4 mb-6 flex items-center justify-between">
-                        <div className="text-sm text-purple-300">
-                            <strong>{selectedIds.length}</strong> restaurant(s) selected
+                        {/* Search and Controls */}
+                        <div className="flex flex-col md:flex-row gap-4 mb-6">
+                            <input
+                                type="text"
+                                placeholder="Search by name, email, or city..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="flex-1 bg-bg-secondary border border-glass-border rounded-lg px-4 py-2 text-sm text-text-primary placeholder-text-secondary/50 focus:border-accent-jp focus:outline-none transition-colors"
+                            />
+                            <select
+                                value={sortBy}
+                                onChange={(e) => setSortBy(e.target.value)}
+                                className="bg-bg-secondary border border-glass-border rounded-lg px-4 py-2 text-sm text-text-primary focus:border-accent-jp focus:outline-none transition-colors"
+                            >
+                                <option value="date">Sort by Date</option>
+                                <option value="name">Sort by Name</option>
+                                <option value="status">Sort by Status</option>
+                            </select>
                         </div>
-                        <div className="flex gap-2">
-                            <button
-                                onClick={() => handleBulkAction('approved')}
-                                disabled={bulkActionLoading}
-                                className="px-3 py-1 bg-green-500/20 hover:bg-green-500/40 text-green-400 rounded text-xs font-bold border border-green-500/30 disabled:opacity-50"
-                            >
-                                Approve All
-                            </button>
-                            <button
-                                onClick={() => handleBulkAction('rejected')}
-                                disabled={bulkActionLoading}
-                                className="px-3 py-1 bg-red-500/20 hover:bg-red-500/40 text-red-400 rounded text-xs font-bold border border-red-500/30 disabled:opacity-50"
-                            >
-                                Reject All
-                            </button>
-                            <button
-                                onClick={() => handleBulkAction('disabled')}
-                                disabled={bulkActionLoading}
-                                className="px-3 py-1 bg-gray-500/20 hover:bg-gray-500/40 text-gray-400 rounded text-xs font-bold border border-gray-500/30 disabled:opacity-50"
-                            >
-                                Disable All
-                            </button>
-                            <button
-                                onClick={() => setSelectedIds([])}
-                                className="px-3 py-1 bg-bg-secondary hover:bg-glass-border text-text-secondary rounded text-xs font-bold border border-glass-border"
-                            >
-                                Clear
-                            </button>
+
+                        {/* Filters */}
+                        <div className="flex gap-2 mb-6">
+                            {['all', 'pending', 'approved', 'rejected', 'disabled', 'suspended'].map(f => (
+                                <button
+                                    key={f}
+                                    onClick={() => setFilter(f)}
+                                    className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider border transition-all ${filter === f
+                                        ? 'bg-text-primary text-bg-primary border-text-primary'
+                                        : 'bg-transparent text-text-secondary border-glass-border hover:border-text-secondary'
+                                        }`}
+                                >
+                                    {f}
+                                </button>
+                            ))}
                         </div>
-                    </div>
+
+                        {/* Bulk Actions */}
+                        {selectedIds.length > 0 && (
+                            <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-4 mb-6 flex items-center justify-between">
+                                <div className="text-sm text-purple-300">
+                                    <strong>{selectedIds.length}</strong> restaurant(s) selected
+                                </div>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => handleBulkAction('approved')}
+                                        disabled={bulkActionLoading}
+                                        className="px-3 py-1 bg-green-500/20 hover:bg-green-500/40 text-green-400 rounded text-xs font-bold border border-green-500/30 disabled:opacity-50"
+                                    >
+                                        Approve All
+                                    </button>
+                                    <button
+                                        onClick={() => handleBulkAction('rejected')}
+                                        disabled={bulkActionLoading}
+                                        className="px-3 py-1 bg-red-500/20 hover:bg-red-500/40 text-red-400 rounded text-xs font-bold border border-red-500/30 disabled:opacity-50"
+                                    >
+                                        Reject All
+                                    </button>
+                                    <button
+                                        onClick={() => handleBulkAction('disabled')}
+                                        disabled={bulkActionLoading}
+                                        className="px-3 py-1 bg-gray-500/20 hover:bg-gray-500/40 text-gray-400 rounded text-xs font-bold border border-gray-500/30 disabled:opacity-50"
+                                    >
+                                        Disable All
+                                    </button>
+                                    <button
+                                        onClick={() => setSelectedIds([])}
+                                        className="px-3 py-1 bg-bg-secondary hover:bg-glass-border text-text-secondary rounded text-xs font-bold border border-glass-border"
+                                    >
+                                        Clear
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Table */}
+                        <div className="bg-bg-secondary border border-glass-border rounded-xl overflow-hidden shadow-2xl">
+                            <table className="w-full text-left border-collapse">
+                                <thead>
+                                    <tr className="bg-glass-border/30 text-xs uppercase text-text-secondary font-mono">
+                                        <th className="p-4 border-b border-glass-border">
+                                            <input
+                                                type="checkbox"
+                                                checked={selectedIds.length === filteredList.length && filteredList.length > 0}
+                                                onChange={toggleSelectAll}
+                                                className="cursor-pointer"
+                                            />
+                                        </th>
+                                        <th className="p-4 border-b border-glass-border">Entity</th>
+                                        <th className="p-4 border-b border-glass-border">Location</th>
+                                        <th className="p-4 border-b border-glass-border">Status</th>
+                                        <th className="p-4 border-b border-glass-border">Joined</th>
+                                        <th className="p-4 border-b border-glass-border text-right">Control</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filteredList.map(r => (
+                                        <tr key={r.id} className="hover:bg-glass-border/10 transition-colors border-b border-glass-border last:border-0 relative group">
+                                            <td className="p-4">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedIds.includes(r.id)}
+                                                    onChange={() => toggleSelect(r.id)}
+                                                    className="cursor-pointer"
+                                                />
+                                            </td>
+                                            <td className="p-4">
+                                                <div className="font-bold text-lg">{r.name || 'Unnamed'}</div>
+                                                <div className="text-xs text-text-secondary font-mono">{r.email}</div>
+                                                <div className="text-xs text-text-secondary font-mono opacity-50">{r.id}</div>
+                                            </td>
+                                            <td className="p-4 text-sm">
+                                                {r.city || 'Unknown'}, {r.currency}
+                                            </td>
+                                            <td className="p-4">
+                                                <span className={`px-2 py-1 rounded border text-xs font-bold uppercase ${getStatusColor(r.status || 'pending')}`}>
+                                                    {r.status || 'pending'}
+                                                </span>
+                                            </td>
+                                            <td className="p-4 text-xs text-text-secondary">
+                                                {new Date(r.created_at).toLocaleDateString()}
+                                            </td>
+                                            <td className="p-4 text-right">
+                                                <div className="flex justify-end gap-2 opacity-50 group-hover:opacity-100 transition-opacity flex-wrap">
+                                                    <button
+                                                        onClick={() => handleViewDashboard(r)}
+                                                        className="px-3 py-1 bg-purple-500/20 hover:bg-purple-500/40 text-purple-400 rounded text-xs font-bold border border-purple-500/30"
+                                                    >
+                                                        👁️ View Dashboard
+                                                    </button>
+                                                    {r.status !== 'approved' && (
+                                                        <button
+                                                            onClick={() => updateStatus(r.id, 'approved', r.name)}
+                                                            className="px-3 py-1 bg-green-500/20 hover:bg-green-500/40 text-green-400 rounded text-xs font-bold border border-green-500/30"
+                                                        >
+                                                            Approve
+                                                        </button>
+                                                    )}
+                                                    {r.status !== 'rejected' && (
+                                                        <button
+                                                            onClick={() => updateStatus(r.id, 'rejected', r.name)}
+                                                            className="px-3 py-1 bg-red-500/20 hover:bg-red-500/40 text-red-400 rounded text-xs font-bold border border-red-500/30"
+                                                        >
+                                                            Reject
+                                                        </button>
+                                                    )}
+                                                    {r.status !== 'disabled' && (
+                                                        <button
+                                                            onClick={() => updateStatus(r.id, 'disabled', r.name)}
+                                                            className="px-3 py-1 bg-gray-500/20 hover:bg-gray-500/40 text-gray-400 rounded text-xs font-bold border border-gray-500/30"
+                                                        >
+                                                            Disable
+                                                        </button>
+                                                    )}
+                                                    {r.status !== 'suspended' && (
+                                                        <button
+                                                            onClick={() => updateStatus(r.id, 'suspended', r.name)}
+                                                            className="px-3 py-1 bg-orange-500/20 hover:bg-orange-500/40 text-orange-400 rounded text-xs font-bold border border-orange-500/30"
+                                                        >
+                                                            Suspend
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {filteredList.length === 0 && (
+                                        <tr>
+                                            <td colSpan="6" className="p-8 text-center text-text-secondary italic">
+                                                No entities found in this sector.
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </>
                 )}
 
-                {/* Table */}
-                <div className="bg-bg-secondary border border-glass-border rounded-xl overflow-hidden shadow-2xl">
-                    <table className="w-full text-left border-collapse">
-                        <thead>
-                            <tr className="bg-glass-border/30 text-xs uppercase text-text-secondary font-mono">
-                                <th className="p-4 border-b border-glass-border">
-                                    <input
-                                        type="checkbox"
-                                        checked={selectedIds.length === filteredList.length && filteredList.length > 0}
-                                        onChange={toggleSelectAll}
-                                        className="cursor-pointer"
-                                    />
-                                </th>
-                                <th className="p-4 border-b border-glass-border">Entity</th>
-                                <th className="p-4 border-b border-glass-border">Location</th>
-                                <th className="p-4 border-b border-glass-border">Status</th>
-                                <th className="p-4 border-b border-glass-border">Joined</th>
-                                <th className="p-4 border-b border-glass-border text-right">Control</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredList.map(r => (
-                                <tr key={r.id} className="hover:bg-glass-border/10 transition-colors border-b border-glass-border last:border-0 relative group">
-                                    <td className="p-4">
-                                        <input
-                                            type="checkbox"
-                                            checked={selectedIds.includes(r.id)}
-                                            onChange={() => toggleSelect(r.id)}
-                                            className="cursor-pointer"
-                                        />
-                                    </td>
-                                    <td className="p-4">
-                                        <div className="font-bold text-lg">{r.name || 'Unnamed'}</div>
-                                        <div className="text-xs text-text-secondary font-mono">{r.email}</div>
-                                        <div className="text-xs text-text-secondary font-mono opacity-50">{r.id}</div>
-                                    </td>
-                                    <td className="p-4 text-sm">
-                                        {r.city || 'Unknown'}, {r.currency}
-                                    </td>
-                                    <td className="p-4">
-                                        <span className={`px-2 py-1 rounded border text-xs font-bold uppercase ${getStatusColor(r.status || 'pending')}`}>
-                                            {r.status || 'pending'}
-                                        </span>
-                                    </td>
-                                    <td className="p-4 text-xs text-text-secondary">
-                                        {new Date(r.created_at).toLocaleDateString()}
-                                    </td>
-                                    <td className="p-4 text-right">
-                                        <div className="flex justify-end gap-2 opacity-50 group-hover:opacity-100 transition-opacity flex-wrap">
+                {/* Users Tab */}
+                {activeTab === 'users' && (
+                    <div className="bg-bg-secondary border border-glass-border rounded-xl overflow-hidden shadow-2xl">
+                        <table className="w-full text-left border-collapse">
+                            <thead>
+                                <tr className="bg-glass-border/30 text-xs uppercase text-text-secondary font-mono">
+                                    <th className="p-4 border-b border-glass-border">User</th>
+                                    <th className="p-4 border-b border-glass-border">Email</th>
+                                    <th className="p-4 border-b border-glass-border">Joined</th>
+                                    <th className="p-4 border-b border-glass-border">Status</th>
+                                    <th className="p-4 border-b border-glass-border text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {users.map(user => (
+                                    <tr key={user.id} className="hover:bg-glass-border/10 transition-colors border-b border-glass-border last:border-0">
+                                        <td className="p-4">
+                                            <div className="font-bold text-text-primary">{user.name || 'Unnamed User'}</div>
+                                            <div className="text-xs text-text-secondary font-mono">ID: {user.id.slice(0, 8)}...</div>
+                                        </td>
+                                        <td className="p-4 text-text-secondary text-sm">{user.email || 'No email'}</td>
+                                        <td className="p-4 text-text-secondary text-sm font-mono">
+                                            {new Date(user.created_at).toLocaleDateString()}
+                                        </td>
+                                        <td className="p-4">
+                                            <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${user.status === 'disabled' ? 'bg-red-500/20 text-red-400' : 'bg-green-500/20 text-green-400'
+                                                }`}>
+                                                {user.status === 'disabled' ? 'Disabled' : 'Active'}
+                                            </span>
+                                        </td>
+                                        <td className="p-4 text-right">
                                             <button
-                                                onClick={() => handleViewDashboard(r)}
-                                                className="px-3 py-1 bg-purple-500/20 hover:bg-purple-500/40 text-purple-400 rounded text-xs font-bold border border-purple-500/30"
+                                                onClick={() => updateStatus(user.id, user.status === 'disabled' ? 'active' : 'disabled', user.name || user.email)}
+                                                className={`px-3 py-1 rounded text-xs font-bold transition ${user.status === 'disabled'
+                                                        ? 'bg-green-500/20 text-green-400 hover:bg-green-500/30'
+                                                        : 'bg-red-500/20 text-red-400 hover:bg-red-500/30'
+                                                    }`}
                                             >
-                                                👁️ View Dashboard
+                                                {user.status === 'disabled' ? 'Enable' : 'Disable'}
                                             </button>
-                                            {r.status !== 'approved' && (
-                                                <button
-                                                    onClick={() => updateStatus(r.id, 'approved', r.name)}
-                                                    className="px-3 py-1 bg-green-500/20 hover:bg-green-500/40 text-green-400 rounded text-xs font-bold border border-green-500/30"
-                                                >
-                                                    Approve
-                                                </button>
-                                            )}
-                                            {r.status !== 'rejected' && (
-                                                <button
-                                                    onClick={() => updateStatus(r.id, 'rejected', r.name)}
-                                                    className="px-3 py-1 bg-red-500/20 hover:bg-red-500/40 text-red-400 rounded text-xs font-bold border border-red-500/30"
-                                                >
-                                                    Reject
-                                                </button>
-                                            )}
-                                            {r.status !== 'disabled' && (
-                                                <button
-                                                    onClick={() => updateStatus(r.id, 'disabled', r.name)}
-                                                    className="px-3 py-1 bg-gray-500/20 hover:bg-gray-500/40 text-gray-400 rounded text-xs font-bold border border-gray-500/30"
-                                                >
-                                                    Disable
-                                                </button>
-                                            )}
-                                            {r.status !== 'suspended' && (
-                                                <button
-                                                    onClick={() => updateStatus(r.id, 'suspended', r.name)}
-                                                    className="px-3 py-1 bg-orange-500/20 hover:bg-orange-500/40 text-orange-400 rounded text-xs font-bold border border-orange-500/30"
-                                                >
-                                                    Suspend
-                                                </button>
-                                            )}
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                            {filteredList.length === 0 && (
-                                <tr>
-                                    <td colSpan="6" className="p-8 text-center text-text-secondary italic">
-                                        No entities found in this sector.
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                                {users.length === 0 && (
+                                    <tr>
+                                        <td colSpan="5" className="p-8 text-center text-text-secondary italic">
+                                            No users found.
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
             </div>
         </div>
     );
