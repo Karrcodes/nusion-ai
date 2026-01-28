@@ -78,7 +78,7 @@ function App() {
             // Determine name for email
             const emailName = session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split('@')[0];
             const siteUrl = window.location.origin;
-            const logoUrl = `${siteUrl}/nusion-logo.png`; // Correctly uses the public logo
+            const logoUrl = `${siteUrl}/nusion-logo-brown.png`; // Uses the new brown logo
 
             // Call Serverless Function (requires Vercel hosting)
             fetch('/api/send-email', {
@@ -125,6 +125,7 @@ function App() {
 
         // 2. ALWAYS Sync/Ensure Profile Exists
         // We use upsert to guarantee the record exists and has the correct type.
+        // This handles cases where metadata exists but profile is missing, OR type mismatch.
         const name = session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split('@')[0];
 
         const { error: profileError } = await supabase
