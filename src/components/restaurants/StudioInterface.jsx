@@ -258,7 +258,7 @@ function StudioInterface({ user }) {
                 )}
             </div>
             {/* Invisible SVG Filter for Logo Transparency (Corrected: A = A - R) */}
-            <svg style={{ position: 'absolute', width: 0, height: 0 }}>
+            <svg style={{ position: 'absolute', width: 0, height: 0, overflow: 'hidden' }} aria-hidden="true">
                 <filter id="logo-transparency" colorInterpolationFilters="sRGB">
                     <feColorMatrix
                         type="matrix"
@@ -267,16 +267,6 @@ function StudioInterface({ user }) {
                                 0 0 0 0 1 
                                 -1 0 0 1 0"
                     />
-                    {/* 
-                        Logic:
-                        R, G, B = 1 (Force pure white color)
-                        A = A - R
-                        
-                        If Source is White (1,1,1,1): A = 1 - 1 = 0 (Transparent)
-                        If Source is Black (0,0,0,1): A = 1 - 0 = 1 (Opaque White)
-                        If Source is Transp (0,0,0,0): A = 0 - 0 = 0 (Transparent)
-                        Safe for all PNG types.
-                    */}
                 </filter>
             </svg>
 
@@ -294,11 +284,9 @@ function StudioInterface({ user }) {
                                 <img
                                     src={brand.logoUrl}
                                     alt={brand.name}
+                                    crossOrigin="anonymous"
                                     className="h-16 md:h-24 w-auto object-contain mb-6 block"
-                                    style={{
-                                        filter: 'grayscale(100%) contrast(100) invert(100%)',
-                                        mixBlendMode: 'screen'
-                                    }}
+                                    style={{ filter: 'url(#logo-transparency)' }}
                                 />
                             ) : (
                                 <h1 className="text-4xl md:text-6xl font-cinzel text-[var(--color-cream)] mb-6 tracking-[0.1em] drop-shadow-lg leading-tight">
