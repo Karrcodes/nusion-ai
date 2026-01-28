@@ -38,8 +38,9 @@ function IkoyiInterface({ user }) {
     // --- DYNAMIC BRANDING LOGIC ---
     const [brand, setBrand] = useState({
         name: currentConfig.restaurantName,
-        logoUrl: null, // If null, use default Nusion branding
-        accentColor: '#d4af37', // Default Gold
+        logoUrl: null,
+        coverUrl: null, // Default null
+        accentColor: '#d4af37',
         font: 'Modern Sans',
         uiStyle: 'soft'
     });
@@ -67,6 +68,7 @@ function IkoyiInterface({ user }) {
                             setBrand({
                                 name: matchedBrand.name,
                                 logoUrl: matchedBrand.logo_url,
+                                coverUrl: matchedBrand.cover_url, // Load Card Cover
                                 accentColor: matchedBrand.accent_color || '#d4af37',
                                 font: matchedBrand.font || 'Modern Sans',
                                 uiStyle: matchedBrand.ui_style || 'soft'
@@ -93,6 +95,7 @@ function IkoyiInterface({ user }) {
                         ...prev,
                         name: parsed.name || (user?.id ? user.name : 'Nusion AI'),
                         logoUrl: parsed.logoUrl,
+                        coverUrl: parsed.coverUrl, // Load from local
                         accentColor: parsed.accentColor || '#d4af37',
                         font: parsed.font || 'Modern Sans',
                         uiStyle: parsed.uiStyle || 'soft'
@@ -238,8 +241,16 @@ function IkoyiInterface({ user }) {
         <div
             className={`w-full min-h-screen flex flex-col items-center relative transition-all duration-500 overflow-hidden bg-[var(--color-midnight)]`}
         >
-            {/* Minimal Background Gradient */}
-            <div className="absolute inset-0 z-0 pointer-events-none bg-[radial-gradient(circle_at_center,_transparent_0%,_#0f0f13_90%)]"></div>
+            {/* 1. Blurred Background Image */}
+            {brand.coverUrl && (
+                <div
+                    className="absolute inset-0 z-0 pointer-events-none bg-cover bg-center opacity-30 blur-xl scale-110"
+                    style={{ backgroundImage: `url(${brand.coverUrl})` }}
+                />
+            )}
+
+            {/* 2. Gradient/Overlay (Modified to blend) */}
+            <div className="absolute inset-0 z-0 pointer-events-none bg-[radial-gradient(circle_at_center,_transparent_0%,_#0f0f13_100%)] bg-black/40"></div>
 
 
             {/* Navigation Header */}
