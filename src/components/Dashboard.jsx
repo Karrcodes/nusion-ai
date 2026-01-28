@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabaseClient';
 
 const Dashboard = ({ user }) => {
     const [brands, setBrands] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchBrands = async () => {
@@ -16,6 +17,7 @@ const Dashboard = ({ user }) => {
             if (data && data.length > 0) {
                 setBrands(data);
             }
+            setLoading(false);
         };
         fetchBrands();
     }, []);
@@ -91,12 +93,15 @@ const Dashboard = ({ user }) => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl">
                 {/* Dynamic Brand Cards or Default Ikoyi */}
-                {brands.length > 0 ? (
+                {loading ? (
+                    <div className="md:col-span-2 flex justify-center py-20">
+                        <div className="w-12 h-12 border-2 border-text-secondary/20 border-t-text-primary rounded-full animate-spin"></div>
+                    </div>
+                ) : brands.length > 0 ? (
                     brands.map(brand => (
                         <Link
                             key={brand.id}
                             to={`/${(brand.name || 'brand').toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '')}`}
-                            /* Future: to={`/brand/${brand.id}`} */
                             className="group cursor-pointer relative h-64 md:h-[400px] rounded-3xl overflow-hidden shadow-xl transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl block"
                         >
                             <div className="absolute inset-0 bg-black/60 z-10 group-hover:bg-black/40 transition-colors duration-500"></div>
@@ -132,13 +137,13 @@ const Dashboard = ({ user }) => {
                         to="/ikoyi"
                         className="group cursor-pointer relative h-64 md:h-[400px] rounded-3xl overflow-hidden shadow-xl transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl block"
                     >
+                        {/* ... existing fallback content ... */}
                         <div className="absolute inset-0 bg-black/60 z-10 group-hover:bg-black/40 transition-colors duration-500"></div>
                         <img
                             src="/ikoyi-interior.png"
                             alt="Ikoyi Background"
                             className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:scale-110 transition-transform duration-700"
                         />
-
                         <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-10">
                             <div className="absolute top-10 left-10 right-10 h-1 bg-gradient-to-r from-accent-wa to-accent-jp opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
