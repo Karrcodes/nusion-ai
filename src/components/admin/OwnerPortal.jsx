@@ -138,6 +138,37 @@ const OwnerPortal = () => {
         navigate('/admin');
     };
 
+    const handleConvertType = async (id, currentType, name) => {
+        const newType = currentType === 'diner' ? 'restaurant' : 'diner';
+        if (!window.confirm(`Are you sure you want to convert ${name} from ${currentType} to ${newType}?`)) return;
+
+        try {
+            const { error } = await supabaseAdmin
+                .from('profiles')
+                .update({ type: newType })
+                .eq('id', id);
+
+            if (error) throw error;
+
+            // Move user between lists locally
+            if (newType === 'restaurant') {
+                const user = users.find(u => u.id === id);
+                setUsers(prev => prev.filter(u => u.id !== id));
+                setRestaurants(prev => [{ ...user, type: 'restaurant', status: user.status || 'pending' }, ...prev]);
+            } else {
+                const restaurant = restaurants.find(r => r.id === id);
+                setRestaurants(prev => prev.filter(r => r.id !== id));
+                setUsers(prev => [{ ...restaurant, type: 'diner' }, ...prev]);
+            }
+
+            alert(`Converted ${name} to ${newType}`);
+
+        } catch (err) {
+            console.error("Conversion failed:", err);
+            alert("Conversion failed: " + err.message);
+        }
+    };
+
     const toggleSelectAll = () => {
         if (selectedIds.length === filteredList.length) {
             setSelectedIds([]);
@@ -500,6 +531,13 @@ const OwnerPortal = () => {
                                                     }`}
                                             >
                                                 {user.status === 'disabled' ? 'Enable' : 'Disable'}
+                                            </button>
+                                            <button
+                                                onClick={() => handleConvertType(user.id, 'diner', user.name || user.email)}
+                                                className="px-3 py-1 bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 rounded text-xs font-bold transition ml-2 border border-purple-500/30"
+                                                title="Convert to Restaurant Account"
+                                            >
+                                                To Restaurant
                                             </button>
                                         </td>
                                     </tr>
