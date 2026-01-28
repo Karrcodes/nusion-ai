@@ -60,13 +60,47 @@ function App() {
     return () => subscription.unsubscribe();
   }, []); // Run once on mount
 
-  const handleSession = (session) => {
+  const handleSession = async (session) => {
     if (session?.user) {
+      // --- HEAL GOOGLE AUTH USERS ---
+      // If authenticating via OAuth, metadata might be missing. We default to 'diner' and ensure profile exists.
+      let type = session.user.user_metadata?.type;
+
+      if (!type) {
+        console.log("Healing Google Auth User: Setting default diner type...");
+        type = 'diner';
+        try {
+          // 1. Update Auth Metadata (persists for future sessions)
+          await supabase.auth.updateUser({
+            data: { type: 'diner' }
+          });
+
+          // 2. Create/Update Public Profile
+          // Google usually provides 'full_name' or 'name' in metadata
+          const name = session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split('@')[0];
+
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .upsert({
+              id: session.user.id,
+              email: session.user.email,
+              name: name,
+              type: 'diner',
+              status: 'active', // Auto-activate
+              updated_at: new Date().toISOString()
+            }, { onConflict: 'id' }); // Don't overwrite if exists, but we are fixing missing data so upsert is safe
+
+          if (profileError) console.error("Error creating profile for Google user:", profileError);
+        } catch (healError) {
+          console.error("Healing failed:", healError);
+        }
+      }
+
       const appUser = {
         id: session.user.id,
         email: session.user.email,
         name: session.user.user_metadata?.name,
-        type: session.user.user_metadata?.type || 'diner'
+        type: type || 'diner'
       };
       setCurrentUser(appUser);
 
