@@ -272,11 +272,10 @@ function StudioInterface({ user }) {
                                 <img
                                     src={brand.logoUrl}
                                     alt={brand.name}
-                                    className="h-16 md:h-24 w-auto object-contain mb-6"
+                                    className="h-16 md:h-24 w-auto object-contain mb-6 block"
                                     style={{
-                                        filter: 'grayscale(100%) contrast(5) invert(1)',
-                                        mixBlendMode: 'screen',
-                                        opacity: 0.9
+                                        filter: 'grayscale(100%) contrast(100) invert(100%)',
+                                        mixBlendMode: 'screen'
                                     }}
                                 />
                             ) : (
