@@ -1312,7 +1312,8 @@ const RestaurantDashboard = ({ user }) => {
                                                     setShowCitySuggestions(true);
                                                 }}
                                                 onFocus={() => setShowCitySuggestions(true)}
-                                                className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none"
+                                                disabled={isImpersonating}
+                                                className={`w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none ${isImpersonating ? 'opacity-60 cursor-not-allowed' : ''}`}
                                                 placeholder="Start typing..."
                                             />
                                             {/* City Suggestions Dropdown */}
@@ -1383,7 +1384,8 @@ const RestaurantDashboard = ({ user }) => {
                                                 placeholder="e.g. Modern West African"
                                                 value={profile.cuisine}
                                                 onChange={(e) => setProfile({ ...profile, cuisine: e.target.value })}
-                                                className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none"
+                                                disabled={isImpersonating}
+                                                className={`w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none ${isImpersonating ? 'opacity-60 cursor-not-allowed' : ''}`}
                                             />
                                         </div>
                                         <div className="space-y-2">
@@ -1393,7 +1395,8 @@ const RestaurantDashboard = ({ user }) => {
                                                 placeholder="e.g. Hyper-seasonal, Fermentation"
                                                 value={profile.philosophy}
                                                 onChange={(e) => setProfile({ ...profile, philosophy: e.target.value })}
-                                                className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none"
+                                                disabled={isImpersonating}
+                                                className={`w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none ${isImpersonating ? 'opacity-60 cursor-not-allowed' : ''}`}
                                             />
                                         </div>
                                     </div>
@@ -1411,11 +1414,12 @@ const RestaurantDashboard = ({ user }) => {
                                                 placeholder="Resaurant Website (e.g. sushi-zen.com)"
                                                 value={websiteUrl}
                                                 onChange={(e) => setWebsiteUrl(e.target.value)}
-                                                className="bg-bg-primary/50 border border-glass-border rounded-full px-4 py-1.5 text-xs w-64 focus:border-accent-jp focus:outline-none"
+                                                disabled={isImpersonating}
+                                                className={`bg-bg-primary/50 border border-glass-border rounded-full px-4 py-1.5 text-xs w-64 focus:border-accent-jp focus:outline-none ${isImpersonating ? 'opacity-60 cursor-not-allowed' : ''}`}
                                             />
                                             <button
                                                 onClick={handleAIImport}
-                                                disabled={importing || !websiteUrl}
+                                                disabled={importing || !websiteUrl || isImpersonating}
                                                 className="bg-accent-wa/10 hover:bg-accent-wa/20 text-accent-wa border border-accent-wa/30 rounded-full px-4 py-1.5 text-xs font-bold transition-all disabled:opacity-50 flex items-center gap-2"
                                             >
                                                 {importing ? (
@@ -1443,9 +1447,9 @@ const RestaurantDashboard = ({ user }) => {
                                                         ) : (
                                                             <span className="text-2xl opacity-20">🖼️</span>
                                                         )}
-                                                        <label className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center cursor-pointer transition-opacity text-xs text-white font-bold">
-                                                            {uploading === 'logoUrl' ? '...' : 'Upload'}
-                                                            <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e.target.files[0], 'logoUrl')} />
+                                                        <label className={`absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-xs text-white font-bold ${isImpersonating ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
+                                                            {uploading === 'logoUrl' ? '...' : isImpersonating ? '🔒' : 'Upload'}
+                                                            <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e.target.files[0], 'logoUrl')} disabled={isImpersonating} />
                                                         </label>
                                                     </div>
                                                     <div className="flex-1 space-y-2">
@@ -1470,9 +1474,9 @@ const RestaurantDashboard = ({ user }) => {
                                                         ) : (
                                                             <span className="text-2xl opacity-20">📸</span>
                                                         )}
-                                                        <label className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center cursor-pointer transition-opacity text-xs text-white font-bold">
-                                                            {uploading === 'coverUrl' ? '...' : 'Upload'}
-                                                            <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e.target.files[0], 'coverUrl')} />
+                                                        <label className={`absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-xs text-white font-bold ${isImpersonating ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
+                                                            {uploading === 'coverUrl' ? '...' : isImpersonating ? '🔒' : 'Upload'}
+                                                            <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e.target.files[0], 'coverUrl')} disabled={isImpersonating} />
                                                         </label>
                                                     </div>
                                                     <div className="flex-1 space-y-2">
@@ -1481,7 +1485,8 @@ const RestaurantDashboard = ({ user }) => {
                                                             placeholder="Or paste Cover Image URL..."
                                                             value={profile.coverUrl || ''}
                                                             onChange={(e) => setProfile({ ...profile, coverUrl: e.target.value })}
-                                                            className="w-full bg-bg-primary/50 border border-glass-border rounded p-2 text-text-primary focus:border-accent-jp focus:outline-none text-xs"
+                                                            disabled={isImpersonating}
+                                                            className={`w-full bg-bg-primary/50 border border-glass-border rounded p-2 text-text-primary focus:border-accent-jp focus:outline-none text-xs ${isImpersonating ? 'opacity-60 cursor-not-allowed' : ''}`}
                                                         />
                                                         <p className="text-[10px] text-text-secondary">This image represents you on the main Discovery board.</p>
                                                     </div>
