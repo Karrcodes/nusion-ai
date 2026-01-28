@@ -52,7 +52,7 @@ const OwnerPortal = () => {
             setRestaurants(data || []);
         } catch (err) {
             console.error("Error fetching restaurants:", err);
-            alert("Failed to load data. Ensure RLS policies allow admin access.");
+            alert(`Failed to load data: ${err.message || err.error_description || 'Unknown error'}`);
         } finally {
             setLoading(false);
         }
@@ -70,6 +70,7 @@ const OwnerPortal = () => {
             setUsers(data || []);
         } catch (err) {
             console.error("Error fetching users:", err);
+            // Don't alert twice if both fail, just log
         }
     };
 
