@@ -162,9 +162,17 @@ const OwnerPortal = () => {
                 {/* Header */}
                 <div className="flex justify-between items-center mb-10">
                     <div>
-                        <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">
-                            Shadow Portal
-                        </h1>
+                        <div className="flex items-center gap-3 mb-2">
+                            <img
+                                src="/nusion-logo.png"
+                                alt="Nusion"
+                                className="h-8 w-auto opacity-90"
+                                style={{ filter: 'brightness(0) saturate(100%) invert(23%) sepia(13%) saturate(928%) hue-rotate(338deg) brightness(96%) contrast(90%)' }}
+                            />
+                            <h1 className="text-3xl font-bold text-text-primary">
+                                Admin Portal
+                            </h1>
+                        </div>
                         <p className="text-text-secondary text-sm">God Mode • {stats.total} Total Entities</p>
                     </div>
                     <div className="flex gap-4">
