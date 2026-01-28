@@ -240,6 +240,10 @@ const DinerDashboard = ({ user }) => {
                                                     key={restaurant.id}
                                                     to={`/${(restaurant.name || 'brand').toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '')}`}
                                                     className="group relative h-72 rounded-2xl overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500 block"
+                                                    style={{
+                                                        '--brand-accent': restaurant.accent_color || '#d4af37',
+                                                        fontFamily: restaurant.font === 'Tech Mono' ? 'monospace' : restaurant.font === 'Elegant Serif' ? 'serif' : 'inherit'
+                                                    }}
                                                 >
                                                     {/* Cover Image */}
                                                     <div className="absolute inset-0 bg-black/50 group-hover:bg-black/40 transition-colors z-10"></div>
@@ -251,8 +255,9 @@ const DinerDashboard = ({ user }) => {
 
                                                     {/* Match Score Badge */}
                                                     <div className="absolute top-4 right-4 z-20">
-                                                        <div className={`${badgeColors.bg} px-3 py-1.5 rounded-full shadow-lg ring-4 ${badgeColors.ring}`}>
-                                                            <span className={`text-xs font-bold ${badgeColors.text} tracking-wide`}>
+                                                        <div className="px-3 py-1.5 rounded-full shadow-lg ring-4 ring-black/20 overflow-hidden relative">
+                                                            <div className="absolute inset-0 opacity-80" style={{ backgroundColor: 'var(--brand-accent)' }}></div>
+                                                            <span className="relative z-10 text-xs font-bold text-white tracking-wide">
                                                                 {restaurant.matchScore}% Match
                                                             </span>
                                                         </div>
@@ -267,7 +272,7 @@ const DinerDashboard = ({ user }) => {
                                                         )}
                                                         <p className="text-white/80 text-xs uppercase tracking-widest mb-2">{restaurant.city || 'Global'}</p>
                                                         <div className="flex items-center gap-2 text-white/70 text-xs">
-                                                            <span>{restaurant.cuisine_type || 'Fine Dining'}</span>
+                                                            <span style={{ color: restaurant.accent_color || 'inherit' }}>{restaurant.cuisine_type || 'Fine Dining'}</span>
                                                             <span>•</span>
                                                             <span>{restaurant.price_range || '$$$$'}</span>
                                                         </div>
@@ -305,6 +310,10 @@ const DinerDashboard = ({ user }) => {
                                                     key={restaurant.id}
                                                     to={`/${(restaurant.name || 'brand').toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '')}`}
                                                     className="group relative h-72 rounded-2xl overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500 block"
+                                                    style={{
+                                                        '--brand-accent': restaurant.accent_color || '#d4af37',
+                                                        fontFamily: restaurant.font === 'Tech Mono' ? 'monospace' : restaurant.font === 'Elegant Serif' ? 'serif' : 'inherit'
+                                                    }}
                                                 >
                                                     {/* Cover Image */}
                                                     <div className="absolute inset-0 bg-black/50 group-hover:bg-black/40 transition-colors z-10"></div>
@@ -316,8 +325,9 @@ const DinerDashboard = ({ user }) => {
 
                                                     {/* Match Score Badge */}
                                                     <div className="absolute top-4 right-4 z-20">
-                                                        <div className={`${badgeColors.bg} px-3 py-1.5 rounded-full shadow-lg ring-4 ${badgeColors.ring}`}>
-                                                            <span className={`text-xs font-bold ${badgeColors.text} tracking-wide`}>
+                                                        <div className="px-3 py-1.5 rounded-full shadow-lg ring-4 ring-black/20 overflow-hidden relative">
+                                                            <div className="absolute inset-0 opacity-80" style={{ backgroundColor: 'var(--brand-accent)' }}></div>
+                                                            <span className="relative z-10 text-xs font-bold text-white tracking-wide">
                                                                 {restaurant.matchScore}% Match
                                                             </span>
                                                         </div>
@@ -332,7 +342,7 @@ const DinerDashboard = ({ user }) => {
                                                         )}
                                                         <p className="text-white/80 text-xs uppercase tracking-widest mb-2">{restaurant.city || 'Global'}</p>
                                                         <div className="flex items-center gap-2 text-white/70 text-xs">
-                                                            <span>{restaurant.cuisine_type || 'Fine Dining'}</span>
+                                                            <span style={{ color: restaurant.accent_color || 'inherit' }}>{restaurant.cuisine_type || 'Fine Dining'}</span>
                                                             <span>•</span>
                                                             <span>{restaurant.price_range || '$$$$'}</span>
                                                         </div>

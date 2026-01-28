@@ -14,6 +14,7 @@ import { Link } from 'react-router-dom';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminGuard from './components/auth/AdminGuard';
 import OwnerPortal from './components/admin/OwnerPortal';
+import AdminLogin from './components/AdminLogin';
 import ErrorBoundary from './components/ErrorBoundary';
 import './index.css';
 
@@ -94,16 +95,6 @@ function App() {
   return (
     <ErrorBoundary>
       <div className="min-h-screen bg-bg-primary font-main text-text-primary transition-all duration-500 relative">
-        {/* GLOBAL GOD MODE BUTTON (Visible everywhere except Portal, for Admin) */}
-        {currentUser && ['owner@nusion.ai', 'abduluk98@gmail.com'].includes(currentUser.email) && location.pathname !== '/portal/owner' && (
-          <Link
-            to="/portal/owner"
-            className="fixed bottom-4 right-4 z-[9999] px-4 py-2 bg-gradient-to-r from-red-600 to-purple-800 text-white font-mono text-xs font-bold uppercase tracking-widest rounded-full shadow-2xl hover:scale-110 transition-transform border border-white/20"
-          >
-            GOD MODE
-          </Link>
-        )}
-
         <Routes>
           <Route path="/" element={
             <Home
@@ -191,7 +182,10 @@ function App() {
             </ProtectedRoute>
           } />
 
-          {/* Fallback */}
+          {/* Admin Portal */}
+          <Route path="/admin" element={<AdminLogin />} />
+
+          {/* Owner Portal (God Mode) */}
           <Route path="/portal/owner" element={
             <AdminGuard>
               <OwnerPortal />

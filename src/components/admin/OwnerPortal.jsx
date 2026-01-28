@@ -1,9 +1,10 @@
 
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
 
 const OwnerPortal = () => {
+    const navigate = useNavigate();
     const [restaurants, setRestaurants] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('all'); // 'all', 'pending', 'approved', 'rejected'
@@ -56,6 +57,15 @@ const OwnerPortal = () => {
         }
     };
 
+    const handleLogout = () => {
+        // Clear admin session
+        sessionStorage.removeItem('nusion_admin_session');
+        sessionStorage.removeItem('nusion_admin_timestamp');
+
+        // Redirect to admin login
+        navigate('/admin');
+    };
+
     const filteredList = restaurants.filter(r => {
         if (filter === 'all') return true;
         return (r.status || 'pending') === filter; // Handle undefined as pending
@@ -83,6 +93,12 @@ const OwnerPortal = () => {
                         <p className="text-text-secondary text-sm">God Mode • {restaurants.length} Total Entities</p>
                     </div>
                     <div className="flex gap-4">
+                        <button
+                            onClick={handleLogout}
+                            className="px-4 py-2 border border-red-500/50 hover:bg-red-500/20 rounded-lg text-sm text-red-400 transition font-mono uppercase tracking-wider"
+                        >
+                            🔒 Logout
+                        </button>
                         <Link to="/dashboard" className="px-4 py-2 border border-glass-border hover:bg-glass-border/20 rounded-lg text-sm text-text-secondary transition">
                             Exit God Mode
                         </Link>
@@ -99,8 +115,8 @@ const OwnerPortal = () => {
                             key={f}
                             onClick={() => setFilter(f)}
                             className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider border transition-all ${filter === f
-                                    ? 'bg-text-primary text-bg-primary border-text-primary'
-                                    : 'bg-transparent text-text-secondary border-glass-border hover:border-text-secondary'
+                                ? 'bg-text-primary text-bg-primary border-text-primary'
+                                : 'bg-transparent text-text-secondary border-glass-border hover:border-text-secondary'
                                 }`}
                         >
                             {f}

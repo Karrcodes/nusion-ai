@@ -13,17 +13,24 @@ const AdminGuard = ({ children }) => {
     }, []);
 
     const checkAdmin = async () => {
-        const { data: { user } } = await supabase.auth.getUser();
+        // Check for admin session token (set by AdminLogin component)
+        const adminSession = sessionStorage.getItem('nusion_admin_session');
+        const timestamp = sessionStorage.getItem('nusion_admin_timestamp');
 
-        // HARDCODED OWNER EMAILS (For MVP "Shadow Strategy")
-        // In production, this should check a 'role' column in 'profiles' table.
-        const OWNERS = ['owner@nusion.ai', 'abduluk98@gmail.com'];
+        // Verify session exists and is valid (within 24 hours for extra safety)
+        const isValidSession = adminSession === 'true' &&
+            timestamp &&
+            (Date.now() - parseInt(timestamp)) < 24 * 60 * 60 * 1000;
 
-        if (user && OWNERS.includes(user.email)) {
+        if (isValidSession) {
             setAuthorized(true);
         } else {
-            // Kick them out strictly
-            navigate('/dashboard');
+            // Clear any stale session data
+            sessionStorage.removeItem('nusion_admin_session');
+            sessionStorage.removeItem('nusion_admin_timestamp');
+
+            // Redirect to admin login
+            navigate('/admin');
         }
         setLoading(false);
     };

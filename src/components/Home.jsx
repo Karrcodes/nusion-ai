@@ -203,6 +203,10 @@ const Home = ({ user, onStart, onLogin, onSignup, onPartnerSignup }) => {
                                         }
                                     }}
                                     className="group relative h-64 rounded-2xl overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500 block"
+                                    style={{
+                                        '--brand-accent': brand.accent_color || '#d4af37',
+                                        fontFamily: brand.font === 'Tech Mono' ? 'monospace' : brand.font === 'Elegant Serif' ? 'serif' : 'inherit'
+                                    }}
                                 >
                                     <div className="absolute inset-0 bg-black/50 group-hover:bg-black/40 transition-colors z-10"></div>
                                     <img
@@ -216,7 +220,7 @@ const Home = ({ user, onStart, onLogin, onSignup, onPartnerSignup }) => {
                                         ) : (
                                             <h3 className="text-3xl font-display font-bold text-white mb-2">{brand.name}</h3>
                                         )}
-                                        <p className="text-white/80 text-xs uppercase tracking-widest">{brand.city || 'Global'}</p>
+                                        <p className="text-white/80 text-xs uppercase tracking-widest" style={{ color: brand.accent_color || 'white' }}>{brand.city || 'Global'}</p>
                                     </div>
                                 </Link>
                             ))

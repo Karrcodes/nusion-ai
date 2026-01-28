@@ -2,12 +2,16 @@
 -- Run this in the Supabase SQL Editor
 
 ALTER TABLE public.profiles 
+ADD COLUMN IF NOT EXISTS name text,
+ADD COLUMN IF NOT EXISTS email text,
+ADD COLUMN IF NOT EXISTS city text,
 ADD COLUMN IF NOT EXISTS logo_url text,
 ADD COLUMN IF NOT EXISTS cover_url text,
 ADD COLUMN IF NOT EXISTS cuisine_type text,
 ADD COLUMN IF NOT EXISTS accent_color text,
 ADD COLUMN IF NOT EXISTS font text,
-ADD COLUMN IF NOT EXISTS ui_style text;
+ADD COLUMN IF NOT EXISTS ui_style text,
+ADD COLUMN IF NOT EXISTS status text DEFAULT 'pending';
 
 -- Optional: Add a comment to describe the columns
 COMMENT ON COLUMN public.profiles.cover_url IS 'URL for the restaurant card cover image used on landing/discovery pages.';
