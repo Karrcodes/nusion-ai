@@ -136,7 +136,7 @@ const InputForm = ({ onCalculate }) => {
             <div className="flex justify-center mt-12 animate-[fadeIn_1.2s]">
                 <button
                     type="submit"
-                    className="btn-gold group"
+                    className="btn-gold group rounded-full"
                 >
                     <span className="relative z-10 transition-colors group-hover:text-[var(--color-midnight)]">Curate Experience</span>
                 </button>

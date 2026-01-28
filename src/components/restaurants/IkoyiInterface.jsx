@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useLocation } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
 import { currentConfig } from '../../config/restaurantConfig';
@@ -6,6 +6,22 @@ import InputForm from '../InputForm';
 import RecommendationResult from '../RecommendationResult';
 import { getRecommendation } from '../../utils/recommendationLogic';
 import { generateDishImage } from '../../utils/imageGenerator';
+import { Globe3D } from '../Globe3D';
+
+// Simple City Mapping
+const CITY_COORDS = {
+    'London': { lat: 51.5074, lng: -0.1278 },
+    'New York': { lat: 40.7128, lng: -74.0060 },
+    'Paris': { lat: 48.8566, lng: 2.3522 },
+    'Tokyo': { lat: 35.6762, lng: 139.6503 },
+    'Lagos': { lat: 6.5244, lng: 3.3792 },
+    'Dubai': { lat: 25.2048, lng: 55.2708 },
+    'Singapore': { lat: 1.3521, lng: 103.8198 },
+    'Los Angeles': { lat: 34.0522, lng: -118.2437 },
+    'San Francisco': { lat: 37.7749, lng: -122.4194 },
+    'Berlin': { lat: 52.5200, lng: 13.4050 },
+    'Copenhagen': { lat: 55.6761, lng: 12.5683 }
+};
 
 function IkoyiInterface({ user }) {
     const { brandSlug } = useParams();
@@ -39,7 +55,8 @@ function IkoyiInterface({ user }) {
     const [brand, setBrand] = useState({
         name: currentConfig.restaurantName,
         logoUrl: null,
-        coverUrl: null, // Default null
+        coverUrl: null,
+        city: 'London', // Default
         accentColor: '#d4af37',
         font: 'Modern Sans',
         uiStyle: 'soft'
@@ -68,24 +85,23 @@ function IkoyiInterface({ user }) {
                             setBrand({
                                 name: matchedBrand.name,
                                 logoUrl: matchedBrand.logo_url,
-                                coverUrl: matchedBrand.cover_url, // Load Card Cover
+                                coverUrl: matchedBrand.cover_url,
+                                city: matchedBrand.location || 'London', // Use 'location' column if 'city' missing (schema usually uses location string)
                                 accentColor: matchedBrand.accent_color || '#d4af37',
                                 font: matchedBrand.font || 'Modern Sans',
                                 uiStyle: matchedBrand.ui_style || 'soft'
                             });
 
-                            // Try to load menu from DB (simulated or real key if we had one)
-                            // For now, if we match a brand from DB, we also want their specific menu
                             const menuKey = `restaurant_menu_${matchedBrand.id}`;
                             const savedMenu = localStorage.getItem(menuKey);
                             if (savedMenu) setLiveMenu(JSON.parse(savedMenu));
 
-                            return; // Stop here if we found a DB match
+                            return;
                         }
                     }
                 }
 
-                // 2. FALLBACK: Connect to local session if no slug match
+                // 2. FALLBACK: Connect to local session 
                 const userKey = user?.id ? `restaurant_profile_${user.id}` : 'restaurant_profile';
                 const savedProfile = localStorage.getItem(userKey) || localStorage.getItem('restaurant_profile');
 
@@ -95,7 +111,8 @@ function IkoyiInterface({ user }) {
                         ...prev,
                         name: parsed.name || (user?.id ? user.name : 'Nusion AI'),
                         logoUrl: parsed.logoUrl,
-                        coverUrl: parsed.coverUrl, // Load from local
+                        coverUrl: parsed.coverUrl,
+                        city: parsed.location || 'London',
                         accentColor: parsed.accentColor || '#d4af37',
                         font: parsed.font || 'Modern Sans',
                         uiStyle: parsed.uiStyle || 'soft'
@@ -117,22 +134,6 @@ function IkoyiInterface({ user }) {
         loadBrandData();
     }, [user?.id, brandSlug]);
 
-    // Derived Styles
-    const fontClass = {
-        'Modern Sans': 'font-sans',
-        'Elegant Serif': 'font-serif',
-        'Tech Mono': 'font-mono'
-    }[brand.font] || 'font-sans';
-
-    const roundedClass = brand.uiStyle === 'sharp' ? 'rounded-none' : 'rounded-3xl';
-    const btnRoundedClass = brand.uiStyle === 'sharp' ? 'rounded-none' : 'rounded-full';
-
-    // Inject CSS Custom Properties for children to use
-    const dynamicStyle = {
-        '--brand-accent': brand.accentColor,
-        fontFamily: brand.font === 'Tech Mono' ? 'monospace' : brand.font === 'Elegant Serif' ? 'serif' : 'sans-serif' // Fallback
-    };
-
     const handleCalculate = async (userData) => {
         setLoading(true);
         setLoadingPhase('consulting');
@@ -144,85 +145,51 @@ function IkoyiInterface({ user }) {
                 setProgress(p => Math.min(p + 5, 40));
             }, 200);
 
-            await new Promise(r => setTimeout(r, 600)); // Consulting Reduced
+            await new Promise(r => setTimeout(r, 600));
 
             const recommendation = getRecommendation(userData, liveMenu);
             clearInterval(textProgress);
 
-            // Handle Generation Errors (Budget too low, Menu Empty, etc.)
             if (recommendation.error) {
                 setResult({ error: recommendation.error });
                 return;
             }
 
             setProgress(40);
-
             setLoadingPhase('visualising');
-            console.log('🎨 Starting image generation for', recommendation.courses.length, 'courses');
-
-            // SEQUENTIAL GENERATION LOOPS (Strict Rate Limit Protection)
-            // We use a simple for-loop instead of Promise.all to ensure one finishes before the next starts.
 
             const coursesWithImages = [];
 
             for (let i = 0; i < recommendation.courses.length; i++) {
                 const course = recommendation.courses[i];
-                console.log(`🖼️ Generating image ${i + 1}/${recommendation.courses.length} for:`, course.name);
-
                 try {
-                    // Stagger: Wait 2.5s before making the request (except potentially the first one, but consistency is safer)
-                    // if (i > 0) {
-                    //      await new Promise(r => setTimeout(r, 2500)); 
-                    // }
-
-                    // TEMP: Disable AI Generation for Testing Speed
                     const imageUrl = await generateDishImage(course.description);
-                    // const imageUrl = "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&q=80&w=800"; // Placeholder
-
-                    console.log(`✅ Image generated for ${course.name}:`, imageUrl);
                     coursesWithImages.push({ ...course, image: imageUrl });
-
-                    // Update progress (Faster)
                     setProgress(prev => Math.min(prev + (60 / recommendation.courses.length), 95));
                 } catch (err) {
-                    console.error(`❌ Failed to generate image for ${course.name}`, err);
                     coursesWithImages.push({ ...course, image: null });
                 }
             }
 
-            console.log('🎨 Image generation complete. Courses with images:', coursesWithImages);
-
             setLoadingPhase('plating');
             setProgress(100);
-            await new Promise(r => setTimeout(r, 400)); // Plating Reduced
+            await new Promise(r => setTimeout(r, 400));
 
             const finalResult = { ...recommendation, courses: coursesWithImages, date: new Date().toISOString() };
             setResult(finalResult);
 
-            // Persist to Supabase
             if (user?.id) {
                 try {
-                    const { error } = await supabase
-                        .from('generations')
-                        .insert([
-                            {
-                                user_id: user.id,
-                                courses: coursesWithImages,
-                                total_cost: recommendation.totalCost,
-                                narrative: recommendation.narrative
-                            }
-                        ]);
-
-                    if (error) throw error;
-                    console.log("Generation saved to Supabase");
-                } catch (e) {
-                    console.error("Failed to save history to Supabase", e);
-                    // Fallback or alert? For now silent fail/log is acceptable as per MVP.
-                }
+                    await supabase.from('generations').insert([{
+                        user_id: user.id,
+                        courses: coursesWithImages,
+                        total_cost: recommendation.totalCost,
+                        narrative: recommendation.narrative
+                    }]);
+                } catch (e) { }
             }
 
         } catch (error) {
-            console.error("Error calling API:", error);
             setResult({ error: "The Chef is currently overwhelmed. Please try again in a moment." });
         } finally {
             setLoading(false);
@@ -233,50 +200,42 @@ function IkoyiInterface({ user }) {
     const reset = () => {
         setResult(null);
         setProgress(0);
-        // Clear location state history so back doesn't get weird? 
-        // Actually, internal state reset is fine.
     };
 
+    // Get Coords
+    const brandLocation = brand.city || 'London'; // Default
+    // Try to find exact match or partial match
+    let coords = CITY_COORDS['London'];
+    const cityKey = Object.keys(CITY_COORDS).find(c => brandLocation.toLowerCase().includes(c.toLowerCase()));
+    if (cityKey) coords = CITY_COORDS[cityKey];
+
+
     return (
-        <div
-            className={`w-full min-h-screen flex flex-col items-center relative transition-all duration-500 overflow-hidden bg-[var(--color-midnight)]`}
-        >
-            {/* 1. Blurred Background Image */}
+        <div className={`w-full min-h-screen flex flex-col items-center relative transition-all duration-500 overflow-hidden bg-[var(--color-midnight)]`}>
+
+            {/* Background */}
             {brand.coverUrl && (
                 <div
                     className="absolute inset-0 z-0 pointer-events-none bg-cover bg-center opacity-50 blur-xl scale-110"
                     style={{ backgroundImage: `url(${brand.coverUrl})` }}
                 />
             )}
-
-            {/* 2. Gradient/Overlay (Modified to blend) */}
             <div className="absolute inset-0 z-0 pointer-events-none bg-[radial-gradient(circle_at_center,_transparent_0%,_#0f0f13_100%)] bg-black/20"></div>
 
 
             {/* Navigation Header */}
             <div className="absolute top-0 left-0 w-full px-8 py-6 flex justify-between items-start z-50 pointer-events-none">
-                {/* Back Button */}
-                <Link
-                    to="/dashboard"
-                    className={`pointer-events-auto text-white/50 hover:text-white uppercase text-[10px] tracking-[0.2em] font-cinzel transition-all flex items-center gap-2`}
-                >
+                <Link to="/dashboard" className={`pointer-events-auto text-white/50 hover:text-white uppercase text-[10px] tracking-[0.2em] font-cinzel transition-all flex items-center gap-2`}>
                     <span className="text-[var(--color-gold)]">←</span> Studio
                 </Link>
 
-                {/* Profile Button */}
                 {user && (
-                    <Link
-                        to={user.type === 'restaurant' ? '/dashboard/restaurant?view=profile' : '/dashboard/diner?view=profile'}
-                        className={`pointer-events-auto group flex items-center gap-3 transition-all opacity-70 hover:opacity-100`}
-                        title="Go to Profile"
-                    >
+                    <Link to={user.type === 'restaurant' ? '/dashboard/restaurant?view=profile' : '/dashboard/diner?view=profile'} className={`pointer-events-auto group flex items-center gap-3 transition-all opacity-70 hover:opacity-100`} title="Go to Profile">
                         <span className="text-[10px] font-cinzel uppercase text-white tracking-widest group-hover:text-[var(--color-gold)] transition-colors pr-2">
                             {user.type === 'restaurant' ? brand.name : (user.name || 'LIST')}
                         </span>
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all bg-[var(--color-charcoal)] border border-[var(--color-gold-dim)]`}>
-                            {userPhoto ? (
-                                <img src={userPhoto} alt="Profile" className="w-full h-full object-cover rounded-full grayscale hover:grayscale-0 transition-all" />
-                            ) : (
+                            {userPhoto ? <img src={userPhoto} alt="Profile" className="w-full h-full object-cover rounded-full grayscale hover:grayscale-0 transition-all" /> : (
                                 <span className="font-cinzel text-[var(--color-gold)]">
                                     {user.type === 'restaurant' ? brand.name.charAt(0).toUpperCase() : (user.name ? user.name.charAt(0).toUpperCase() : 'U')}
                                 </span>
@@ -286,15 +245,15 @@ function IkoyiInterface({ user }) {
                 )}
             </div>
 
-            <div className="container mx-auto px-6 h-full flex-grow flex flex-col justify-center relative z-10 pt-[100px] mb-20">
+            <div className="container mx-auto px-6 h-full flex-grow flex flex-col justify-center relative z-10 pt-[50px] mb-20 min-h-screen">
 
                 {!loading && !result ? (
                     // --- SPLIT LAYOUT (Input Mode) ---
-                    <div className="flex flex-col md:flex-row w-full max-w-7xl mx-auto items-center md:items-start justify-center gap-12 md:gap-24 animate-[fadeIn_0.5s]">
+                    <div className="flex flex-col md:flex-row w-full max-w-7xl mx-auto items-center justify-between gap-12 md:gap-24 animate-[fadeIn_0.5s]">
 
                         {/* LEFT COLUMN: Branding & Description */}
-                        <div className="flex-1 flex flex-col items-center md:items-start text-center md:text-left mt-0 md:mt-10">
-                            <h1 className="text-5xl md:text-7xl lg:text-8xl font-cinzel text-[var(--color-cream)] mb-6 tracking-[0.1em] drop-shadow-lg leading-tight">
+                        <div className="flex-1 flex flex-col items-center md:items-start text-center md:text-left mt-20 relative">
+                            <h1 className="text-4xl md:text-6xl font-cinzel text-[var(--color-cream)] mb-6 tracking-[0.1em] drop-shadow-lg leading-tight">
                                 {brand.name === 'Nusion AI' ? 'THE STUDIO' : brand.name}
                             </h1>
                             <div className="w-24 h-[1px] bg-[var(--color-gold)] mb-8 opacity-60"></div>
@@ -303,17 +262,22 @@ function IkoyiInterface({ user }) {
                                 Speculative Gastronomy
                             </p>
 
-                            <p className="text-white/60 text-sm md:text-base leading-relaxed max-w-md font-light">
+                            <p className="text-white/60 text-sm md:text-base leading-relaxed max-w-md font-light mb-12">
                                 Welcome to the Generative Engine. Define your preferences, set your budget, and allow our AI to curate a bespoke tasting menu tailored precisely to your palate.
                             </p>
 
-                            <div className="mt-12 hidden md:block opacity-40 text-[10px] uppercase tracking-[0.3em] font-cinzel">
-                                Aikin Karr • Nusion AI 2026
+                            {/* Globe Widget */}
+                            <div className="w-full max-w-[200px] aspect-square relative opacity-80 mix-blend-screen md:self-start">
+                                <Globe3D lat={coords.lat} lng={coords.lng} size={200} />
+                                <div className="absolute bottom-0 w-full text-center text-[9px] uppercase tracking-[0.3em] text-[var(--color-gold)] opacity-80">
+                                    {brandLocation}
+                                </div>
                             </div>
                         </div>
 
                         {/* RIGHT COLUMN: Input Form */}
-                        <div className="flex-1 w-full max-w-md bg-black/20 backdrop-blur-sm p-8 rounded-3xl border border-white/5 shadow-2xl">
+                        {/* Widened to max-w-2xl, centered vertically via parent */}
+                        <div className="flex-1 w-full max-w-xl bg-black/20 backdrop-blur-sm p-10 rounded-3xl border border-white/5 shadow-2xl flex flex-col justify-center">
                             <InputForm onCalculate={handleCalculate} />
                         </div>
 
@@ -323,7 +287,6 @@ function IkoyiInterface({ user }) {
                     <main className={`w-full max-w-5xl mx-auto relative min-h-[500px] flex flex-col justify-center items-center transition-all duration-500`}>
                         {loading ? (
                             <div className="flex flex-col items-center w-full max-w-md animate-[fadeIn_0.5s]">
-                                {/* Sleek Minimal Loader - No Emojis */}
                                 <div className="w-16 h-16 mb-8 relative">
                                     <div className="absolute inset-0 border-[1px] border-[var(--color-gold)] opacity-20 rounded-full"></div>
                                     <div className="absolute inset-0 border-t-[1px] border-[var(--color-gold)] rounded-full animate-spin"></div>
@@ -356,6 +319,11 @@ function IkoyiInterface({ user }) {
                 )}
 
             </div>
+
+            {/* Footer - Pushed to absolute bottom */}
+            <footer className="absolute bottom-6 w-full text-center text-white/20 text-[10px] uppercase tracking-[0.3em] font-cinzel pointer-events-none">
+                <span>Nusion AI &copy; 2026</span>
+            </footer>
         </div>
     );
 }
