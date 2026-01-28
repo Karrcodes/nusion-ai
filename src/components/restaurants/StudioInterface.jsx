@@ -270,7 +270,7 @@ function StudioInterface({ user }) {
                                 <img
                                     src={brand.logoUrl}
                                     alt={brand.name}
-                                    className="h-16 md:h-24 w-auto object-contain filter invert contrast-200 brightness-200 mix-blend-screen mb-6"
+                                    className="h-16 md:h-24 w-auto object-contain filter invert mix-blend-lighten mb-6"
                                 />
                             ) : (
                                 <h1 className="text-4xl md:text-6xl font-cinzel text-[var(--color-cream)] mb-6 tracking-[0.1em] drop-shadow-lg leading-tight">
