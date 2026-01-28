@@ -1508,7 +1508,8 @@ const RestaurantDashboard = ({ user }) => {
                                                         <button
                                                             key={color}
                                                             onClick={() => setProfile({ ...profile, accentColor: color })}
-                                                            className={`w-8 h-8 rounded-full border-2 transition-all ${profile.accentColor === color ? 'border-text-primary scale-110' : 'border-transparent hover:scale-105'}`}
+                                                            disabled={isImpersonating}
+                                                            className={`w-8 h-8 rounded-full border-2 transition-all ${profile.accentColor === color ? 'border-text-primary scale-110' : 'border-transparent hover:scale-105'} ${isImpersonating ? 'opacity-60 cursor-not-allowed' : ''}`}
                                                             style={{ backgroundColor: color }}
                                                         />
                                                     ))}
@@ -1517,7 +1518,8 @@ const RestaurantDashboard = ({ user }) => {
                                                             type="color"
                                                             value={profile.accentColor || '#10b981'}
                                                             onChange={(e) => setProfile({ ...profile, accentColor: e.target.value })}
-                                                            className="w-full h-full rounded-full cursor-pointer opacity-0 absolute z-10"
+                                                            disabled={isImpersonating}
+                                                            className={`w-full h-full rounded-full opacity-0 absolute z-10 ${isImpersonating ? 'cursor-not-allowed' : 'cursor-pointer'}`}
                                                         />
                                                         <div
                                                             className={`w-full h-full rounded-full border border-glass-border flex items-center justify-center text-xs text-text-secondary hover:bg-glass-border/20 transition-all ${!['#10b981', '#f59e0b', '#ef4444', '#3b82f6', '#8b5cf6'].includes(profile.accentColor)
@@ -1544,10 +1546,11 @@ const RestaurantDashboard = ({ user }) => {
                                                         <button
                                                             key={font}
                                                             onClick={() => setProfile({ ...profile, font: font })}
+                                                            disabled={isImpersonating}
                                                             className={`w-full text-left px-4 py-2 text-sm rounded border transition-all ${profile.font === font
                                                                 ? 'bg-text-primary text-bg-primary border-text-primary'
                                                                 : 'bg-transparent border-glass-border text-text-secondary hover:border-text-secondary'
-                                                                }`}
+                                                                } ${isImpersonating ? 'opacity-60 cursor-not-allowed' : ''}`}
                                                         >
                                                             {font}
                                                         </button>
@@ -1561,20 +1564,22 @@ const RestaurantDashboard = ({ user }) => {
                                                 <div className="flex gap-2">
                                                     <button
                                                         onClick={() => setProfile({ ...profile, uiStyle: 'soft' })}
+                                                        disabled={isImpersonating}
                                                         className={`flex-1 py-6 rounded-xl border flex flex-col items-center justify-center gap-2 transition-all ${profile.uiStyle === 'soft' || !profile.uiStyle // Default
                                                             ? 'bg-bg-secondary/50 border-accent-wa text-accent-wa'
                                                             : 'bg-transparent border-glass-border text-text-secondary hover:border-text-secondary'
-                                                            }`}
+                                                            } ${isImpersonating ? 'opacity-60 cursor-not-allowed' : ''}`}
                                                     >
                                                         <div className="w-8 h-6 border-2 border-current rounded-lg"></div>
                                                         <span className="text-xs">Rounded</span>
                                                     </button>
                                                     <button
                                                         onClick={() => setProfile({ ...profile, uiStyle: 'sharp' })}
+                                                        disabled={isImpersonating}
                                                         className={`flex-1 py-6 rounded-none border flex flex-col items-center justify-center gap-2 transition-all ${profile.uiStyle === 'sharp'
                                                             ? 'bg-bg-secondary/50 border-accent-wa text-accent-wa'
                                                             : 'bg-transparent border-glass-border text-text-secondary hover:border-text-secondary'
-                                                            }`}
+                                                            } ${isImpersonating ? 'opacity-60 cursor-not-allowed' : ''}`}
                                                     >
                                                         <div className="w-8 h-6 border-2 border-current rounded-none"></div>
                                                         <span className="text-xs">Sharp</span>
@@ -1598,7 +1603,8 @@ const RestaurantDashboard = ({ user }) => {
                                                 placeholder="e.g. Tue-Sun, 18:00 - 23:00"
                                                 value={profile.hours}
                                                 onChange={(e) => setProfile({ ...profile, hours: e.target.value })}
-                                                className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none"
+                                                disabled={isImpersonating}
+                                                className={`w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none ${isImpersonating ? 'opacity-60 cursor-not-allowed' : ''}`}
                                             />
                                         </div>
                                         <div className="space-y-2">
@@ -1606,7 +1612,8 @@ const RestaurantDashboard = ({ user }) => {
                                             <select
                                                 value={profile.priceTier}
                                                 onChange={(e) => setProfile({ ...profile, priceTier: e.target.value })}
-                                                className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none"
+                                                disabled={isImpersonating}
+                                                className={`w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none ${isImpersonating ? 'opacity-60 cursor-not-allowed' : ''}`}
                                             >
                                                 <option value="$">Low ($)</option>
                                                 <option value="$$">Medium ($$)</option>
@@ -1621,7 +1628,8 @@ const RestaurantDashboard = ({ user }) => {
                                                 placeholder="chef@example.com"
                                                 value={profile.contactEmail}
                                                 onChange={(e) => setProfile({ ...profile, contactEmail: e.target.value })}
-                                                className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none"
+                                                disabled={isImpersonating}
+                                                className={`w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none ${isImpersonating ? 'opacity-60 cursor-not-allowed' : ''}`}
                                             />
                                         </div>
                                         <div className="space-y-2">
@@ -1631,7 +1639,8 @@ const RestaurantDashboard = ({ user }) => {
                                                 placeholder="e.g. Vegan, Halal, Gluten-Free"
                                                 value={profile.dietaryTags}
                                                 onChange={(e) => setProfile({ ...profile, dietaryTags: e.target.value })}
-                                                className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none"
+                                                disabled={isImpersonating}
+                                                className={`w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none ${isImpersonating ? 'opacity-60 cursor-not-allowed' : ''}`}
                                             />
                                         </div>
                                     </div>
