@@ -77,6 +77,8 @@ function App() {
           try {
             // Determine name for email
             const emailName = session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split('@')[0];
+            const siteUrl = window.location.origin;
+            const logoUrl = `${siteUrl}/nusion-logo.png`; // Correctly uses the public logo
 
             // Call Serverless Function (requires Vercel hosting)
             fetch('/api/send-email', {
@@ -86,13 +88,33 @@ function App() {
                 to: session.user.email,
                 subject: 'Welcome to Nusion!',
                 html: `
-                            <div style="font-family: sans-serif; padding: 20px; background: #0f1623; color: #fff;">
-                                <h1 style="color: #92e6e6;">Welcome to Nusion, ${emailName}!</h1>
-                                <p>We're thrilled to have you onboard.</p>
-                                <p>Nusion is your personalized dining companion, powered by advanced AI.</p>
-                                <br/>
-                                <a href="${window.location.origin}/dashboard" style="display: inline-block; padding: 12px 24px; background: #fff; color: #000; text-decoration: none; border-radius: 4px; font-weight: bold;">Go to Dashboard</a>
-                            </div>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Nusion</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #fdfbf7; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #4a4036; -webkit-font-smoothing: antialiased;">
+    <div style="width: 100%; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+        <div style="background-color: #ffffff; border: 1px solid rgba(194, 168, 120, 0.2); border-radius: 24px; padding: 48px; text-align: center; box-shadow: 0 10px 40px rgba(139, 94, 60, 0.05);">
+            <div style="margin-bottom: 32px;">
+                <img src="${logoUrl}" alt="Nusion AI" style="height: 48px; width: auto;">
+            </div>
+            <h1 style="font-size: 28px; margin: 0 0 16px 0; color: #4a4036; font-weight: 600; letter-spacing: -0.02em;">Welcome to the Future of Dining, ${emailName}!</h1>
+            <p style="font-size: 16px; line-height: 1.6; color: #8c7b6c; margin: 0 0 32px 0;">
+                You are now part of NusionAI.<br>
+                We are thrilled to be your personalized generative dining engine.
+            </p>
+            <a href="${siteUrl}/dashboard" style="display: inline-block; background: linear-gradient(90deg, #c2a878 0%, #8b5e3c 100%); color: #ffffff !important; font-weight: bold; text-decoration: none; padding: 16px 40px; border-radius: 50px; font-size: 16px; box-shadow: 0 4px 15px rgba(139, 94, 60, 0.2);">Go to Dashboard</a>
+            <div style="height: 1px; background: rgba(194, 168, 120, 0.2); margin: 40px 0;"></div>
+            <p style="font-size: 13px; margin-bottom: 0; color: #8c7b6c; font-family: monospace; opacity: 0.6;">
+                Studio Aikin Karr 2026 • NusionAI Generative Gastronomy
+            </p>
+        </div>
+    </div>
+</body>
+</html>
                         `
               })
             }).catch(e => console.warn("Email API unreachable (Localhost?):", e));
@@ -103,7 +125,6 @@ function App() {
 
         // 2. ALWAYS Sync/Ensure Profile Exists
         // We use upsert to guarantee the record exists and has the correct type.
-        // This handles cases where metadata exists but profile is missing, OR type mismatch.
         const name = session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split('@')[0];
 
         const { error: profileError } = await supabase
@@ -115,7 +136,7 @@ function App() {
             type: type, // Enforce the type from metadata (or healed default)
             status: 'active', // Ensure active status
             updated_at: new Date().toISOString()
-          }, { onConflict: 'id' }); // Merge/Update
+          }, { onConflict: 'id' });
 
         if (profileError) {
           console.error("Profile Sync Error:", profileError);
