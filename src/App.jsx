@@ -45,8 +45,8 @@ function App() {
 
   useEffect(() => {
     // Check active session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      handleSession(session);
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      await handleSession(session);
       setLoading(false);
     });
 
@@ -69,7 +69,7 @@ function App() {
       try {
         // 1. If metadata type is missing (Google Auth), default to 'diner'.
         if (!type) {
-          console.log("Healing Google Auth User: Setting default diner type...");
+          // console.log("Healing Google Auth User: Setting default diner type...");
           type = 'diner';
           await supabase.auth.updateUser({ data: { type: 'diner' } });
         }
@@ -78,9 +78,6 @@ function App() {
         // We use upsert to guarantee the record exists and has the correct type.
         // This handles cases where metadata exists but profile is missing, OR type mismatch.
         const name = session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split('@')[0];
-
-        // DEBUG LOGGING - REMOVE AFTER FIXING
-        // console.log("Debug: Syncing Profile for", session.user.email);
 
         const { error: profileError } = await supabase
           .from('profiles')
@@ -95,14 +92,10 @@ function App() {
 
         if (profileError) {
           console.error("Profile Sync Error:", profileError);
-          alert(`DEBUG ERROR: Failed to create/sync profile.\n\nError: ${profileError.message}\n\nHint: Potentially an RLS (Policy) issue. Try running the 'supabase_fix_rls.sql' script.`);
-        } else {
-          // alert("DEBUG SUCCESS: Profile Synced!");
         }
 
       } catch (err) {
         console.error("Auto-healing/Sync failed:", err);
-        alert(`DEBUG CRITICAL ERROR: ${err.message}`);
       }
 
       const appUser = {
