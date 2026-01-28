@@ -744,7 +744,7 @@ const RestaurantDashboard = ({ user }) => {
     };
 
     return (
-        <div className="min-h-screen w-full bg-bg-primary flex flex-col md:flex-row">
+        <div className={`min-h-screen w-full bg-bg-primary flex flex-col md:flex-row ${isImpersonating ? 'pt-[60px]' : ''}`}>
             {/* Admin Impersonation Banner */}
             {isImpersonating && (
                 <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 px-6 flex items-center justify-between shadow-lg">
@@ -757,8 +757,7 @@ const RestaurantDashboard = ({ user }) => {
                     </div>
                     <button
                         onClick={() => {
-                            exitImpersonation();
-                            navigate('/portal/owner');
+                            navigate('/portal/owner?exit=true');
                         }}
                         className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-bold transition-all border border-white/30"
                     >
@@ -767,7 +766,7 @@ const RestaurantDashboard = ({ user }) => {
                 </div>
             )}
             {/* Sidebar */}
-            <aside className={`w-full md:w-64 border-b md:border-b-0 md:border-r border-glass-border p-4 md:p-6 flex flex-col md:pt-8 bg-white/50 backdrop-blur-md md:bg-transparent md:sticky md:top-0 md:h-screen transition-all ${isImpersonating ? 'md:mt-[60px]' : ''}`}>
+            <aside className={`w-full md:w-64 border-b md:border-b-0 md:border-r border-glass-border p-4 md:p-6 flex flex-col md:pt-8 bg-white/50 backdrop-blur-md md:bg-transparent md:sticky md:top-0 md:h-screen transition-all`}>
                 <div className="flex justify-between items-center md:block mb-4 md:mb-12">
                     <Link to="/" className="flex items-center gap-2 md:px-2 cursor-pointer hover:opacity-80 transition-opacity" title="Back to Home">
                         <img src="/nusion-logo.png" alt="Logo" className="h-6 md:h-8 w-auto opacity-80" style={{ filter: 'brightness(0) saturate(100%) invert(23%) sepia(13%) saturate(928%) hue-rotate(338deg) brightness(96%) contrast(90%)' }} />
@@ -1344,9 +1343,10 @@ const RestaurantDashboard = ({ user }) => {
                                         <div className="space-y-2">
                                             <label className="text-xs font-mono text-text-secondary uppercase">Currency</label>
                                             <select
-                                                value={profile.currency}
+                                                value={profile.currency || '£'}
                                                 onChange={(e) => setProfile({ ...profile, currency: e.target.value })}
-                                                className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none font-mono"
+                                                disabled={isImpersonating}
+                                                className={`w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none font-mono ${isImpersonating ? 'opacity-60 cursor-not-allowed' : ''}`}
                                             >
                                                 {/* Unique Currencies from list */}
                                                 {[...new Set(cities.map(c => c.symbol))].map(symbol => (
@@ -1364,7 +1364,8 @@ const RestaurantDashboard = ({ user }) => {
                                                 value={profile.description}
                                                 onChange={(e) => setProfile({ ...profile, description: e.target.value })}
                                                 rows={3}
-                                                className="w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none resize-none"
+                                                disabled={isImpersonating}
+                                                className={`w-full bg-bg-primary/50 border border-glass-border rounded p-3 text-text-primary focus:border-accent-jp focus:outline-none resize-none ${isImpersonating ? 'opacity-60 cursor-not-allowed' : ''}`}
                                             />
                                         </div>
                                     </div>

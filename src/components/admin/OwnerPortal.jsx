@@ -1,12 +1,13 @@
 
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
 import { useImpersonation } from '../../contexts/ImpersonationContext';
 
 const OwnerPortal = () => {
     const navigate = useNavigate();
-    const { startImpersonation } = useImpersonation();
+    const location = useLocation();
+    const { startImpersonation, exitImpersonation } = useImpersonation();
     const [restaurants, setRestaurants] = useState([]);
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -18,9 +19,17 @@ const OwnerPortal = () => {
     const [bulkActionLoading, setBulkActionLoading] = useState(false);
 
     useEffect(() => {
+        // Check for exit impersonation flag
+        const params = new URLSearchParams(location.search);
+        if (params.get('exit') === 'true') {
+            exitImpersonation();
+            // Clean up the URL
+            navigate('/portal/owner', { replace: true });
+        }
+
         fetchRestaurants();
         fetchUsers();
-    }, []);
+    }, [location.search]);
 
     const fetchRestaurants = async () => {
         try {
@@ -474,8 +483,8 @@ const OwnerPortal = () => {
                                             <button
                                                 onClick={() => updateStatus(user.id, user.status === 'disabled' ? 'active' : 'disabled', user.name || user.email)}
                                                 className={`px-3 py-1 rounded text-xs font-bold transition ${user.status === 'disabled'
-                                                        ? 'bg-green-500/20 text-green-400 hover:bg-green-500/30'
-                                                        : 'bg-red-500/20 text-red-400 hover:bg-red-500/30'
+                                                    ? 'bg-green-500/20 text-green-400 hover:bg-green-500/30'
+                                                    : 'bg-red-500/20 text-red-400 hover:bg-red-500/30'
                                                     }`}
                                             >
                                                 {user.status === 'disabled' ? 'Enable' : 'Disable'}
