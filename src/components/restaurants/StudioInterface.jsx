@@ -266,9 +266,17 @@ function StudioInterface({ user }) {
 
                         {/* LEFT COLUMN: Branding & Description */}
                         <div className="flex-1 flex flex-col items-center md:items-start text-center md:text-left mt-20 relative">
-                            <h1 className="text-4xl md:text-6xl font-cinzel text-[var(--color-cream)] mb-6 tracking-[0.1em] drop-shadow-lg leading-tight">
-                                {brand.name === 'Nusion AI' ? 'THE STUDIO' : brand.name}
-                            </h1>
+                            {brand.logoUrl ? (
+                                <img
+                                    src={brand.logoUrl}
+                                    alt={brand.name}
+                                    className="h-24 md:h-32 w-auto object-contain filter invert mix-blend-screen mb-6 opacity-90"
+                                />
+                            ) : (
+                                <h1 className="text-4xl md:text-6xl font-cinzel text-[var(--color-cream)] mb-6 tracking-[0.1em] drop-shadow-lg leading-tight">
+                                    {brand.name === 'Nusion AI' ? 'THE STUDIO' : brand.name}
+                                </h1>
+                            )}
                             <div className="w-24 h-[1px] bg-[var(--color-gold)] mb-8 opacity-60"></div>
 
                             <p className="text-[var(--color-cream)]/80 text-xl font-serif italic tracking-wide mb-6">
