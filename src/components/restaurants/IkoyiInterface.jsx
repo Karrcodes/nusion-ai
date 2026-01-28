@@ -244,13 +244,13 @@ function IkoyiInterface({ user }) {
             {/* 1. Blurred Background Image */}
             {brand.coverUrl && (
                 <div
-                    className="absolute inset-0 z-0 pointer-events-none bg-cover bg-center opacity-30 blur-xl scale-110"
+                    className="absolute inset-0 z-0 pointer-events-none bg-cover bg-center opacity-50 blur-xl scale-110"
                     style={{ backgroundImage: `url(${brand.coverUrl})` }}
                 />
             )}
 
             {/* 2. Gradient/Overlay (Modified to blend) */}
-            <div className="absolute inset-0 z-0 pointer-events-none bg-[radial-gradient(circle_at_center,_transparent_0%,_#0f0f13_100%)] bg-black/40"></div>
+            <div className="absolute inset-0 z-0 pointer-events-none bg-[radial-gradient(circle_at_center,_transparent_0%,_#0f0f13_100%)] bg-black/20"></div>
 
 
             {/* Navigation Header */}
