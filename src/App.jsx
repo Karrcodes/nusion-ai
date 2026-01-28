@@ -5,7 +5,7 @@ import Home from './components/Home';
 import AuthSelection from './components/AuthSelection';
 import AuthForms from './components/auth/AuthForms';
 import Dashboard from './components/Dashboard';
-import IkoyiInterface from './components/restaurants/IkoyiInterface';
+import StudioInterface from './components/restaurants/StudioInterface';
 import DinerDashboard from './components/DinerDashboard';
 import RestaurantDashboard from './components/RestaurantDashboard';
 import Welcome from './components/auth/Welcome';
@@ -260,7 +260,7 @@ function App() {
             <Route path="/:brandSlug" element={
               <ProtectedRoute user={currentUser}>
                 <div className="animate-[fadeSlideIn_0.5s_ease-out] w-full min-h-screen bg-[var(--color-midnight)]">
-                  <IkoyiInterface user={currentUser} />
+                  <StudioInterface user={currentUser} />
                 </div>
               </ProtectedRoute>
             } />
