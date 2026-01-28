@@ -16,6 +16,7 @@ import AdminGuard from './components/auth/AdminGuard';
 import OwnerPortal from './components/admin/OwnerPortal';
 import AdminLogin from './components/AdminLogin';
 import ErrorBoundary from './components/ErrorBoundary';
+import { ImpersonationProvider } from './contexts/ImpersonationContext';
 import './index.css';
 
 function App() {
@@ -94,106 +95,108 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-bg-primary font-main text-text-primary transition-all duration-500 relative">
-        <Routes>
-          <Route path="/" element={
-            <Home
-              user={currentUser}
-              onStart={() => {
-                if (currentUser) {
-                  navigate('/dashboard');
-                } else {
+      <ImpersonationProvider>
+        <div className="min-h-screen bg-bg-primary font-main text-text-primary transition-all duration-500 relative">
+          <Routes>
+            <Route path="/" element={
+              <Home
+                user={currentUser}
+                onStart={() => {
+                  if (currentUser) {
+                    navigate('/dashboard');
+                  } else {
+                    setAuthMode('signup');
+                    navigate('/auth');
+                  }
+                }}
+                onLogin={() => {
+                  setAuthMode('login');
+                  navigate('/auth');
+                }}
+                onSignup={() => {
                   setAuthMode('signup');
                   navigate('/auth');
-                }
-              }}
-              onLogin={() => {
-                setAuthMode('login');
-                navigate('/auth');
-              }}
-              onSignup={() => {
-                setAuthMode('signup');
-                navigate('/auth');
-              }}
-              onPartnerSignup={() => {
-                setAuthMode('signup');
-                setSelectedAuthType('restaurant');
-                navigate('/auth/forms', { state: { from: '/' } });
-              }}
-            />
-          } />
-
-          <Route path="/auth" element={
-            <AuthSelection
-              mode={authMode}
-              onSwitchMode={setAuthMode}
-              onSelect={(type) => {
-                setSelectedAuthType(type);
-                navigate('/auth/forms');
-              }}
-            />
-          } />
-
-          <Route path="/auth/forms" element={
-            <AuthForms
-              type={selectedAuthType}
-              mode={authMode}
-            />
-          } />
-
-          <Route path="/welcome" element={
-            <ProtectedRoute user={currentUser}>
-              <Welcome
-                user={currentUser}
-                onContinue={() => {
-                  navigate('/onboarding', { replace: true });
+                }}
+                onPartnerSignup={() => {
+                  setAuthMode('signup');
+                  setSelectedAuthType('restaurant');
+                  navigate('/auth/forms', { state: { from: '/' } });
                 }}
               />
-            </ProtectedRoute>
-          } />
+            } />
 
-          <Route path="/onboarding" element={
-            <ProtectedRoute user={currentUser}>
-              <OnboardingWizard user={currentUser} />
-            </ProtectedRoute>
-          } />
+            <Route path="/auth" element={
+              <AuthSelection
+                mode={authMode}
+                onSwitchMode={setAuthMode}
+                onSelect={(type) => {
+                  setSelectedAuthType(type);
+                  navigate('/auth/forms');
+                }}
+              />
+            } />
 
-          <Route path="/dashboard/restaurant" element={
-            <ProtectedRoute user={currentUser} requiredType="restaurant">
-              <RestaurantDashboard user={currentUser} />
-            </ProtectedRoute>
-          } />
+            <Route path="/auth/forms" element={
+              <AuthForms
+                type={selectedAuthType}
+                mode={authMode}
+              />
+            } />
 
-          <Route path="/dashboard/diner" element={
-            <ProtectedRoute user={currentUser} requiredType="diner">
-              <DinerDashboard user={currentUser} />
-            </ProtectedRoute>
-          } />
+            <Route path="/welcome" element={
+              <ProtectedRoute user={currentUser}>
+                <Welcome
+                  user={currentUser}
+                  onContinue={() => {
+                    navigate('/onboarding', { replace: true });
+                  }}
+                />
+              </ProtectedRoute>
+            } />
 
-          <Route path="/dashboard" element={
-            <Dashboard user={currentUser} />
-          } />
+            <Route path="/onboarding" element={
+              <ProtectedRoute user={currentUser}>
+                <OnboardingWizard user={currentUser} />
+              </ProtectedRoute>
+            } />
 
-          <Route path="/:brandSlug" element={
-            <ProtectedRoute user={currentUser}>
-              <div className="animate-[fadeSlideIn_0.5s_ease-out] w-full min-h-screen bg-[var(--color-midnight)]">
-                <IkoyiInterface user={currentUser} />
-              </div>
-            </ProtectedRoute>
-          } />
+            <Route path="/dashboard/restaurant" element={
+              <ProtectedRoute user={currentUser} requiredType="restaurant">
+                <RestaurantDashboard user={currentUser} />
+              </ProtectedRoute>
+            } />
 
-          {/* Admin Portal */}
-          <Route path="/admin" element={<AdminLogin />} />
+            <Route path="/dashboard/diner" element={
+              <ProtectedRoute user={currentUser} requiredType="diner">
+                <DinerDashboard user={currentUser} />
+              </ProtectedRoute>
+            } />
 
-          {/* Owner Portal (God Mode) */}
-          <Route path="/portal/owner" element={
-            <AdminGuard>
-              <OwnerPortal />
-            </AdminGuard>
-          } />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </div>
+            <Route path="/dashboard" element={
+              <Dashboard user={currentUser} />
+            } />
+
+            <Route path="/:brandSlug" element={
+              <ProtectedRoute user={currentUser}>
+                <div className="animate-[fadeSlideIn_0.5s_ease-out] w-full min-h-screen bg-[var(--color-midnight)]">
+                  <IkoyiInterface user={currentUser} />
+                </div>
+              </ProtectedRoute>
+            } />
+
+            {/* Admin Portal */}
+            <Route path="/admin" element={<AdminLogin />} />
+
+            {/* Owner Portal (God Mode) */}
+            <Route path="/portal/owner" element={
+              <AdminGuard>
+                <OwnerPortal />
+              </AdminGuard>
+            } />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </div>
+      </ImpersonationProvider>
     </ErrorBoundary>
   );
 }

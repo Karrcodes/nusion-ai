@@ -2,12 +2,18 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
+import { useImpersonation } from '../../contexts/ImpersonationContext';
 
 const OwnerPortal = () => {
     const navigate = useNavigate();
+    const { startImpersonation } = useImpersonation();
     const [restaurants, setRestaurants] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [filter, setFilter] = useState('all'); // 'all', 'pending', 'approved', 'rejected'
+    const [filter, setFilter] = useState('all');
+    const [searchQuery, setSearchQuery] = useState('');
+    const [sortBy, setSortBy] = useState('date'); // 'date', 'name', 'status'
+    const [selectedIds, setSelectedIds] = useState([]);
+    const [bulkActionLoading, setBulkActionLoading] = useState(false);
 
     useEffect(() => {
         fetchRestaurants();
@@ -15,7 +21,6 @@ const OwnerPortal = () => {
 
     const fetchRestaurants = async () => {
         try {
-            // Note: RLS must allow this user to SELECT * from profiles
             const { data, error } = await supabase
                 .from('profiles')
                 .select('*')
@@ -32,10 +37,9 @@ const OwnerPortal = () => {
     };
 
     const updateStatus = async (id, newStatus, currentName) => {
-        if (!window.confirm(`Are you sure you want to ${newStatus.toUpperCase()} ${currentName}?`)) return;
+        if (!window.confirm(`Are you sure you want to set ${currentName} to ${newStatus.toUpperCase()}?`)) return;
 
         try {
-            // 1. Update DB
             const { error } = await supabase
                 .from('profiles')
                 .update({ status: newStatus })
@@ -43,11 +47,7 @@ const OwnerPortal = () => {
 
             if (error) throw error;
 
-            // 2. Optimistic UI Update
             setRestaurants(prev => prev.map(r => r.id === id ? { ...r, status: newStatus } : r));
-
-            // 3. Send Email Notification (Mock/Real)
-            // In a real app, call /api/send-email here to notify the user.
             console.log(`[Notification] Sent ${newStatus} email to restaurant ${id}`);
             alert(`Updated ${currentName} to ${newStatus}`);
 
@@ -57,24 +57,98 @@ const OwnerPortal = () => {
         }
     };
 
+    const handleBulkAction = async (action) => {
+        if (selectedIds.length === 0) {
+            alert('Please select at least one restaurant');
+            return;
+        }
+
+        if (!window.confirm(`Are you sure you want to ${action.toUpperCase()} ${selectedIds.length} restaurant(s)?`)) return;
+
+        setBulkActionLoading(true);
+        try {
+            const { error } = await supabase
+                .from('profiles')
+                .update({ status: action })
+                .in('id', selectedIds);
+
+            if (error) throw error;
+
+            setRestaurants(prev => prev.map(r =>
+                selectedIds.includes(r.id) ? { ...r, status: action } : r
+            ));
+            setSelectedIds([]);
+            alert(`Successfully ${action}d ${selectedIds.length} restaurant(s)`);
+
+        } catch (err) {
+            console.error("Bulk action failed:", err);
+            alert("Bulk action failed.");
+        } finally {
+            setBulkActionLoading(false);
+        }
+    };
+
+    const handleViewDashboard = (restaurant) => {
+        startImpersonation(restaurant);
+        navigate('/dashboard');
+    };
+
     const handleLogout = () => {
-        // Clear admin session
         sessionStorage.removeItem('nusion_admin_session');
         sessionStorage.removeItem('nusion_admin_timestamp');
-
-        // Redirect to admin login
         navigate('/admin');
     };
 
-    const filteredList = restaurants.filter(r => {
-        if (filter === 'all') return true;
-        return (r.status || 'pending') === filter; // Handle undefined as pending
-    });
+    const toggleSelectAll = () => {
+        if (selectedIds.length === filteredList.length) {
+            setSelectedIds([]);
+        } else {
+            setSelectedIds(filteredList.map(r => r.id));
+        }
+    };
+
+    const toggleSelect = (id) => {
+        setSelectedIds(prev =>
+            prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+        );
+    };
+
+    // Filtering and Sorting
+    const filteredList = restaurants
+        .filter(r => {
+            if (filter !== 'all' && (r.status || 'pending') !== filter) return false;
+            if (searchQuery) {
+                const query = searchQuery.toLowerCase();
+                return (
+                    (r.name || '').toLowerCase().includes(query) ||
+                    (r.email || '').toLowerCase().includes(query) ||
+                    (r.city || '').toLowerCase().includes(query)
+                );
+            }
+            return true;
+        })
+        .sort((a, b) => {
+            if (sortBy === 'name') return (a.name || '').localeCompare(b.name || '');
+            if (sortBy === 'status') return (a.status || 'pending').localeCompare(b.status || 'pending');
+            return new Date(b.created_at) - new Date(a.created_at); // date (default)
+        });
+
+    // Stats
+    const stats = {
+        total: restaurants.length,
+        pending: restaurants.filter(r => (r.status || 'pending') === 'pending').length,
+        approved: restaurants.filter(r => r.status === 'approved').length,
+        rejected: restaurants.filter(r => r.status === 'rejected').length,
+        disabled: restaurants.filter(r => r.status === 'disabled').length,
+        suspended: restaurants.filter(r => r.status === 'suspended').length,
+    };
 
     const getStatusColor = (status) => {
         switch (status) {
             case 'approved': return 'bg-green-500/20 text-green-400 border-green-500/50';
             case 'rejected': return 'bg-red-500/20 text-red-400 border-red-500/50';
+            case 'disabled': return 'bg-gray-500/20 text-gray-400 border-gray-500/50';
+            case 'suspended': return 'bg-orange-500/20 text-orange-400 border-orange-500/50';
             case 'pending':
             default: return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50';
         }
@@ -84,13 +158,14 @@ const OwnerPortal = () => {
 
     return (
         <div className="min-h-screen bg-bg-primary text-text-primary p-8 font-sans">
-            <div className="max-w-6xl mx-auto">
+            <div className="max-w-7xl mx-auto">
+                {/* Header */}
                 <div className="flex justify-between items-center mb-10">
                     <div>
                         <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">
                             Shadow Portal
                         </h1>
-                        <p className="text-text-secondary text-sm">God Mode • {restaurants.length} Total Entities</p>
+                        <p className="text-text-secondary text-sm">God Mode • {stats.total} Total Entities</p>
                     </div>
                     <div className="flex gap-4">
                         <button
@@ -108,9 +183,57 @@ const OwnerPortal = () => {
                     </div>
                 </div>
 
+                {/* Quick Stats */}
+                <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-8">
+                    <div className="bg-bg-secondary border border-glass-border rounded-lg p-4 text-center">
+                        <div className="text-2xl font-bold text-text-primary">{stats.total}</div>
+                        <div className="text-xs text-text-secondary uppercase tracking-wider">Total</div>
+                    </div>
+                    <div className="bg-bg-secondary border border-yellow-500/30 rounded-lg p-4 text-center">
+                        <div className="text-2xl font-bold text-yellow-400">{stats.pending}</div>
+                        <div className="text-xs text-text-secondary uppercase tracking-wider">Pending</div>
+                    </div>
+                    <div className="bg-bg-secondary border border-green-500/30 rounded-lg p-4 text-center">
+                        <div className="text-2xl font-bold text-green-400">{stats.approved}</div>
+                        <div className="text-xs text-text-secondary uppercase tracking-wider">Approved</div>
+                    </div>
+                    <div className="bg-bg-secondary border border-red-500/30 rounded-lg p-4 text-center">
+                        <div className="text-2xl font-bold text-red-400">{stats.rejected}</div>
+                        <div className="text-xs text-text-secondary uppercase tracking-wider">Rejected</div>
+                    </div>
+                    <div className="bg-bg-secondary border border-gray-500/30 rounded-lg p-4 text-center">
+                        <div className="text-2xl font-bold text-gray-400">{stats.disabled}</div>
+                        <div className="text-xs text-text-secondary uppercase tracking-wider">Disabled</div>
+                    </div>
+                    <div className="bg-bg-secondary border border-orange-500/30 rounded-lg p-4 text-center">
+                        <div className="text-2xl font-bold text-orange-400">{stats.suspended}</div>
+                        <div className="text-xs text-text-secondary uppercase tracking-wider">Suspended</div>
+                    </div>
+                </div>
+
+                {/* Search and Controls */}
+                <div className="flex flex-col md:flex-row gap-4 mb-6">
+                    <input
+                        type="text"
+                        placeholder="Search by name, email, or city..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="flex-1 bg-bg-secondary border border-glass-border rounded-lg px-4 py-2 text-sm text-text-primary placeholder-text-secondary/50 focus:border-accent-jp focus:outline-none transition-colors"
+                    />
+                    <select
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value)}
+                        className="bg-bg-secondary border border-glass-border rounded-lg px-4 py-2 text-sm text-text-primary focus:border-accent-jp focus:outline-none transition-colors"
+                    >
+                        <option value="date">Sort by Date</option>
+                        <option value="name">Sort by Name</option>
+                        <option value="status">Sort by Status</option>
+                    </select>
+                </div>
+
                 {/* Filters */}
                 <div className="flex gap-2 mb-6">
-                    {['all', 'pending', 'approved', 'rejected'].map(f => (
+                    {['all', 'pending', 'approved', 'rejected', 'disabled', 'suspended'].map(f => (
                         <button
                             key={f}
                             onClick={() => setFilter(f)}
@@ -124,11 +247,57 @@ const OwnerPortal = () => {
                     ))}
                 </div>
 
+                {/* Bulk Actions */}
+                {selectedIds.length > 0 && (
+                    <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-4 mb-6 flex items-center justify-between">
+                        <div className="text-sm text-purple-300">
+                            <strong>{selectedIds.length}</strong> restaurant(s) selected
+                        </div>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => handleBulkAction('approved')}
+                                disabled={bulkActionLoading}
+                                className="px-3 py-1 bg-green-500/20 hover:bg-green-500/40 text-green-400 rounded text-xs font-bold border border-green-500/30 disabled:opacity-50"
+                            >
+                                Approve All
+                            </button>
+                            <button
+                                onClick={() => handleBulkAction('rejected')}
+                                disabled={bulkActionLoading}
+                                className="px-3 py-1 bg-red-500/20 hover:bg-red-500/40 text-red-400 rounded text-xs font-bold border border-red-500/30 disabled:opacity-50"
+                            >
+                                Reject All
+                            </button>
+                            <button
+                                onClick={() => handleBulkAction('disabled')}
+                                disabled={bulkActionLoading}
+                                className="px-3 py-1 bg-gray-500/20 hover:bg-gray-500/40 text-gray-400 rounded text-xs font-bold border border-gray-500/30 disabled:opacity-50"
+                            >
+                                Disable All
+                            </button>
+                            <button
+                                onClick={() => setSelectedIds([])}
+                                className="px-3 py-1 bg-bg-secondary hover:bg-glass-border text-text-secondary rounded text-xs font-bold border border-glass-border"
+                            >
+                                Clear
+                            </button>
+                        </div>
+                    </div>
+                )}
+
                 {/* Table */}
                 <div className="bg-bg-secondary border border-glass-border rounded-xl overflow-hidden shadow-2xl">
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-glass-border/30 text-xs uppercase text-text-secondary font-mono">
+                                <th className="p-4 border-b border-glass-border">
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedIds.length === filteredList.length && filteredList.length > 0}
+                                        onChange={toggleSelectAll}
+                                        className="cursor-pointer"
+                                    />
+                                </th>
                                 <th className="p-4 border-b border-glass-border">Entity</th>
                                 <th className="p-4 border-b border-glass-border">Location</th>
                                 <th className="p-4 border-b border-glass-border">Status</th>
@@ -139,6 +308,14 @@ const OwnerPortal = () => {
                         <tbody>
                             {filteredList.map(r => (
                                 <tr key={r.id} className="hover:bg-glass-border/10 transition-colors border-b border-glass-border last:border-0 relative group">
+                                    <td className="p-4">
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedIds.includes(r.id)}
+                                            onChange={() => toggleSelect(r.id)}
+                                            className="cursor-pointer"
+                                        />
+                                    </td>
                                     <td className="p-4">
                                         <div className="font-bold text-lg">{r.name || 'Unnamed'}</div>
                                         <div className="text-xs text-text-secondary font-mono">{r.email}</div>
@@ -156,7 +333,13 @@ const OwnerPortal = () => {
                                         {new Date(r.created_at).toLocaleDateString()}
                                     </td>
                                     <td className="p-4 text-right">
-                                        <div className="flex justify-end gap-2 opacity-50 group-hover:opacity-100 transition-opacity">
+                                        <div className="flex justify-end gap-2 opacity-50 group-hover:opacity-100 transition-opacity flex-wrap">
+                                            <button
+                                                onClick={() => handleViewDashboard(r)}
+                                                className="px-3 py-1 bg-purple-500/20 hover:bg-purple-500/40 text-purple-400 rounded text-xs font-bold border border-purple-500/30"
+                                            >
+                                                👁️ View Dashboard
+                                            </button>
                                             {r.status !== 'approved' && (
                                                 <button
                                                     onClick={() => updateStatus(r.id, 'approved', r.name)}
@@ -173,13 +356,29 @@ const OwnerPortal = () => {
                                                     Reject
                                                 </button>
                                             )}
+                                            {r.status !== 'disabled' && (
+                                                <button
+                                                    onClick={() => updateStatus(r.id, 'disabled', r.name)}
+                                                    className="px-3 py-1 bg-gray-500/20 hover:bg-gray-500/40 text-gray-400 rounded text-xs font-bold border border-gray-500/30"
+                                                >
+                                                    Disable
+                                                </button>
+                                            )}
+                                            {r.status !== 'suspended' && (
+                                                <button
+                                                    onClick={() => updateStatus(r.id, 'suspended', r.name)}
+                                                    className="px-3 py-1 bg-orange-500/20 hover:bg-orange-500/40 text-orange-400 rounded text-xs font-bold border border-orange-500/30"
+                                                >
+                                                    Suspend
+                                                </button>
+                                            )}
                                         </div>
                                     </td>
                                 </tr>
                             ))}
                             {filteredList.length === 0 && (
                                 <tr>
-                                    <td colSpan="5" className="p-8 text-center text-text-secondary italic">
+                                    <td colSpan="6" className="p-8 text-center text-text-secondary italic">
                                         No entities found in this sector.
                                     </td>
                                 </tr>

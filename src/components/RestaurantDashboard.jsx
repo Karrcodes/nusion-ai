@@ -1,19 +1,38 @@
 
+
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
 import { cities } from '../lib/cities';
 import { resizeImage } from '../utils/imageUtils';
+import { useImpersonation } from '../contexts/ImpersonationContext';
 
 
 const RestaurantDashboard = ({ user }) => {
     const navigate = useNavigate();
     const location = useLocation();
+    const { isImpersonating, impersonatedRestaurant, exitImpersonation, checkImpersonationSession } = useImpersonation();
     const [loading, setLoading] = useState(false);
     const [activeTab, setActiveTab] = useState(() => {
         const params = new URLSearchParams(location.search);
         return params.get('view') === 'profile' ? 'profile' : 'inventory';
     }); // 'dashboard', 'inventory', 'insights'
+
+    // Check for impersonation session on mount
+    useEffect(() => {
+        checkImpersonationSession();
+    }, []);
+
+    // Use impersonated restaurant data if in impersonation mode
+    const effectiveUser = isImpersonating ? {
+        id: impersonatedRestaurant?.id,
+        email: impersonatedRestaurant?.email,
+        name: impersonatedRestaurant?.name,
+        user_metadata: {
+            full_name: impersonatedRestaurant?.name,
+            type: 'restaurant'
+        }
+    } : user;
 
     // Helper for safe parsing
     const safeParse = (key, fallback) => {
@@ -28,21 +47,22 @@ const RestaurantDashboard = ({ user }) => {
 
     // Load initial inventory
     const [inventory, setInventory] = useState(() => {
-        if (!user?.id) return [];
+        const userId = effectiveUser?.id || user?.id;
+        if (!userId) return [];
         // Check for wizard-saved inventory first
-        const wizardKey = `restaurant_inventory_${user.id}`;
+        const wizardKey = `restaurant_inventory_${userId}`;
         const wizardSaved = safeParse(wizardKey, null);
         if (wizardSaved) return wizardSaved;
 
         // Fallback
-        const storageKey = `restaurant_inventory_${user.id}`;
+        const storageKey = `restaurant_inventory_${userId}`;
         return safeParse(storageKey, []);
     });
 
     // Load profile from localStorage
     const [profile, setProfile] = useState(() => {
         const defaultProfile = {
-            name: user?.user_metadata?.full_name || user?.name || '',
+            name: effectiveUser?.user_metadata?.full_name || effectiveUser?.name || user?.user_metadata?.full_name || user?.name || '',
             location: '',
             description: '',
             cuisine: '',
@@ -642,8 +662,29 @@ const RestaurantDashboard = ({ user }) => {
 
     return (
         <div className="min-h-screen w-full bg-bg-primary flex flex-col md:flex-row">
+            {/* Admin Impersonation Banner */}
+            {isImpersonating && (
+                <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 px-6 flex items-center justify-between shadow-lg">
+                    <div className="flex items-center gap-3">
+                        <span className="text-xl">👁️</span>
+                        <div>
+                            <div className="font-bold">Admin Mode</div>
+                            <div className="text-xs opacity-90">Viewing as: {impersonatedRestaurant?.name || impersonatedRestaurant?.email}</div>
+                        </div>
+                    </div>
+                    <button
+                        onClick={() => {
+                            exitImpersonation();
+                            navigate('/portal/owner');
+                        }}
+                        className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-bold transition-all border border-white/30"
+                    >
+                        Exit Impersonation
+                    </button>
+                </div>
+            )}
             {/* Sidebar */}
-            <aside className="w-full md:w-64 border-b md:border-b-0 md:border-r border-glass-border p-4 md:p-6 flex flex-col md:pt-8 bg-white/50 backdrop-blur-md md:bg-transparent md:sticky md:top-0 md:h-screen transition-all">
+            <aside className={`w-full md:w-64 border-b md:border-b-0 md:border-r border-glass-border p-4 md:p-6 flex flex-col md:pt-8 bg-white/50 backdrop-blur-md md:bg-transparent md:sticky md:top-0 md:h-screen transition-all ${isImpersonating ? 'md:mt-[60px]' : ''}`}>
                 <div className="flex justify-between items-center md:block mb-4 md:mb-12">
                     <Link to="/" className="flex items-center gap-2 md:px-2 cursor-pointer hover:opacity-80 transition-opacity" title="Back to Home">
                         <img src="/nusion-logo.png" alt="Logo" className="h-6 md:h-8 w-auto opacity-80" style={{ filter: 'brightness(0) saturate(100%) invert(23%) sepia(13%) saturate(928%) hue-rotate(338deg) brightness(96%) contrast(90%)' }} />
