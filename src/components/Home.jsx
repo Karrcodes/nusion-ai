@@ -220,7 +220,7 @@ const Home = ({ user, onStart, onLogin, onSignup, onPartnerSignup }) => {
                                         ) : (
                                             <h3 className="text-3xl font-display font-bold text-white mb-2">{brand.name}</h3>
                                         )}
-                                        <p className="text-white/80 text-xs uppercase tracking-widest" style={{ color: brand.accent_color || 'white' }}>{brand.city || 'Global'}</p>
+                                        <p className="text-white/70 uppercase tracking-widest text-xs">{brand.city || 'Global'} • {brand.name}</p>
                                     </div>
                                 </Link>
                             ))
@@ -240,7 +240,7 @@ const Home = ({ user, onStart, onLogin, onSignup, onPartnerSignup }) => {
                                 <img src="/ikoyi-interior.png" alt="Ikoyi" className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                                 <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-6 text-center">
                                     <img src="/logo.png" alt="Logo" className="h-16 w-auto brightness-0 invert mb-3" />
-                                    <p className="text-white/80 text-xs uppercase tracking-widest">London</p>
+                                    <p className="text-white/70 uppercase tracking-widest text-xs">London • Hyper-Seasonal Spice</p>
                                 </div>
                             </Link>
                         )}
