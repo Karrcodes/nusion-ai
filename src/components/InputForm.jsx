@@ -51,16 +51,18 @@ const InputForm = ({ onCalculate }) => {
                             key={idx}
                             onClick={() => updateBudget(idx)}
                             className={`
-                                group relative flex flex-col items-center transition-all duration-500
-                                ${selectedBudgetIdx === idx ? 'opacity-100 scale-110' : 'opacity-30 hover:opacity-60'}
+                                group relative flex flex-col items-center
+                                ${selectedBudgetIdx === idx ? 'opacity-100' : 'opacity-30 hover:opacity-60'}
                             `}
                         >
-                            <span className={`font-cinzel text-xl md:text-2xl mb-2 ${selectedBudgetIdx === idx ? 'text-[var(--color-cream)]' : 'text-white'}`}>
-                                {option.label}
-                            </span>
-                            <span className="text-[10px] uppercase tracking-widest font-sans font-light">
-                                {option.desc}
-                            </span>
+                            <div className={`flex flex-col items-center transition-transform duration-500 ${selectedBudgetIdx === idx ? 'scale-110' : ''}`}>
+                                <span className={`font-cinzel text-xl md:text-2xl mb-2 ${selectedBudgetIdx === idx ? 'text-[var(--color-cream)]' : 'text-white'}`}>
+                                    {option.label}
+                                </span>
+                                <span className="text-[10px] uppercase tracking-widest font-sans font-light">
+                                    {option.desc}
+                                </span>
+                            </div>
                             {selectedBudgetIdx === idx && (
                                 <div className="absolute -bottom-8 w-2 h-2 bg-[var(--color-gold)] rounded-full shadow-[0_0_8px_var(--color-gold)]"></div>
                             )}
