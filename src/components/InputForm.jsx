@@ -64,7 +64,7 @@ const InputForm = ({ onCalculate }) => {
                                 </span>
                             </div>
                             {selectedBudgetIdx === idx && (
-                                <div className="absolute -bottom-8 w-2 h-2 bg-[var(--color-gold)] rounded-full shadow-[0_0_8px_var(--color-gold)]"></div>
+                                <div className="absolute -bottom-9 w-2 h-2 bg-[var(--color-gold)] rounded-full shadow-[0_0_8px_var(--color-gold)]"></div>
                             )}
                         </button>
                     ))}
