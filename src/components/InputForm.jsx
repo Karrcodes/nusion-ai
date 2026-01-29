@@ -62,7 +62,7 @@ const InputForm = ({ onCalculate }) => {
                                 {option.desc}
                             </span>
                             {selectedBudgetIdx === idx && (
-                                <div className="absolute -bottom-9 w-1 h-1 bg-[var(--color-gold)] rounded-full shadow-[0_0_10px_var(--color-gold)]"></div>
+                                <div className="absolute -bottom-8 w-2 h-2 bg-[var(--color-gold)] rounded-full shadow-[0_0_8px_var(--color-gold)]"></div>
                             )}
                         </button>
                     ))}
