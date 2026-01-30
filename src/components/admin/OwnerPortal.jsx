@@ -4,8 +4,10 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
 import { supabaseAdmin } from '../../lib/supabaseAdmin';
 import { useImpersonation } from '../../contexts/ImpersonationContext';
+import { useAuth } from '../../contexts/AuthContext';
 
 const OwnerPortal = () => {
+    const { user, loading: authLoading } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
     const { startImpersonation, exitImpersonation } = useImpersonation();
