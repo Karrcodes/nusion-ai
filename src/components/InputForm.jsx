@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { currentConfig } from '../config/restaurantConfig';
 
-const InputForm = ({ onCalculate }) => {
+const InputForm = ({ onCalculate, onValuesChange }) => {
     const [budget, setBudget] = useState(currentConfig.defaultBudget);
     const [spiceTolerance, setSpiceTolerance] = useState(3);
     const [allergies, setAllergies] = useState([]);
@@ -15,6 +15,22 @@ const InputForm = ({ onCalculate }) => {
     ];
 
     const [selectedBudgetIdx, setSelectedBudgetIdx] = useState(1);
+
+    // Pantry State
+    const [selectedIngredients, setSelectedIngredients] = useState([]);
+    const PANTRY_ITEMS = ["Wagyu A5", "Bluefin Toro", "White Truffle", "Caviar", "Gold Leaf", "Saffron", "Foie Gras", "Lobster"];
+
+    // Emit changes whenever state updates
+    useEffect(() => {
+        if (onValuesChange) {
+            onValuesChange({
+                budget: Number(budget),
+                spiceTolerance,
+                allergies,
+                budgetLabel: budgetOptions[selectedBudgetIdx].desc
+            });
+        }
+    }, [budget, spiceTolerance, allergies, selectedBudgetIdx, onValuesChange]);
 
     const updateBudget = (idx) => {
         setSelectedBudgetIdx(idx);
@@ -34,7 +50,12 @@ const InputForm = ({ onCalculate }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        onCalculate({ budget: Number(budget), spiceTolerance, allergies });
+        onCalculate({
+            budget: Number(budget),
+            spiceTolerance,
+            allergies,
+            ingredients: selectedIngredients
+        });
     };
 
     return (
@@ -135,7 +156,59 @@ const InputForm = ({ onCalculate }) => {
                 </div>
             </section>
 
-            <div className="flex justify-center mt-8 animate-[fadeIn_1.2s]">
+            {/* Pantry Section (Drag & Drop) */}
+            <section className="animate-[fadeIn_1.2s] text-center w-full max-w-lg mx-auto">
+                <label className="block mb-6 text-[10px] uppercase tracking-[0.2em] text-[var(--color-gold)] font-cinzel opacity-80">
+                    THE PANTRY
+                </label>
+
+                {/* Selection Zone (The Pass) */}
+                <div
+                    className={`
+                        w-full min-h-[80px] mb-8 border border-dashed rounded-xl transition-all duration-300 flex flex-wrap gap-2 p-4 justify-center items-center
+                        ${selectedIngredients.length === 0 ? 'border-white/20 bg-white/5' : 'border-[var(--color-gold)]/50 bg-[var(--color-gold)]/5'}
+                    `}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => {
+                        e.preventDefault();
+                        const item = e.dataTransfer.getData("text");
+                        if (item && !selectedIngredients.includes(item)) {
+                            setSelectedIngredients(prev => [...prev, item]);
+                        }
+                    }}
+                >
+                    {selectedIngredients.length === 0 ? (
+                        <span className="text-white/40 text-sm font-serif italic">Drag ingredients here to include them...</span>
+                    ) : (
+                        selectedIngredients.map(item => (
+                            <button
+                                key={item}
+                                type="button"
+                                onClick={() => setSelectedIngredients(prev => prev.filter(i => i !== item))}
+                                className="px-3 py-1 rounded-full bg-[var(--color-gold)]/20 border border-[var(--color-gold)]/40 text-[var(--color-gold)] text-xs font-cinzel hover:bg-red-500/20 hover:border-red-500/40 hover:text-red-300 transition-colors"
+                            >
+                                {item} ×
+                            </button>
+                        ))
+                    )}
+                </div>
+
+                {/* Ingredients Grid */}
+                <div className="flex flex-wrap justify-center gap-3">
+                    {PANTRY_ITEMS.filter(i => !selectedIngredients.includes(i)).map((item) => (
+                        <div
+                            key={item}
+                            draggable
+                            onDragStart={(e) => e.dataTransfer.setData("text", item)}
+                            className="px-3 py-2 bg-white/5 border border-white/10 rounded pointer-events-auto cursor-grab active:cursor-grabbing hover:bg-white/10 hover:border-white/30 transition-all text-xs text-white/80 font-sans tracking-wide"
+                        >
+                            {item}
+                        </div>
+                    ))}
+                </div>
+            </section>
+
+            <div className="flex justify-center mt-8 animate-[fadeIn_1.3s]">
                 <button
                     type="submit"
                     className="btn-gold group rounded-full"

@@ -31,6 +31,13 @@ function StudioInterface({ user }) {
     const [loadingPhase, setLoadingPhase] = useState('idle');
     const [progress, setProgress] = useState(0);
 
+    // --- REAL-TIME SKETCH STATE ---
+    const [sketchState, setSketchState] = useState({
+        budgetLabel: 'Casual',
+        spiceTolerance: 3,
+        allergies: []
+    });
+
     // Check for historical result passed via navigation
     useEffect(() => {
         if (location.state?.historicalResult) {
@@ -219,11 +226,23 @@ function StudioInterface({ user }) {
         <div className={`w-full min-h-screen flex flex-col items-center relative transition-all duration-500 overflow-hidden bg-[var(--color-midnight)]`}>
 
             {/* Background */}
+            {/* Background */}
             {brand.coverUrl && (
-                <div
-                    className="absolute inset-0 z-0 pointer-events-none bg-cover bg-center opacity-50 blur-xl scale-110"
-                    style={{ backgroundImage: `url(${brand.coverUrl})` }}
-                />
+                brand.coverUrl.match(/\.(mp4|webm)$/i) ? (
+                    <video
+                        src={brand.coverUrl}
+                        autoPlay
+                        loop
+                        muted
+                        playsInline
+                        className="absolute inset-0 z-0 w-full h-full object-cover opacity-50 blur-sm scale-105 pointer-events-none"
+                    />
+                ) : (
+                    <div
+                        className="absolute inset-0 z-0 pointer-events-none bg-cover bg-center opacity-50 blur-xl scale-110"
+                        style={{ backgroundImage: `url(${brand.coverUrl})` }}
+                    />
+                )
             )}
             <div className="absolute inset-0 z-0 pointer-events-none bg-[radial-gradient(circle_at_center,_transparent_0%,_#0f0f13_100%)] bg-black/20"></div>
 
@@ -295,13 +314,21 @@ function StudioInterface({ user }) {
                             )}
                             <div className="w-24 h-[1px] bg-[var(--color-gold)] mb-8 opacity-60"></div>
 
-                            <p className="text-[var(--color-cream)]/80 text-xl font-serif italic tracking-wide mb-6">
-                                Speculative Gastronomy
-                            </p>
-
-                            <p className="text-white/60 text-sm md:text-base leading-relaxed max-w-md font-light mb-12">
-                                Welcome to the Generative Engine. Define your preferences, set your budget, and allow our AI to curate a bespoke tasting menu tailored precisely to your palate.
-                            </p>
+                            <div className="flex flex-col items-center md:items-start mb-8 min-h-[100px] transition-all duration-300">
+                                <p className="text-[var(--color-gold)] text-lg font-cinzel tracking-[0.2em] mb-2 uppercase">
+                                    {sketchState.budgetLabel} Experience
+                                </p>
+                                <p className="text-white/60 text-sm font-serif italic mb-4">
+                                    {sketchState.spiceTolerance <= 2 && "A delicate balance of subtle flavors."}
+                                    {sketchState.spiceTolerance === 3 && "A bold journey with measured heat."}
+                                    {sketchState.spiceTolerance >= 4 && "An intense, high-energy culinary expression."}
+                                </p>
+                                <div className="flex gap-1">
+                                    {Array.from({ length: sketchState.spiceTolerance }).map((_, i) => (
+                                        <div key={i} className="w-1 h-4 bg-[var(--color-gold)] opacity-80 rounded-full animate-pulse" style={{ animationDelay: `${i * 0.1}s` }}></div>
+                                    ))}
+                                </div>
+                            </div>
 
                             {/* Globe Widget */}
                             <div className="w-full max-w-[200px] aspect-square relative opacity-80 mix-blend-screen md:self-start">
@@ -312,10 +339,17 @@ function StudioInterface({ user }) {
                             </div>
                         </div>
 
+
+
+                        // ... (rest of code) ...
+
                         {/* RIGHT COLUMN: Input Form */}
                         {/* Widened to max-w-2xl, centered vertically via parent */}
                         <div className="flex-1 w-full max-w-xl bg-black/20 backdrop-blur-sm p-10 rounded-3xl border border-white/5 shadow-2xl flex flex-col justify-center">
-                            <InputForm onCalculate={handleCalculate} />
+                            <InputForm
+                                onCalculate={handleCalculate}
+                                onValuesChange={setSketchState}
+                            />
                         </div>
 
                     </div>
