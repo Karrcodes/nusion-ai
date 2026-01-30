@@ -4,9 +4,8 @@ export const DEMO_RESTAURANTS = [
         email: "demo.alchemist@nusion.ai", // Fake email for auth/listing
         city: "Copenhagen",
         cuisine_type: "Holistic Cuisine",
-
-        cover_url: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&q=80&w=1600",
-        logo_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/React-icon.svg/1200px-React-icon.svg.png",
+        cover_url: "https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&q=80&w=1600",
+        logo_url: "",
         status: "approved",
 
     },
