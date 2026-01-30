@@ -18,6 +18,43 @@ const OwnerPortal = () => {
     const [sortBy, setSortBy] = useState('date'); // 'date', 'name', 'status'
     const [selectedIds, setSelectedIds] = useState([]);
     const [bulkActionLoading, setBulkActionLoading] = useState(false);
+    const [seeding, setSeeding] = useState(false);
+
+    const handleSeedData = async () => {
+        if (!window.confirm("Inject 5 Demo Restaurants? This will add fake data to the list.")) return;
+        setSeeding(true);
+        try {
+            const { DEMO_RESTAURANTS } = await import('../../utils/demoData');
+
+            // Insert sequentially to avoid race conditions or rate limits
+            for (const restaurant of DEMO_RESTAURANTS) {
+                // Check if exists first to avoid dupes (by email)
+                const { data: existing } = await supabaseAdmin
+                    .from('profiles') // Use admin client to bypass RLS if needed, or stick to supabase if auth context allowed
+                    .select('id')
+                    .eq('email', restaurant.email)
+                    .single();
+
+                if (!existing) {
+                    const { error } = await supabaseAdmin.from('profiles').insert([{
+                        id: crypto.randomUUID(),
+                        ...restaurant,
+                        created_at: new Date().toISOString(),
+                        updated_at: new Date().toISOString()
+                    }]);
+                    if (error) console.error("Failed to insert", restaurant.name, error);
+                }
+            }
+            // Refresh list
+            fetchRestaurants();
+            alert("Demo Data Injected Successfully! 🚀");
+        } catch (error) {
+            console.error(error);
+            alert("Error seeding data: " + error.message);
+        } finally {
+            setSeeding(false);
+        }
+    };
 
     useEffect(() => {
         // Check for exit impersonation flag
@@ -303,6 +340,13 @@ const OwnerPortal = () => {
                         </Link>
                         <button onClick={fetchRestaurants} className="px-4 py-2 bg-glass-border hover:bg-glass-border/50 rounded-lg text-sm transition">
                             Refresh
+                        </button>
+                        <button
+                            onClick={handleSeedData}
+                            disabled={seeding}
+                            className="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 rounded-lg text-sm text-white transition font-bold shadow-lg disabled:opacity-50 flex items-center gap-2"
+                        >
+                            {seeding ? 'Seeding...' : '🚀 Seed Demo Data'}
                         </button>
                     </div>
                 </div>
