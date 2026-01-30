@@ -59,7 +59,7 @@ const OwnerPortal = () => {
                         type: 'restaurant', // FORCE TYPE
                         created_at: new Date().toISOString(),
                         updated_at: new Date().toISOString()
-                    }, { onConflict: 'email' });
+                    }, { onConflict: 'id' });
 
                 if (profileError) console.error("Failed to upsert profile", restaurant.name, profileError);
                 else console.log("Seeded/Updated:", restaurant.name);
