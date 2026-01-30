@@ -4,6 +4,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
 import { supabaseAdmin } from '../../lib/supabaseAdmin';
 import { useImpersonation } from '../../contexts/ImpersonationContext';
+import { DEMO_RESTAURANTS } from '../../utils/demoData';
 
 const OwnerPortal = () => {
     const navigate = useNavigate();
