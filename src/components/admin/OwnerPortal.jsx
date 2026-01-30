@@ -26,27 +26,45 @@ const OwnerPortal = () => {
         try {
             const { DEMO_RESTAURANTS } = await import('../../utils/demoData');
 
-            // Insert sequentially to avoid race conditions or rate limits
+            // Insert sequentially
             for (const restaurant of DEMO_RESTAURANTS) {
-                // Check if exists first to avoid dupes (by email)
-                const { data: existing } = await supabaseAdmin
-                    .from('profiles') // Use admin client to bypass RLS if needed, or stick to supabase if auth context allowed
-                    .select('id')
-                    .eq('email', restaurant.email)
-                    .single();
+                // 1. Check if Auth User exists
+                let userId;
+                const { data: users, error: listError } = await supabaseAdmin.auth.admin.listUsers();
+                const existingUser = users?.users?.find(u => u.email === restaurant.email);
 
-                if (!existing) {
-                    const { error } = await supabaseAdmin.from('profiles').insert([{
-                        id: crypto.randomUUID(),
+                if (existingUser) {
+                    userId = existingUser.id;
+                } else {
+                    // 2. Create Auth User
+                    const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
+                        email: restaurant.email,
+                        password: 'demo_password_123',
+                        email_confirm: true,
+                        user_metadata: { name: restaurant.name, type: 'restaurant' }
+                    });
+                    if (createError) {
+                        console.error("Failed to create user", restaurant.name, createError);
+                        continue;
+                    }
+                    userId = newUser.user.id;
+                }
+
+                // 3. Upsert Profile (Idempotent)
+                const { error: profileError } = await supabaseAdmin
+                    .from('profiles')
+                    .upsert({
+                        id: userId,
                         ...restaurant,
                         created_at: new Date().toISOString(),
                         updated_at: new Date().toISOString()
-                    }]);
-                    if (error) console.error("Failed to insert", restaurant.name, error);
-                }
+                    }, { onConflict: 'email' });
+
+                if (profileError) console.error("Failed to upsert profile", restaurant.name, profileError);
             }
+
             // Refresh list
-            fetchRestaurants();
+            await fetchRestaurants();
             alert("Demo Data Injected Successfully! 🚀");
         } catch (error) {
             console.error(error);
