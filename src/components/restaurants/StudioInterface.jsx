@@ -317,7 +317,7 @@ function StudioInterface({ user }) {
 
 
 
-                        // ... (rest of code) ...
+
 
                         {/* RIGHT COLUMN: Input Form */}
                         {/* Widened to max-w-2xl, centered vertically via parent */}
