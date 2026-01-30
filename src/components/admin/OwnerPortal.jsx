@@ -22,10 +22,14 @@ const OwnerPortal = () => {
     const [seeding, setSeeding] = useState(false);
 
     const handleSeedData = async () => {
-        if (!window.confirm("Inject 5 Demo Restaurants? This will add fake data to the list.")) return;
+        if (!window.confirm("Inject 5 Demo Restaurants?")) return;
+
+        alert("Starting Seed Process... (Check Console for details)"); // DEBUG AND CONFIRMATION
         setSeeding(true);
+        console.log("Starting seed with data:", DEMO_RESTAURANTS);
+
         try {
-            const { DEMO_RESTAURANTS } = await import('../../utils/demoData');
+            // Static import is now used, so we skip the await import
 
             // Insert sequentially
             for (const restaurant of DEMO_RESTAURANTS) {
