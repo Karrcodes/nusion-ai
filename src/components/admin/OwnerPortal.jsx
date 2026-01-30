@@ -55,7 +55,8 @@ const OwnerPortal = () => {
                     .from('profiles')
                     .upsert({
                         id: userId,
-                        ...restaurant,
+                        ...restaurant, // Ensure this object has type: 'restaurant', or override below
+                        type: 'restaurant', // FORCE TYPE
                         created_at: new Date().toISOString(),
                         updated_at: new Date().toISOString()
                     }, { onConflict: 'email' });
