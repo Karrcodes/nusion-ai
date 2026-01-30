@@ -250,6 +250,7 @@ const DinerDashboard = ({ user }) => {
                                                     <img
                                                         src={restaurant.cover_url || "/ikoyi-interior.png"}
                                                         alt={restaurant.name}
+                                                        onError={(e) => { e.target.onerror = null; e.target.src = "/ikoyi-interior.png"; }}
                                                         className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                                                     />
 
