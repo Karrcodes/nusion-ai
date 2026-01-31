@@ -11,6 +11,11 @@ export const DEMO_RESTAURANTS = [
             { id: "alc-1", name: "Molecular Sphere Amuse", type: "Starter", cost: 28, price: "28", status: "Active", ingredients: ["Spherified essence", "Edible flowers"], spiceLevel: 1, protein: "Veg", allergens: [], flavorProfile: "Umami", description: "Edible spheres of concentrated flavor essence" },
             { id: "alc-2", name: "Deconstructed Forest Floor", type: "Main", cost: 65, price: "65", status: "Active", ingredients: ["Wild mushrooms", "Moss oil", "Charred bark"], spiceLevel: 2, protein: "Veg", allergens: ["Mushrooms"], flavorProfile: "Earthy", description: "Wild mushrooms, moss oil, and charred bark" },
             { id: "alc-3", name: "Liquid Nitrogen Ice Cream", type: "Dessert", cost: 22, price: "22", status: "Active", ingredients: ["Cream", "Liquid nitrogen", "Vanilla"], spiceLevel: 0, protein: "Veg", allergens: ["Dairy"], flavorProfile: "Sweet", description: "Made tableside with theatrical nitrogen fog" }
+        ],
+        inventory: [
+            { id: "alc-p1", item: "Wild Mushrooms", category: "Produce", stock: "High", status: "Active" },
+            { id: "alc-p2", item: "Edible Flowers", category: "Produce", stock: "Medium", status: "Active" },
+            { id: "alc-p3", item: "Liquid Nitrogen", category: "Pantry", stock: "High", status: "Active" }
         ]
     },
     {
@@ -25,6 +30,11 @@ export const DEMO_RESTAURANTS = [
             { id: "atx-1", name: "Jang Trilogy", type: "Starter", cost: 24, price: "24", status: "Active", ingredients: ["Gochujang", "Doenjang", "Ganjang", "Seasonal vegetables"], spiceLevel: 3, protein: "Veg", allergens: [], flavorProfile: "Umami", description: "Three fermented sauces with seasonal vegetables" },
             { id: "atx-2", name: "Wagyu with Gochugaru", type: "Main", cost: 78, price: "78", status: "Active", ingredients: ["A5 Wagyu", "Korean chili", "Sesame"], spiceLevel: 4, protein: "Beef", allergens: [], flavorProfile: "Spicy", description: "A5 Wagyu with Korean chili and sesame" },
             { id: "atx-3", name: "Makgeolli Granita", type: "Dessert", cost: 18, price: "18", status: "Active", ingredients: ["Rice wine", "Pear", "Pine nut"], spiceLevel: 0, protein: "Veg", allergens: ["Dairy"], flavorProfile: "Sweet", description: "Rice wine ice with pear and pine nut" }
+        ],
+        inventory: [
+            { id: "atx-p1", item: "A5 Wagyu", category: "Protein", stock: "Medium", status: "Active" },
+            { id: "atx-p2", item: "Gochugaru", category: "Spices", stock: "High", status: "Active" },
+            { id: "atx-p3", item: "Gochujang", category: "Pantry", stock: "High", status: "Active" }
         ]
     },
     {
@@ -39,6 +49,11 @@ export const DEMO_RESTAURANTS = [
             { id: "ode-1", name: "Hokkaido Scallop", type: "Starter", cost: 32, price: "32", status: "Active", ingredients: ["Hokkaido scallop", "Cauliflower", "Caviar"], spiceLevel: 1, protein: "Fish", allergens: ["Shellfish"], flavorProfile: "Delicate", description: "With cauliflower and caviar" },
             { id: "ode-2", name: "Pigeon en Croûte", type: "Main", cost: 68, price: "68", status: "Active", ingredients: ["Pigeon", "Puff pastry", "Foie gras"], spiceLevel: 2, protein: "Beef", allergens: ["Gluten"], flavorProfile: "Rich", description: "Wrapped in puff pastry with foie gras" },
             { id: "ode-3", name: "Mango Tart", type: "Dessert", cost: 24, price: "24", status: "Active", ingredients: ["Mango", "Passion fruit", "Coconut"], spiceLevel: 0, protein: "Veg", allergens: ["Dairy", "Gluten"], flavorProfile: "Fruity", description: "With passion fruit and coconut" }
+        ],
+        inventory: [
+            { id: "ode-p1", item: "Hokkaido Scallops", category: "Protein", stock: "Medium", status: "Active" },
+            { id: "ode-p2", item: "Foie Gras", category: "Protein", stock: "Low", status: "Active" },
+            { id: "ode-p3", item: "Caviar", category: "Pantry", stock: "Medium", status: "Active" }
         ]
     },
     {
@@ -53,6 +68,11 @@ export const DEMO_RESTAURANTS = [
             { id: "puj-1", name: "Baby Corn with Chicatana Ants", type: "Starter", cost: 22, price: "22", status: "Active", ingredients: ["Heirloom corn", "Chicatana ants", "Coffee", "Ant mayo"], spiceLevel: 3, protein: "Veg", allergens: [], flavorProfile: "Smoky", description: "Heirloom corn with ant mayo and coffee" },
             { id: "puj-2", name: "Mole Madre", type: "Main", cost: 58, price: "58", status: "Active", ingredients: ["Duck", "1000-day mole", "Sesame"], spiceLevel: 4, protein: "Beef", allergens: ["Nuts"], flavorProfile: "Complex", description: "1000+ day aged mole with duck" },
             { id: "puj-3", name: "Corn Husk Meringue", type: "Dessert", cost: 18, price: "18", status: "Active", ingredients: ["Corn husk", "Vanilla ice cream", "Corn silk"], spiceLevel: 1, protein: "Veg", allergens: ["Eggs"], flavorProfile: "Sweet", description: "With vanilla ice cream and corn silk" }
+        ],
+        inventory: [
+            { id: "puj-p1", item: "Heirloom Corn", category: "Produce", stock: "High", status: "Active" },
+            { id: "puj-p2", item: "Chicatana Ants", category: "Protein", stock: "Low", status: "Active" },
+            { id: "puj-p3", item: "Mole Madre", category: "Pantry", stock: "Medium", status: "Active" }
         ]
     },
     {
@@ -67,6 +87,11 @@ export const DEMO_RESTAURANTS = [
             { id: "gag-1", name: "Yogurt Explosion", type: "Starter", cost: 26, price: "26", status: "Active", ingredients: ["Spherified yogurt", "Curry leaf oil"], spiceLevel: 2, protein: "Veg", allergens: ["Dairy"], flavorProfile: "Tangy", description: "Spherified yogurt with curry leaf oil" },
             { id: "gag-2", name: "Tandoori Lamb Chops", type: "Main", cost: 72, price: "72", status: "Active", ingredients: ["Lamb", "Tandoori spices", "Mint chutney", "Pickled onions"], spiceLevel: 5, protein: "Beef", allergens: [], flavorProfile: "Spicy", description: "With mint chutney and pickled onions" },
             { id: "gag-3", name: "Charcoal Ice Cream", type: "Dessert", cost: 20, price: "20", status: "Active", ingredients: ["Activated charcoal", "Coconut", "Lime"], spiceLevel: 0, protein: "Veg", allergens: ["Dairy"], flavorProfile: "Smoky", description: "Activated charcoal with coconut and lime" }
+        ],
+        inventory: [
+            { id: "gag-p1", item: "Lamb Chops", category: "Protein", stock: "High", status: "Active" },
+            { id: "gag-p2", item: "Tandoori Spices", category: "Spices", stock: "High", status: "Active" },
+            { id: "gag-p3", item: "Activated Charcoal", category: "Pantry", stock: "Medium", status: "Active" }
         ]
     }
 ];

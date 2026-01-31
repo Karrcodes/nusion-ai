@@ -55,8 +55,8 @@ const OwnerPortal = () => {
                     userId = newUser.user.id;
                 }
 
-                // 3. Upsert Profile (Idempotent) - exclude 'menu' field from profile
-                const { menu, ...profileData } = restaurant;
+                // 3. Upsert Profile (Idempotent) - exclude 'menu' and 'inventory' fields from profile
+                const { menu, inventory, ...profileData } = restaurant;
                 const { error: profileError } = await supabaseAdmin
                     .from('profiles')
                     .upsert({
@@ -79,7 +79,13 @@ const OwnerPortal = () => {
                         console.log(`Saved ${menu.length} menu items for ${restaurant.name}`);
                     }
 
-                    // 5. Set approval status to 'approved' in localStorage
+                    // 5. Save inventory to localStorage for this restaurant
+                    if (inventory && inventory.length > 0) {
+                        localStorage.setItem(`restaurant_inventory_${userId}`, JSON.stringify(inventory));
+                        console.log(`Saved ${inventory.length} inventory items for ${restaurant.name}`);
+                    }
+
+                    // 6. Set approval status to 'approved' in localStorage
                     localStorage.setItem(`restaurant_approval_${userId}`, 'approved');
                     console.log(`Set approval status to 'approved' for ${restaurant.name}`);
                 }
