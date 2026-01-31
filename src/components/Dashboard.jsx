@@ -189,16 +189,7 @@ const Dashboard = ({ user }) => {
                             <div className="absolute top-10 left-10 right-10 h-1 bg-gradient-to-r from-accent-wa to-accent-jp opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
                             <div className="text-center transform transition-transform duration-500 group-hover:-translate-y-4 flex flex-col items-center mt-10">
-                                <img
-                                    src="/logo.png"
-                                    alt="IKOYI"
-                                    className="h-12 md:h-16 w-auto mb-4 object-contain mix-blend-lighten opacity-90"
-                                    onError={(e) => {
-                                        e.target.style.display = 'none';
-                                        e.target.nextElementSibling.style.display = 'block';
-                                    }}
-                                />
-                                <h3 className="text-2xl font-display font-bold text-white mb-2 hidden">IKOYI</h3>
+                                <h3 className="text-3xl md:text-4xl font-display font-bold text-white mb-4 tracking-wider">IKOYI</h3>
                                 <p className="text-white/70 uppercase tracking-widest text-xs">London • Hyper-Seasonal Spice</p>
                             </div>
 
