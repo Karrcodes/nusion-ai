@@ -6,6 +6,7 @@ const Dashboard = ({ user }) => {
     const [brands, setBrands] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeBackground, setActiveBackground] = useState(null);
+    const [displayBackground, setDisplayBackground] = useState(null);
 
     useEffect(() => {
         const fetchBrands = async () => {
@@ -22,12 +23,28 @@ const Dashboard = ({ user }) => {
         };
         fetchBrands();
     }, []);
+
+    // Delayed fade-out for smoother card-to-card transitions
+    useEffect(() => {
+        let timeout;
+        if (activeBackground) {
+            // Immediate update when hovering a card
+            setDisplayBackground(activeBackground);
+        } else {
+            // Delay fade-out when leaving a card (300ms)
+            timeout = setTimeout(() => {
+                setDisplayBackground(null);
+            }, 300);
+        }
+        return () => clearTimeout(timeout);
+    }, [activeBackground]);
+
     return (
         <div className="min-h-screen w-full flex flex-col items-center p-4 md:p-8 animate-[fadeIn_0.5s] relative overflow-hidden">
 
             {/* Dynamic Background Layer */}
             <div
-                className={`fixed inset-0 z-0 transition-opacity duration-1500 ease-in-out pointer-events-none ${activeBackground ? 'opacity-70' : 'opacity-0'}`}
+                className={`fixed inset-0 z-0 transition-opacity duration-1500 ease-in-out pointer-events-none ${displayBackground ? 'opacity-70' : 'opacity-0'}`}
                 style={{
                     maskImage: 'radial-gradient(circle at center, black 0%, transparent 70%)',
                     WebkitMaskImage: 'radial-gradient(circle at center, black 0%, transparent 70%)'
@@ -38,7 +55,7 @@ const Dashboard = ({ user }) => {
 
                 {/* The Blurred Image */}
                 <img
-                    src={activeBackground || ''}
+                    src={displayBackground || ''}
                     alt="Background Ambience"
                     className="w-full h-full object-cover blur-[100px] scale-110 transition-transform duration-[20s]"
                 />
