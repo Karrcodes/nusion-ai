@@ -88,7 +88,7 @@ const InputForm = ({ onCalculate }) => {
                                 key={level}
                                 type="button"
                                 onClick={() => setSpiceTolerance(level)}
-                                className={`w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/5 transition-all duration-300 relative
+                                className={`w-11 h-11 md:w-8 md:h-8 rounded-full flex items-center justify-center hover:bg-white/5 transition-all duration-300 relative
                                     ${level === spiceTolerance ? 'scale-125' : ''}
                                 `}
                             >
@@ -97,7 +97,7 @@ const InputForm = ({ onCalculate }) => {
                                 `}></div>
 
                                 {level === spiceTolerance && (
-                                    <span className="absolute -top-8 text-[10px] font-cinzel text-[var(--color-cream)] tracking-widest whitespace-nowrap animate-[fadeIn_0.3s]">
+                                    <span className="absolute -top-8 text-xs md:text-[10px] font-cinzel text-[var(--color-cream)] tracking-widest whitespace-nowrap animate-[fadeIn_0.3s]">
                                         {level === 1 && "MILD"}
                                         {level === 2 && "MED"}
                                         {level === 3 && "HOT"}
@@ -123,7 +123,7 @@ const InputForm = ({ onCalculate }) => {
                             key={allergen}
                             onClick={() => toggleAllergy(allergen)}
                             className={`
-                                text-sm font-serif transition-all duration-300 relative
+                                text-sm font-serif transition-all duration-300 relative px-2 py-1 min-h-[44px] md:min-h-0 md:px-0 md:py-0 flex items-center
                                 ${allergies.includes(allergen)
                                     ? 'text-[var(--color-cream)] opacity-100 line-through decoration-[var(--color-gold)] decoration-2'
                                     : 'text-[var(--color-cream)] opacity-40 hover:opacity-80'}
