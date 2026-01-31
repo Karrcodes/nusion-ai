@@ -31,10 +31,10 @@ const Dashboard = ({ user }) => {
             // Immediate update when hovering a card
             setDisplayBackground(activeBackground);
         } else {
-            // Delay fade-out when leaving a card (300ms)
+            // Delay fade-out when leaving a card (150ms)
             timeout = setTimeout(() => {
                 setDisplayBackground(null);
-            }, 300);
+            }, 150);
         }
         return () => clearTimeout(timeout);
     }, [activeBackground]);
