@@ -26,15 +26,21 @@ const Dashboard = ({ user }) => {
         <div className="min-h-screen w-full flex flex-col items-center p-4 md:p-8 animate-[fadeIn_0.5s] relative overflow-hidden">
 
             {/* Dynamic Background Layer */}
-            <div className={`fixed inset-0 z-0 transition-opacity duration-1000 ease-in-out pointer-events-none ${activeBackground ? 'opacity-100' : 'opacity-0'}`}>
-                {/* Darker overlay to keep text readable */}
-                <div className="absolute inset-0 bg-black/70 z-10"></div>
+            <div
+                className={`fixed inset-0 z-0 transition-opacity duration-1000 ease-in-out pointer-events-none ${activeBackground ? 'opacity-30' : 'opacity-0'}`}
+                style={{
+                    maskImage: 'radial-gradient(circle at center, black 0%, transparent 70%)',
+                    WebkitMaskImage: 'radial-gradient(circle at center, black 0%, transparent 70%)'
+                }}
+            >
+                {/* Darker overlay to keep text readable - Reduced since overall opacity is lower */}
+                <div className="absolute inset-0 bg-black/20 z-10"></div>
 
                 {/* The Blurred Image */}
                 <img
                     src={activeBackground || ''}
                     alt="Background Ambience"
-                    className="w-full h-full object-cover blur-[80px] scale-110 transition-transform duration-[20s]"
+                    className="w-full h-full object-cover blur-[100px] scale-110 transition-transform duration-[20s]"
                 />
             </div>
 
