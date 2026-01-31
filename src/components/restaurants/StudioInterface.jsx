@@ -336,7 +336,7 @@ function StudioInterface({ user }) {
 
                         {/* RIGHT COLUMN: Input Form */}
                         {/* Widened to max-w-2xl, centered vertically via parent, with GLOWING BORDER */}
-                        <div className="flex-1 w-full max-w-xl bg-black/40 backdrop-blur-xl p-10 rounded-3xl border border-[var(--color-gold)]/10 shadow-[0_0_30px_rgba(212,175,55,0.08)] flex flex-col justify-center relative overflow-hidden group">
+                        <div className="flex-1 w-full max-w-xl bg-black/40 backdrop-blur-xl p-10 rounded-3xl border border-[var(--color-gold)]/25 shadow-[0_0_30px_rgba(212,175,55,0.08)] flex flex-col justify-center relative overflow-hidden group">
                             <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-gold)]/5 to-transparent opacity-50 pointer-events-none"></div>
                             <InputForm onCalculate={handleCalculate} />
                         </div>
