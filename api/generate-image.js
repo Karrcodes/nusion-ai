@@ -1,5 +1,5 @@
-// Hugging Face Inference API for AI-generated food images
-// Using Stable Diffusion XL for high-quality food photography
+// Pollinations AI for free AI-generated food images
+// Simple and reliable when available
 
 export default async function handler(req, res) {
     // Enable CORS
@@ -17,91 +17,37 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Description parameter is required' });
     }
 
-    const HF_TOKEN = process.env.HF_TOKEN;
-
-    if (!HF_TOKEN) {
-        console.error('❌ HF_TOKEN not found in environment variables');
-        return res.status(500).json({ error: 'Server configuration error: Missing HF_TOKEN' });
-    }
-
     try {
-        // Enhanced prompt for better food photography - more specific and detailed
-        const prompt = `A professional photograph of ${description}, gourmet food styling, michelin star restaurant plating, studio lighting, macro photography, appetizing, delicious, high-end culinary presentation, 8k resolution, sharp focus, beautiful composition, food magazine quality`;
+        // Enhanced prompt for better food photography
+        const prompt = `${description}, professional food photography, michelin star plating, gourmet presentation, studio lighting, appetizing, delicious, 8k, high quality`;
+        const seed = Math.floor(Math.random() * 100000);
+        const encodedPrompt = encodeURIComponent(prompt);
 
-        console.log(`🎨 Generating AI image with Hugging Face: "${description}"`);
+        // Use Pollinations with Flux model
+        const url = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=800&height=600&model=flux&seed=${seed}&nologo=true&enhance=true`;
 
-        // Use Stable Diffusion XL via Hugging Face Inference API
-        const response = await fetch(
-            'https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0',
-            {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${HF_TOKEN}`,
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    inputs: prompt,
-                    parameters: {
-                        negative_prompt: 'blurry, low quality, distorted, ugly, bad anatomy, watermark, text, logo, people, hands, faces, unappetizing, raw ingredients, messy, dirty, artificial, plastic',
-                        num_inference_steps: 35,
-                        guidance_scale: 8.0,
-                    }
-                })
+        console.log(`🎨 Generating with Pollinations: "${description}"`);
+
+        const response = await fetch(url, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
             }
-        );
+        });
 
         if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Hugging Face API error:', response.status, errorText);
+            throw new Error(`Pollinations returned ${response.status}`);
+        }
 
-            // If model is loading, wait and retry once
-            if (response.status === 503 && errorText.includes('loading')) {
-                console.log('⏳ Model is loading, waiting 20 seconds...');
-                await new Promise(r => setTimeout(r, 20000));
-
-                const retryResponse = await fetch(
-                    'https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0',
-                    {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${HF_TOKEN}`,
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            inputs: prompt,
-                            parameters: {
-                                negative_prompt: 'blurry, low quality, distorted, ugly, bad anatomy, watermark, text, logo',
-                                num_inference_steps: 30,
-                                guidance_scale: 7.5,
-                            }
-                        })
-                    }
-                );
-
-                if (!retryResponse.ok) {
-                    throw new Error(`Retry failed: ${retryResponse.status}`);
-                }
-
-                const arrayBuffer = await retryResponse.arrayBuffer();
-                const buffer = Buffer.from(arrayBuffer);
-                const base64 = buffer.toString('base64');
-
-                console.log('✅ AI image generated successfully (after retry)');
-
-                return res.status(200).json({
-                    success: true,
-                    image: `data:image/jpeg;base64,${base64}`
-                });
-            }
-
-            throw new Error(`HF API error: ${response.status}`);
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.startsWith('image/')) {
+            throw new Error('Invalid content type - not an image');
         }
 
         const arrayBuffer = await response.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
         const base64 = buffer.toString('base64');
 
-        console.log('✅ AI image generated successfully from Hugging Face');
+        console.log('✅ AI image generated successfully from Pollinations');
 
         return res.status(200).json({
             success: true,
@@ -109,9 +55,9 @@ export default async function handler(req, res) {
         });
 
     } catch (error) {
-        console.error('Hugging Face generation error:', error);
+        console.error('Pollinations error:', error);
 
-        // Fallback to Picsum if HF fails
+        // Fallback to Picsum if Pollinations fails
         try {
             const hash = description.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
             const seed = hash % 1000;
