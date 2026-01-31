@@ -78,6 +78,10 @@ const OwnerPortal = () => {
                         localStorage.setItem(menuKey, JSON.stringify(menu));
                         console.log(`Saved ${menu.length} menu items for ${restaurant.name}`);
                     }
+
+                    // 5. Set approval status to 'approved' in localStorage
+                    localStorage.setItem(`restaurant_approval_${userId}`, 'approved');
+                    console.log(`Set approval status to 'approved' for ${restaurant.name}`);
                 }
             }
 
