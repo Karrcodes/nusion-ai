@@ -55,19 +55,30 @@ const OwnerPortal = () => {
                     userId = newUser.user.id;
                 }
 
-                // 3. Upsert Profile (Idempotent)
+                // 3. Upsert Profile (Idempotent) - exclude 'menu' field from profile
+                const { menu, ...profileData } = restaurant;
                 const { error: profileError } = await supabaseAdmin
                     .from('profiles')
                     .upsert({
                         id: userId,
-                        ...restaurant, // Ensure this object has type: 'restaurant', or override below
+                        ...profileData,
                         type: 'restaurant', // FORCE TYPE
                         created_at: new Date().toISOString(),
                         updated_at: new Date().toISOString()
                     }, { onConflict: 'id' });
 
-                if (profileError) console.error("Failed to upsert profile", restaurant.name, profileError);
-                else console.log("Seeded/Updated:", restaurant.name);
+                if (profileError) {
+                    console.error("Failed to upsert profile", restaurant.name, profileError);
+                } else {
+                    console.log("Seeded/Updated:", restaurant.name);
+
+                    // 4. Save menu to localStorage for this restaurant
+                    if (menu && menu.length > 0) {
+                        const menuKey = `restaurant_menu_${userId}`;
+                        localStorage.setItem(menuKey, JSON.stringify(menu));
+                        console.log(`Saved ${menu.length} menu items for ${restaurant.name}`);
+                    }
+                }
             }
 
             // Refresh BOTH lists to reflect changes (move from Users -> Restaurants)
@@ -76,7 +87,7 @@ const OwnerPortal = () => {
                 fetchUsers()
             ]);
 
-            alert("Demo Data Injected & Updated! 🍱\nCheck the 'Restaurants' tab.");
+            alert("Demo Data Injected & Updated! 🍱\nCheck the 'Restaurants' tab.\nMenu items saved to localStorage.");
         } catch (error) {
             console.error(error);
             alert("Error seeding data: " + error.message);
