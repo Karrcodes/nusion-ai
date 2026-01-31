@@ -27,7 +27,7 @@ const Dashboard = ({ user }) => {
 
             {/* Dynamic Background Layer */}
             <div
-                className={`fixed inset-0 z-0 transition-opacity duration-1000 ease-in-out pointer-events-none ${activeBackground ? 'opacity-30' : 'opacity-0'}`}
+                className={`fixed inset-0 z-0 transition-opacity duration-1000 ease-in-out pointer-events-none ${activeBackground ? 'opacity-50' : 'opacity-0'}`}
                 style={{
                     maskImage: 'radial-gradient(circle at center, black 0%, transparent 70%)',
                     WebkitMaskImage: 'radial-gradient(circle at center, black 0%, transparent 70%)'
