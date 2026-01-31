@@ -234,7 +234,12 @@ const RecommendationResult = ({ result, onReset, brandName }) => {
                         {processedCourses.map((course, i) => (
                             <div key={i} className="flex flex-col gap-4">
                                 {course.image && (
-                                    <img src={course.image} className="w-full aspect-[4/5] object-cover rounded-xl" />
+                                    <img
+                                        src={course.image}
+                                        alt={course.name}
+                                        className="w-full aspect-[4/5] object-cover rounded-xl"
+                                        onError={(e) => e.target.style.display = 'none'}
+                                    />
                                 )}
                                 <h3 className="text-2xl font-cinzel text-white">{course.name}</h3>
                                 <p className="text-white/60 font-serif">{course.description}</p>
