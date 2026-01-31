@@ -72,10 +72,10 @@ const OwnerPortal = () => {
                 } else {
                     console.log("Seeded/Updated:", restaurant.name);
 
-                    // 4. Save menu to localStorage for this restaurant
+                    // 4. Save menu to localStorage for this restaurant (both keys for compatibility)
                     if (menu && menu.length > 0) {
-                        const menuKey = `restaurant_menu_${userId}`;
-                        localStorage.setItem(menuKey, JSON.stringify(menu));
+                        localStorage.setItem(`restaurant_menu_${userId}`, JSON.stringify(menu));
+                        localStorage.setItem(`restaurant_meals_${userId}`, JSON.stringify(menu));
                         console.log(`Saved ${menu.length} menu items for ${restaurant.name}`);
                     }
 
