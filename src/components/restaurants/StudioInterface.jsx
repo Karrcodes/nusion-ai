@@ -94,9 +94,16 @@ function StudioInterface({ user }) {
                                 uiStyle: matchedBrand.ui_style || 'soft'
                             });
 
-                            const menuKey = `restaurant_menu_${matchedBrand.id}`;
-                            const savedMenu = localStorage.getItem(menuKey);
-                            if (savedMenu) setLiveMenu(JSON.parse(savedMenu));
+                            // Try both menu keys (restaurant_menu and restaurant_meals)
+                            const menuKey1 = `restaurant_menu_${matchedBrand.id}`;
+                            const menuKey2 = `restaurant_meals_${matchedBrand.id}`;
+                            const savedMenu = localStorage.getItem(menuKey1) || localStorage.getItem(menuKey2);
+                            if (savedMenu) {
+                                setLiveMenu(JSON.parse(savedMenu));
+                                console.log(`📋 Loaded ${JSON.parse(savedMenu).length} menu items for ${matchedBrand.name}`);
+                            } else {
+                                console.warn(`⚠️ No menu found for ${matchedBrand.name} (tried ${menuKey1} and ${menuKey2})`);
+                            }
 
                             return;
                         }
