@@ -42,9 +42,9 @@ export default async function handler(req, res) {
                 body: JSON.stringify({
                     inputs: prompt,
                     parameters: {
-                        negative_prompt: 'blurry, low quality, distorted, ugly, bad anatomy, watermark, text, logo',
-                        num_inference_steps: 30,
-                        guidance_scale: 7.5,
+                        negative_prompt: 'blurry, low quality, distorted, ugly, bad anatomy, watermark, text, logo, people, hands, faces, unappetizing, raw ingredients, messy, dirty, artificial, plastic',
+                        num_inference_steps: 35,
+                        guidance_scale: 8.0,
                     }
                 })
             }
