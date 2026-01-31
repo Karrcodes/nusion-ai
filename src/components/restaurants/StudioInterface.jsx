@@ -193,11 +193,26 @@ function StudioInterface({ user }) {
                         total_cost: recommendation.totalCost,
                         narrative: recommendation.narrative
                     }]);
-                } catch (e) { }
+                } catch (e) {
+                    console.error('Failed to save generation to history:', e);
+                }
             }
 
         } catch (error) {
-            setResult({ error: "The Chef is currently overwhelmed. Please try again in a moment." });
+            console.error('Menu generation error:', error);
+
+            // Provide specific error messages based on error type
+            let errorMessage = "The Chef is currently overwhelmed. Please try again in a moment.";
+
+            if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                errorMessage = "Unable to connect to our kitchen. Please check your internet connection and try again.";
+            } else if (error.message?.includes('timeout') || error.name === 'AbortError') {
+                errorMessage = "The kitchen is taking longer than expected. Please try again with a simpler request.";
+            } else if (error.message?.includes('429') || error.message?.includes('rate limit')) {
+                errorMessage = "Our kitchen is at capacity right now. Please wait a moment and try again.";
+            }
+
+            setResult({ error: errorMessage });
         } finally {
             setLoading(false);
             setLoadingPhase('idle');
