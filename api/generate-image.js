@@ -1,5 +1,5 @@
 // Initialize HfInference with the Router API endpoint
-// Removed unused HfInference import to prevent confusion
+// Using Unsplash for reliable food photography
 
 export default async function handler(req, res) {
     // Enable CORS
@@ -17,41 +17,42 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Description parameter is required' });
     }
 
-    // Helper to fetch with model fallback
-    const fetchImage = async (prompt, model) => {
-        const seed = Math.floor(Math.random() * 100000);
-        const encodedPrompt = encodeURIComponent(`${prompt}, food photography, 8k, photorealistic, cinematic lighting`);
-        const url = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=800&height=600&model=${model}&seed=${seed}&nologo=true`;
+    try {
+        // Extract key food terms from description for better search
+        const foodKeywords = description
+            .toLowerCase()
+            .replace(/\b(with|and|in|on|of|the|a|an)\b/g, '')
+            .split(/[\s,]+/)
+            .filter(word => word.length > 3)
+            .slice(0, 3)
+            .join(',');
 
-        console.log(`🎨 Fetching from Pollinations (${model}): ${url}`);
+        const searchQuery = foodKeywords || 'gourmet food';
 
-        const res = await fetch(url, {
-            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' }
+        // Use Unsplash Source API (no auth required for basic usage)
+        // This returns a random photo from the search results
+        const seed = description.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+        const url = `https://source.unsplash.com/800x600/?${encodeURIComponent(searchQuery)},food,restaurant&sig=${seed}`;
+
+        console.log(`🎨 Fetching from Unsplash: ${searchQuery}`);
+
+        const response = await fetch(url, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            },
+            redirect: 'follow'
         });
 
-        if (!res.ok) throw new Error(`Status ${res.status}`);
-
-        const contentType = res.headers.get('content-type');
-        if (!contentType || !contentType.startsWith('image/')) throw new Error('Invalid content type');
-
-        return res.arrayBuffer();
-    };
-
-    try {
-        let arrayBuffer;
-
-        // Attempt 1: Flux (High Quality)
-        try {
-            arrayBuffer = await fetchImage(description, 'flux');
-        } catch (error) {
-            console.warn(`Flux model failed (${error.message}). Falling back to Turbo.`);
-            // Attempt 2: Turbo (Reliable / Faster)
-            arrayBuffer = await fetchImage(description, 'turbo');
+        if (!response.ok) {
+            throw new Error(`Unsplash returned ${response.status}`);
         }
 
+        const arrayBuffer = await response.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
         const base64 = buffer.toString('base64');
-        const mimeType = 'image/jpeg'; // Checking type is cleaner but for now assume jpeg
+        const mimeType = 'image/jpeg';
+
+        console.log('✅ Image fetched successfully from Unsplash');
 
         return res.status(200).json({
             success: true,
@@ -59,7 +60,31 @@ export default async function handler(req, res) {
         });
 
     } catch (error) {
-        console.error('Image generation fatal error:', error);
-        return res.status(500).json({ error: 'Failed to generate image', message: error.message });
+        console.error('Unsplash fetch error:', error);
+
+        // Fallback to Picsum if Unsplash fails
+        try {
+            const hash = description.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+            const seed = hash % 1000;
+            const fallbackUrl = `https://picsum.photos/seed/${seed}/800/600`;
+
+            const response = await fetch(fallbackUrl);
+            const arrayBuffer = await response.arrayBuffer();
+            const buffer = Buffer.from(arrayBuffer);
+            const base64 = buffer.toString('base64');
+
+            console.log('✅ Using Picsum fallback');
+
+            return res.status(200).json({
+                success: true,
+                image: `data:image/jpeg;base64,${base64}`
+            });
+        } catch (fallbackError) {
+            console.error('Fallback also failed:', fallbackError);
+            return res.status(500).json({
+                error: 'Failed to generate image',
+                message: error.message
+            });
+        }
     }
 }
