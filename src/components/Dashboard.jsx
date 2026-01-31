@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
-import Tooltip from './Tooltip';
-import { useTooltip } from '../hooks/useTooltip';
 
 const Dashboard = ({ user }) => {
     const [brands, setBrands] = useState([]);
