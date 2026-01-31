@@ -159,7 +159,7 @@ const RecommendationResult = ({ result, onReset, brandName }) => {
                                 <div className="absolute bottom-0 left-0 w-full p-8 translate-y-4 transition-transform duration-300 group-hover:translate-y-0 bg-gradient-to-t from-black via-black/80 to-transparent pt-20 z-20">
                                     {/* Title: Fixed height for exact 2 lines */}
                                     <div className="h-[4.5rem] flex items-end mb-2">
-                                        <h3 className="text-2xl font-serif font-bold text-white leading-tight group-hover:text-[var(--color-gold)] transition-colors line-clamp-2 drop-shadow-lg w-full">
+                                        <h3 className="text-xl font-serif font-bold text-white leading-tight group-hover:text-[var(--color-gold)] transition-colors line-clamp-2 drop-shadow-lg w-full">
                                             {course.name}
                                         </h3>
                                     </div>

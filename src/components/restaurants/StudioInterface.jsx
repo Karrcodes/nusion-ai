@@ -149,6 +149,7 @@ function StudioInterface({ user }) {
 
             await new Promise(r => setTimeout(r, 600));
 
+            console.log('🍽️ Using menu with', liveMenu.length, 'items for', brand.name);
             const recommendation = getRecommendation(userData, liveMenu);
             clearInterval(textProgress);
 
