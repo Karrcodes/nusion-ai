@@ -154,12 +154,8 @@ const Dashboard = ({ user }) => {
                                 <div className="absolute top-10 left-10 right-10 h-1 bg-gradient-to-r from-accent-wa to-accent-jp opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
                                 <div className="text-center transform transition-transform duration-500 group-hover:-translate-y-4 flex flex-col items-center mt-10">
-                                    {brand.logo_url ? (
-                                        <img src={brand.logo_url} alt="Logo" className="h-12 md:h-16 w-auto mb-4 object-contain brightness-0 invert" />
-                                    ) : (
-                                        <h3 className="text-2xl font-display font-bold text-white mb-2">{brand.name}</h3>
-                                    )}
-                                    <p className="text-white/70 uppercase tracking-widest text-xs">{brand.city || 'Global'} • {brand.name}</p>
+                                    <h3 className="text-3xl md:text-4xl font-display font-bold text-white mb-4 tracking-wider">{brand.name}</h3>
+                                    <p className="text-white/70 uppercase tracking-widest text-xs">{brand.city || 'Global'} • {brand.cuisine_type || brand.name}</p>
                                 </div>
 
                                 <div className="absolute bottom-10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100 text-center">
