@@ -8,9 +8,6 @@ const Dashboard = ({ user }) => {
     const [activeBackground, setActiveBackground] = useState(null);
     const [displayBackground, setDisplayBackground] = useState(null);
 
-    // Tooltip for first-time users
-    const { shouldShow: showTooltip, markAsShown } = useTooltip('dashboard_first_card');
-
     useEffect(() => {
         const fetchBrands = async () => {
             const { data } = await supabase
