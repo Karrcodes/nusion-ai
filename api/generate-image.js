@@ -1,5 +1,5 @@
-// Initialize HfInference with the Router API endpoint
-// Using Unsplash for reliable food photography
+// Hugging Face Inference API for AI-generated food images
+// Using Stable Diffusion XL for high-quality food photography
 
 export default async function handler(req, res) {
     // Enable CORS
@@ -17,52 +17,101 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Description parameter is required' });
     }
 
+    const HF_TOKEN = process.env.HF_TOKEN;
+
+    if (!HF_TOKEN) {
+        console.error('❌ HF_TOKEN not found in environment variables');
+        return res.status(500).json({ error: 'Server configuration error: Missing HF_TOKEN' });
+    }
+
     try {
-        // Extract key food terms from description for better search
-        const foodKeywords = description
-            .toLowerCase()
-            .replace(/\b(with|and|in|on|of|the|a|an)\b/g, '')
-            .split(/[\s,]+/)
-            .filter(word => word.length > 3)
-            .slice(0, 3)
-            .join(',');
+        // Enhanced prompt for better food photography
+        const prompt = `${description}, professional food photography, michelin star presentation, 8k, ultra detailed, cinematic lighting, gourmet plating, shallow depth of field, award winning photography`;
 
-        const searchQuery = foodKeywords || 'gourmet food';
+        console.log(`🎨 Generating AI image with Hugging Face: "${description}"`);
 
-        // Use Unsplash Source API (no auth required for basic usage)
-        // This returns a random photo from the search results
-        const seed = description.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-        const url = `https://source.unsplash.com/800x600/?${encodeURIComponent(searchQuery)},food,restaurant&sig=${seed}`;
-
-        console.log(`🎨 Fetching from Unsplash: ${searchQuery}`);
-
-        const response = await fetch(url, {
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-            },
-            redirect: 'follow'
-        });
+        // Use Stable Diffusion XL via Hugging Face Inference API
+        const response = await fetch(
+            'https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0',
+            {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${HF_TOKEN}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    inputs: prompt,
+                    parameters: {
+                        negative_prompt: 'blurry, low quality, distorted, ugly, bad anatomy, watermark, text, logo',
+                        num_inference_steps: 30,
+                        guidance_scale: 7.5,
+                    }
+                })
+            }
+        );
 
         if (!response.ok) {
-            throw new Error(`Unsplash returned ${response.status}`);
+            const errorText = await response.text();
+            console.error('Hugging Face API error:', response.status, errorText);
+
+            // If model is loading, wait and retry once
+            if (response.status === 503 && errorText.includes('loading')) {
+                console.log('⏳ Model is loading, waiting 20 seconds...');
+                await new Promise(r => setTimeout(r, 20000));
+
+                const retryResponse = await fetch(
+                    'https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0',
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${HF_TOKEN}`,
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            inputs: prompt,
+                            parameters: {
+                                negative_prompt: 'blurry, low quality, distorted, ugly, bad anatomy, watermark, text, logo',
+                                num_inference_steps: 30,
+                                guidance_scale: 7.5,
+                            }
+                        })
+                    }
+                );
+
+                if (!retryResponse.ok) {
+                    throw new Error(`Retry failed: ${retryResponse.status}`);
+                }
+
+                const arrayBuffer = await retryResponse.arrayBuffer();
+                const buffer = Buffer.from(arrayBuffer);
+                const base64 = buffer.toString('base64');
+
+                console.log('✅ AI image generated successfully (after retry)');
+
+                return res.status(200).json({
+                    success: true,
+                    image: `data:image/jpeg;base64,${base64}`
+                });
+            }
+
+            throw new Error(`HF API error: ${response.status}`);
         }
 
         const arrayBuffer = await response.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
         const base64 = buffer.toString('base64');
-        const mimeType = 'image/jpeg';
 
-        console.log('✅ Image fetched successfully from Unsplash');
+        console.log('✅ AI image generated successfully from Hugging Face');
 
         return res.status(200).json({
             success: true,
-            image: `data:${mimeType};base64,${base64}`
+            image: `data:image/jpeg;base64,${base64}`
         });
 
     } catch (error) {
-        console.error('Unsplash fetch error:', error);
+        console.error('Hugging Face generation error:', error);
 
-        // Fallback to Picsum if Unsplash fails
+        // Fallback to Picsum if HF fails
         try {
             const hash = description.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
             const seed = hash % 1000;
