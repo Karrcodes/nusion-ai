@@ -137,48 +137,36 @@ const Dashboard = ({ user }) => {
                         <div className="w-12 h-12 border-2 border-text-secondary/20 border-t-text-primary rounded-full animate-spin"></div>
                     </div>
                 ) : brands.length > 0 ? (
-                    brands.map((brand, index) => (
-                        <div key={brand.id} className="relative">
-                            {/* First-time tooltip - only on first card */}
-                            {index === 0 && showTooltip && (
-                                <Tooltip
-                                    message="Click any restaurant to start creating personalized menus ✨"
-                                    position="bottom"
-                                    onDismiss={markAsShown}
-                                    autoHideDelay={5000}
-                                    show={true}
-                                />
-                            )}
+                    brands.map(brand => (
+                        <Link
+                            key={brand.id}
+                            to={`/${(brand.name || 'brand').toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '')}`}
+                            onMouseEnter={() => setActiveBackground(brand.cover_url)}
+                            onMouseLeave={() => setActiveBackground(null)}
+                            className="group cursor-pointer relative h-64 md:h-[400px] rounded-3xl overflow-hidden shadow-xl transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl block border border-white/5 z-20"
+                        >
+                            <div className="absolute inset-0 bg-black/60 z-10 group-hover:bg-black/40 transition-colors duration-500"></div>
+                            <img
+                                src={brand.cover_url || "/ikoyi-interior.png"}
+                                alt={brand.name}
+                                className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:scale-110 transition-transform duration-700"
+                            />
 
-                            <Link
-                                to={`/${(brand.name || 'brand').toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '')}`}
-                                onMouseEnter={() => setActiveBackground(brand.cover_url)}
-                                onMouseLeave={() => setActiveBackground(null)}
-                                className="group cursor-pointer relative h-64 md:h-[400px] rounded-3xl overflow-hidden shadow-xl transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl block border border-white/5 z-20"
-                            >
-                                <div className="absolute inset-0 bg-black/60 z-10 group-hover:bg-black/40 transition-colors duration-500"></div>
-                                <img
-                                    src={brand.cover_url || "/ikoyi-interior.png"}
-                                    alt={brand.name}
-                                    className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:scale-110 transition-transform duration-700"
-                                />
+                            <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-10">
+                                <div className="absolute top-10 left-10 right-10 h-1 bg-gradient-to-r from-accent-wa to-accent-jp opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
-                                <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-10">
-                                    <div className="absolute top-10 left-10 right-10 h-1 bg-gradient-to-r from-accent-wa to-accent-jp opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-
-                                    <div className="text-center transform transition-transform duration-500 group-hover:-translate-y-4 flex flex-col items-center mt-10">
-                                        <h3 className="text-3xl md:text-4xl font-display font-bold text-white mb-4 tracking-wider">{brand.name}</h3>
-                                        <p className="text-white/70 uppercase tracking-widest text-xs">{brand.city || 'Global'} • {brand.cuisine_type || brand.name}</p>
-                                    </div>
-
-                                    <div className="absolute bottom-10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100 text-center">
-                                        <span className="inline-block px-6 py-2 border border-white/30 rounded-full text-white text-sm uppercase tracking-wider backdrop-blur-md">
-                                            Enter Studio
-                                        </span>
-                                    </div>
+                                <div className="text-center transform transition-transform duration-500 group-hover:-translate-y-4 flex flex-col items-center mt-10">
+                                    <h3 className="text-3xl md:text-4xl font-display font-bold text-white mb-4 tracking-wider">{brand.name}</h3>
+                                    <p className="text-white/70 uppercase tracking-widest text-xs">{brand.city || 'Global'} • {brand.cuisine_type || brand.name}</p>
                                 </div>
-                            </Link>
-                        </div>
+
+                                <div className="absolute bottom-10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100 text-center">
+                                    <span className="inline-block px-6 py-2 border border-white/30 rounded-full text-white text-sm uppercase tracking-wider backdrop-blur-md">
+                                        Enter Studio
+                                    </span>
+                                </div>
+                            </div>
+                        </Link>
                     ))
                 ) : (
                     /* Fallback Ikoyi Card */
