@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabaseClient';
 const Dashboard = ({ user }) => {
     const [brands, setBrands] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [activeBackground, setActiveBackground] = useState(null);
 
     useEffect(() => {
         const fetchBrands = async () => {
@@ -22,7 +23,20 @@ const Dashboard = ({ user }) => {
         fetchBrands();
     }, []);
     return (
-        <div className="min-h-screen w-full flex flex-col items-center p-4 md:p-8 animate-[fadeIn_0.5s] relative">
+        <div className="min-h-screen w-full flex flex-col items-center p-4 md:p-8 animate-[fadeIn_0.5s] relative overflow-hidden">
+
+            {/* Dynamic Background Layer */}
+            <div className={`fixed inset-0 z-0 transition-opacity duration-1000 ease-in-out pointer-events-none ${activeBackground ? 'opacity-100' : 'opacity-0'}`}>
+                {/* Darker overlay to keep text readable */}
+                <div className="absolute inset-0 bg-black/70 z-10"></div>
+
+                {/* The Blurred Image */}
+                <img
+                    src={activeBackground || ''}
+                    alt="Background Ambience"
+                    className="w-full h-full object-cover blur-[80px] scale-110 transition-transform duration-[20s]"
+                />
+            </div>
 
             {/* Top Navigation */}
             <nav className="w-full max-w-7xl flex justify-between items-center mb-8 md:mb-12 relative z-50">
@@ -102,7 +116,9 @@ const Dashboard = ({ user }) => {
                         <Link
                             key={brand.id}
                             to={`/${(brand.name || 'brand').toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '')}`}
-                            className="group cursor-pointer relative h-64 md:h-[400px] rounded-3xl overflow-hidden shadow-xl transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl block"
+                            onMouseEnter={() => setActiveBackground(brand.cover_url)}
+                            onMouseLeave={() => setActiveBackground(null)}
+                            className="group cursor-pointer relative h-64 md:h-[400px] rounded-3xl overflow-hidden shadow-xl transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl block border border-white/5 z-20"
                         >
                             <div className="absolute inset-0 bg-black/60 z-10 group-hover:bg-black/40 transition-colors duration-500"></div>
                             <img
@@ -135,7 +151,9 @@ const Dashboard = ({ user }) => {
                     /* Fallback Ikoyi Card */
                     <Link
                         to="/ikoyi"
-                        className="group cursor-pointer relative h-64 md:h-[400px] rounded-3xl overflow-hidden shadow-xl transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl block"
+                        onMouseEnter={() => setActiveBackground("/ikoyi-interior.png")}
+                        onMouseLeave={() => setActiveBackground(null)}
+                        className="group cursor-pointer relative h-64 md:h-[400px] rounded-3xl overflow-hidden shadow-xl transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl block border border-white/5 z-20"
                     >
                         {/* ... existing fallback content ... */}
                         <div className="absolute inset-0 bg-black/60 z-10 group-hover:bg-black/40 transition-colors duration-500"></div>
