@@ -1,17 +1,17 @@
 /**
  * Generates AI food images using Hugging Face via backend proxy
  * @param {string} description - The description of the dish to generate
- * @param {number} retries - Number of retry attempts (default: 2)
+ * @param {number} retries - Number of retry attempts (default: 1)
  * @returns {Promise<string>} - Base64 data URL of the generated image
  */
-export const generateDishImage = async (description, retries = 2) => {
-    console.log('🖼️ Requesting AI-generated image from Hugging Face...');
+export const generateDishImage = async (description, retries = 1) => {
+    console.log('🖼️ Requesting AI-generated image...');
 
     for (let attempt = 0; attempt <= retries; attempt++) {
         try {
             // Add timeout to prevent hanging requests
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
+            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
 
             // Call our serverless function
             const response = await fetch(`/api/generate-image?description=${encodeURIComponent(description)}`, {
@@ -21,47 +21,27 @@ export const generateDishImage = async (description, retries = 2) => {
             clearTimeout(timeoutId);
 
             if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-
-                // Check for rate limiting
-                if (response.status === 429) {
-                    console.warn(`⏳ Rate limited. Attempt ${attempt + 1}/${retries + 1}`);
-                    if (attempt < retries) {
-                        await new Promise(r => setTimeout(r, 2000 * (attempt + 1))); // Exponential backoff
-                        continue;
-                    }
-                }
-
-                console.error('Frontend reported error. Backend response:', errorData);
-                throw new Error(errorData.message || `API error: ${response.status}`);
+                console.warn(`⚠️ API returned ${response.status}. Using fallback.`);
+                throw new Error(`API error: ${response.status}`);
             }
 
             const data = await response.json();
 
             if (data.success && data.image) {
-                console.log('✅ AI image generated successfully via Hugging Face');
+                console.log('✅ AI image generated successfully');
                 return data.image;
             } else {
                 throw new Error(data.error || 'Unknown error');
             }
         } catch (error) {
-            // Handle timeout
-            if (error.name === 'AbortError') {
-                console.warn(`⏱️ Request timeout. Attempt ${attempt + 1}/${retries + 1}`);
-                if (attempt < retries) {
-                    continue;
-                }
-            }
-
-            // Log error and retry if attempts remain
-            console.error(`❌ Failed to generate AI image (attempt ${attempt + 1}/${retries + 1}):`, error.message);
+            console.warn(`⚠️ Image generation failed (attempt ${attempt + 1}/${retries + 1}):`, error.message);
 
             if (attempt < retries) {
-                await new Promise(r => setTimeout(r, 1000 * (attempt + 1))); // Exponential backoff
+                await new Promise(r => setTimeout(r, 1000));
                 continue;
             }
 
-            // Final fallback after all retries exhausted
+            // Immediate fallback to Picsum after retries exhausted
             console.log('🎨 Using fallback placeholder image');
             const hash = description.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
             const seed = hash % 1000;
