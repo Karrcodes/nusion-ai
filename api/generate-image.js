@@ -25,8 +25,8 @@ export default async function handler(req, res) {
     }
 
     try {
-        // Enhanced prompt for better food photography
-        const prompt = `${description}, professional food photography, michelin star presentation, 8k, ultra detailed, cinematic lighting, gourmet plating, shallow depth of field, award winning photography`;
+        // Enhanced prompt for better food photography - more specific and detailed
+        const prompt = `A professional photograph of ${description}, gourmet food styling, michelin star restaurant plating, studio lighting, macro photography, appetizing, delicious, high-end culinary presentation, 8k resolution, sharp focus, beautiful composition, food magazine quality`;
 
         console.log(`🎨 Generating AI image with Hugging Face: "${description}"`);
 
