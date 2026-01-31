@@ -8,6 +8,8 @@ const Dashboard = ({ user }) => {
     const [activeBackground, setActiveBackground] = useState(null);
     const [displayBackground, setDisplayBackground] = useState(null);
 
+    // Fetch approved restaurant brands
+
     useEffect(() => {
         const fetchBrands = async () => {
             const { data } = await supabase
