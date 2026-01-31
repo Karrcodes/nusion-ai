@@ -142,7 +142,7 @@ const InputForm = ({ onCalculate }) => {
                     type="submit"
                     className="btn-gold group rounded-full"
                 >
-                    <span className="relative z-10 transition-colors group-hover:text-[var(--color-midnight)]">Curate Experience</span>
+                    <span className="relative z-10 transition-colors hover:text-[var(--color-midnight)]">Curate Experience</span>
                 </button>
             </div>
         </form>
